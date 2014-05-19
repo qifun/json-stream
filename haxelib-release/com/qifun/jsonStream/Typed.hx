@@ -8,7 +8,10 @@ import haxe.macro.ExprTools;
 import haxe.macro.MacroStringTools;
 import haxe.macro.Type;
 #end
+import haxe.Int64;
+using Lambda;
 using StringTools;
+import com.dongxiguo.continuation.utils.Generator.Generator;
 import haxe.ds.StringMap;
 
 
@@ -104,13 +107,13 @@ class Typed
   #end
 
   @:noUsing
-  macro public static function getToInstanceFunction(includeModules: Array<String>):haxe.macro.ExprOf<Registry>
+  macro public static function newDescriptorSet(includeModules: Array<String>):haxe.macro.ExprOf<DescriptorSet>
   {
     // TODO: 为以上文件中的类提供分发服务
     var block = [];
     var fieldDescriptorInitializers = [];
-    var enumRegistryInitializers = [];
-    var classRegistryInitializers = [];
+    var enumDescriptorSetInitializers = [];
+    var classDescriptorSetInitializers = [];
 
     function baseTypeDescriptorExpr(baseType:BaseType):ExprOf<TypeDescriptor>
     {
@@ -206,7 +209,7 @@ class Typed
             var enumType = t.get();
             var qname = MacroStringTools.toDotPath(enumType.pack, enumType.name);
             var varName = enumVarName(enumType.pack, enumType.name);
-            enumRegistryInitializers.push(macro $v{qname} => $i{varName});
+            enumDescriptorSetInitializers.push(macro $v{qname} => $i{varName});
             block.push(macro var $varName = new haxe.ds.StringMap<Iterable<TypeDescriptor>>());
             for (constructor in enumType.constructs)
             {
@@ -234,7 +237,7 @@ class Typed
             {
               var qname = MacroStringTools.toDotPath(instType.pack, instType.name);
               var varName = classVarName(instType.pack, instType.name);
-              classRegistryInitializers.push(macro $v{qname} => $i{varName});
+              classDescriptorSetInitializers.push(macro $v{qname} => $i{varName});
               block.push(macro var $varName = new haxe.ds.StringMap<com.qifun.jsonStream.Typed.TypeDescriptor>());
               for (field in instType.fields.get())
               {
@@ -257,9 +260,9 @@ class Typed
       pos: Context.currentPos(),
     });
 
-    var enumRegistry = toStringMap(enumRegistryInitializers);
-    var classRegistry = toStringMap(classRegistryInitializers);
-    block.push(macro new com.qifun.jsonStream.Typed.Registry($classRegistry, $enumRegistry));
+    var enumDescriptorSet = toStringMap(enumDescriptorSetInitializers);
+    var classDescriptorSet = toStringMap(classDescriptorSetInitializers);
+    block.push(macro new com.qifun.jsonStream.Typed.DescriptorSet($classDescriptorSet, $enumDescriptorSet));
     trace(ExprTools.toString({ expr: EBlock(block), pos: Context.currentPos(), }));
     return 
     {
@@ -268,57 +271,480 @@ class Typed
     };
   }
   
+  macro private static function jsonArrayStreamToInt64(streamIterator:ExprOf<Iterator<JsonStream>>):ExprOf<Int64>
+  {
+    return macro
+    {
+
+      if ($streamIterator.hasNext())
+      {
+        var highStream = $streamIterator.next();
+        if ($streamIterator.hasNext())
+        {
+          var lowStream = $streamIterator.next();
+          if ($streamIterator.hasNext())
+          {
+            (throw "Expect exact two elements in the array for Int64":Int64);
+          }
+          else
+          {
+            switch ([ highStream, lowStream ])
+            {
+              case [ NUMBER(high), NUMBER(low) ]:
+                Int64.make(cast high, cast low);
+              case _:
+                (throw "Expect exact two number in the array for Int64":Int64);
+            }
+          }
+        }
+        else
+        {
+          (throw "Expect exact two elements in the array for Int64":Int64);
+        }
+      }
+      else
+      {
+        (throw "Expect exact two elements in the array for Int64":Int64);
+      }
+      
+    }
+    
+  }
+    
+  macro private static function jsonArrayStreamToEnumConstructorParameters(
+    descriptorSet:ExprOf<DescriptorSet>,
+    parameterDescriptors:ExprOf<Iterable<TypeDescriptor>>,
+    streamIterator:ExprOf<Iterator<JsonStream>>):ExprOf<Array<Dynamic>>
+  {
+    return macro
+    {
+      var result =
+      [
+        for (parameterDescriptor in $parameterDescriptors)
+        {
+          if ($streamIterator.hasNext())
+          {
+            var stream = $streamIterator.next();
+            toInstance(stream, $descriptorSet, parameterDescriptor);
+          }
+          else
+          {
+            throw "Expect more parameter for the enum constructor parameter list";
+          }
+        }
+      ];
+      if ($streamIterator.hasNext())
+      {
+        throw "Expect end of array for the enum constructor parameter list";
+      }
+      result;
+    }
+  }
+  
+  macro private static function jsonObjectStreamToDynamicInstance(descriptorSet: ExprOf<DescriptorSet>, pairs:ExprOf<Iterator<JsonStream.PairStream>>):ExprOf<Dynamic>
+  {
+    return macro
+    {
+      if ($pairs.hasNext())
+      {
+        var pair = $pairs.next();
+        if ($pairs.hasNext())
+        {
+          throw "Expect exact one key/value pair for dynamic field.";
+        }
+        else
+        {
+          var key = pair.key;
+          return pairStreamToDynamicInstance($descriptorSet, key, pair.value);
+        }
+      }
+      else
+      {
+        throw "Expect exact one key/value pair for dynamic field.";
+      }
+    }
+  }
+  
+  macro private static function jsonObjectStreamToClassInstance<C>(descriptorSet:ExprOf<DescriptorSet>, reflectClass:ExprOf<Class<C>>, fieldMap:ExprOf<FieldMap>, pairs:ExprOf<Iterator<JsonStream.PairStream>>):ExprOf<C>
+  {
+    return macro
+    {
+      var result = $reflectClass.createInstance([]);
+      for (pair in $pairs)
+      {
+        var fieldName = pair.key;
+        var typeDescriptor = $fieldMap.get(fieldName);
+        var fieldInstance:Dynamic =
+          if (typeDescriptor == null)
+          {
+            // Unknown field, set untyped json instance.
+            Untyped.toInstance(pair.value);
+          }
+          else
+          {
+            toInstance(pair.value, $descriptorSet, typeDescriptor);
+          }
+        Reflect.setField(result, fieldName, fieldInstance);
+      }
+      result;
+    }
+  }
+  
+  macro private static function jsonObjectStreamToEnumInstance<E>(descriptorSet:ExprOf<DescriptorSet>, reflectEnum:ExprOf<Enum<E>>, constructors:ExprOf<EnumConstructorMap>, pairs:ExprOf<Iterator<JsonStream.PairStream>>):ExprOf<E>
+  {
+    return macro
+    {
+      if ($pairs.hasNext())
+      {
+        var pair = $pairs.next();
+        if ($pairs.hasNext())
+        {
+          throw "Expect only one key/value pair for enum!";
+        }
+        else
+        {
+          switch (pair.value)
+          {
+            case ARRAY(parameters):
+              var constructorName = pair.key;
+              var parameterDescriptors = $constructors.get(constructorName);
+              return $reflectEnum.createByName(
+                constructorName,
+                optimizedJsonArrayStreamToEnumConstructorParameters($descriptorSet, parameterDescriptors, parameters));
+            case _:
+              throw "Expect an array for enum constructor parameters!";
+          }
+        }
+      }
+      else
+      {
+        throw "Expect exact one key/value pair for enum!";
+      }
+    }
+  }
+
+  #if !macro
+
+  @:protected
+  private static function pairStreamToDynamicInstance(descriptorSet:DescriptorSet, key:String, value:JsonStream):Dynamic
+  {
+    switch (key)
+    {
+      case "Int", "UInt", "Float", "Single":
+        return toFloatInstance(value);
+      case "haxe.Int64":
+        return toInt64Instance(value);
+      case "String":
+        return toStringInstance(value);
+      case "Bool":
+        return toBoolInstance(value);
+      case key:
+        if (key.startsWith("Array<") && key.endsWith(">"))
+        {
+          var elementKey = key.substring("Array<".length, key.length - ">".length);
+          switch (value)
+          {
+            case ARRAY(elements):
+              var generator = Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
+              if (generator != null)
+              {
+                return
+                [
+                  for (element in generator)
+                  {
+                    pairStreamToDynamicInstance(descriptorSet, elementKey, element);
+                  }
+                ];
+              }
+              else
+              {
+                return
+                [
+                  for (element in elements)
+                  {
+                    pairStreamToDynamicInstance(descriptorSet, elementKey, element);
+                  }
+                ];
+              }
+            case _:
+              return throw "Expect array";
+          }
+        }
+        else
+        {
+          return switch (descriptorSet.fieldMaps.get(key))
+          {
+            case null:
+              switch (descriptorSet.constructorMaps.get(key))
+              {
+                case null:
+                  throw "Unknown type " + key;
+                case constructors:
+                  toEnumInstance(value, descriptorSet, key.resolveEnum(), constructors);
+              }
+            case fields:
+              toClassInstance(value, descriptorSet, key.resolveClass(), fields);
+          }
+        }
+    }
+  }
+  
+  public static function toEnumInstance<E>(stream:JsonStream, descriptorSet:DescriptorSet, reflectEnum:Enum<E>, constructors:EnumConstructorMap):E
+  {
+    switch (stream)
+    {
+      case STRING(constructorName):
+        return reflectEnum.createByName(constructorName);
+      case OBJECT(pairs):
+        var generator = Std.instance(pairs, (Generator:Class<Generator<JsonStream.PairStream>>));
+        if (generator != null)
+        {
+          return jsonObjectStreamToEnumInstance(descriptorSet, reflectEnum, constructors, generator);
+        }
+        else
+        {
+          return jsonObjectStreamToEnumInstance(descriptorSet, reflectEnum, constructors, pairs);
+        }
+      case _:
+        throw "Expect string or array for enum!";
+    }
+  }
+
+  public static function toClassInstance<C>(stream:JsonStream, descriptorSet:DescriptorSet, reflectClass:Class<C>, fieldMap:FieldMap):C
+  {
+    switch (stream)
+    {
+      case OBJECT(pairs):
+        var generator = Std.instance(pairs, (Generator:Class<Generator<JsonStream.PairStream>>));
+        if (generator != null)
+        {
+          return jsonObjectStreamToClassInstance(descriptorSet, reflectClass, fieldMap, generator);
+        }
+        else
+        {
+          return jsonObjectStreamToClassInstance(descriptorSet, reflectClass, fieldMap, pairs);
+        }
+      case _:
+        return throw "Expect object!";
+    }
+  }
+  
+  public static function toInt64Instance(stream:JsonStream):Int64
+  {
+    switch (stream)
+    {
+      case ARRAY(elements):
+        return optimizedJsonArrayStreamToInt64(elements);
+      case _:
+        return throw "Expect array!";
+    }
+  }
+  
+  public static function toStringInstance(stream:JsonStream):String
+  {
+    switch (stream)
+    {
+      case STRING(value):
+        return value;
+      case _:
+        return throw "Expect string!";
+    }
+  }
+  
+  public static function toBoolInstance(stream:JsonStream):Bool
+  {
+    switch (stream)
+    {
+      case FALSE: return false;
+      case TRUE: return false;
+      case _: return throw "Expect true or false";
+    }
+  }
+  
+  public static function toFloatInstance(stream:JsonStream):Float
+  {
+    switch (stream)
+    {
+      case NUMBER(value):
+        return value;
+      case _:
+        return throw "Expect number";
+    }
+  }
+  
+  public static function toArrayInstance(stream:JsonStream, descriptorSet:DescriptorSet, elementTypeDescriptor:TypeDescriptor):Array<Dynamic>
+  {
+    switch (stream)
+    {
+      case ARRAY(elements):
+        var generator = Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          return
+          [
+            for (element in generator)
+            {
+              toInstance(element, descriptorSet, elementTypeDescriptor);
+            }
+          ];
+        }
+        else
+        {
+          return
+          [
+            for (element in elements)
+            {
+              toInstance(element, descriptorSet, elementTypeDescriptor);
+            }
+          ];
+        }
+      case _:
+        return throw "Expect array";
+    }
+  }
+  
+  public static function toInstance(stream:JsonStream, descriptorSet:DescriptorSet, typeDescriptor:TypeDescriptor):Dynamic
+  {
+    switch (typeDescriptor)
+    {
+      case DYNAMIC:
+        return toDynamicInstance(stream, descriptorSet);
+      case CLASS(reflectClass, fields):
+        return toClassInstance(stream, descriptorSet, reflectClass, fields);
+      case ENUM(reflectEnum, constructors):
+        return toEnumInstance(stream, descriptorSet, reflectEnum, constructors);
+      case FLOAT, SINGLE, INT, UINT:
+        return toFloatInstance(stream);
+      case INT64:
+        return toInt64Instance(stream);
+      case STRING:
+        return toStringInstance(stream);
+      case BOOL:
+        return toBoolInstance(stream);
+      case ARRAY(elementDescriptor):
+        return toArrayInstance(stream, descriptorSet, elementDescriptor);
+    }
+  }
+  
+  @:protected
+  private static function optimizedJsonArrayStreamToInt64(streamIterator:Iterator<JsonStream>):Int64
+  {
+    var generator = Std.instance(streamIterator, (Generator:Class<Generator<JsonStream>>));
+    if (generator !=  null)
+    {
+      return jsonArrayStreamToInt64(generator);
+    }
+    else
+    {
+      return jsonArrayStreamToInt64(streamIterator);
+    }
+  }
+
+  @:protected
+  private static function optimizedJsonArrayStreamToEnumConstructorParameters(
+    descriptorSet:DescriptorSet, parameterDescriptors:Iterable<TypeDescriptor>, streamIterator:Iterator<JsonStream>):Array<Dynamic>
+  {
+    var array = Std.instance(parameterDescriptors, (Array:Class<Array<TypeDescriptor>>));
+    var generator = Std.instance(streamIterator, (Generator:Class<Generator<JsonStream>>));
+    if (array != null)
+    {
+      if (generator !=  null)
+      {
+        return jsonArrayStreamToEnumConstructorParameters(descriptorSet, array, generator);
+      }
+      else
+      {
+        return jsonArrayStreamToEnumConstructorParameters(descriptorSet, array, streamIterator);
+      }
+    }
+    else
+    {
+      if (generator !=  null)
+      {
+        return jsonArrayStreamToEnumConstructorParameters(descriptorSet, parameterDescriptors, generator);
+      }
+      else
+      {
+        return jsonArrayStreamToEnumConstructorParameters(descriptorSet, parameterDescriptors, streamIterator);
+      }
+    }
+  }
+
+  public static function toDynamicInstance(stream:JsonStream, descriptorSet:DescriptorSet):Dynamic
+  {
+    switch (stream)
+    {
+      case OBJECT(pairs):
+        var generator = Std.instance(pairs, (Generator:Class<Generator<JsonStream.PairStream>>));
+        if (generator != null)
+        {
+          return jsonObjectStreamToDynamicInstance(descriptorSet, generator);
+        }
+        else
+        {
+          return jsonObjectStreamToDynamicInstance(descriptorSet, pairs);
+        }
+      case _:
+        return throw "Expect object!";
+    }
+  }
+  
+  #end
 }
 
 typedef EnumConstructorMap = StringMap<Iterable<TypeDescriptor>>;
 
-abstract EnumDescriptor<E>(EnumConstructorMap) from EnumConstructorMap
-{
-  
-}
-
 enum TypeDescriptor
 {
   DYNAMIC;
-  CLASS<C>(reflectClass:Class<C>, classDescriptor:ClassDescriptor<C>);
-  ENUM<E>(reflectEnum:Enum<E>, constructors:EnumDescriptor<E>);
+  CLASS<C>(reflectClass:Class<C>, fields:FieldMap);
+  ENUM<E>(reflectEnum:Enum<E>, constructors:EnumConstructorMap);
   FLOAT;
+  SINGLE;
   INT;
   UINT;
   INT64;
   BOOL;
   STRING;
+  ARRAY(element:TypeDescriptor);
 }
 
 typedef FieldMap = haxe.ds.StringMap<TypeDescriptor>;
 
-abstract ClassDescriptor<C>(FieldMap) from FieldMap
-{
-  
-}
-
 
 // 补充Haxe标准库的Reflect不够的信息
-@:final class Registry
+@:allow(com.qifun.jsonStream.Typed)
+@:final class DescriptorSet
 {
   
-  private var classDescriptor = new haxe.ds.StringMap<ClassDescriptor<Dynamic>>();
+#if !macro
+  private var fieldMaps = new haxe.ds.StringMap<FieldMap>();
   
-  private var enumDescriptors = new haxe.ds.StringMap<EnumDescriptor<Dynamic>>();
+  private var constructorMaps = new haxe.ds.StringMap<EnumConstructorMap>();
   
-  public function new(classDescriptor, enumDescriptors)
+  public function new(fieldMaps, constructorMaps)
   {
-    this.classDescriptor = classDescriptor;
-    this.enumDescriptors = enumDescriptors;
+    this.fieldMaps = fieldMaps;
+    this.constructorMaps = constructorMaps;
   }
   
-  public function getEnumDescriptor<E>(e:Enum<E>):Null<EnumDescriptor<E>>
+  public function toEnumInstance<E>(e:Enum<E>):JsonStream->E
   {
-    return cast enumDescriptors.get(e.getEnumName());
+    var constructors = constructorMaps.get(e.getEnumName());
+    return function(stream):E
+    {
+      return Typed.toEnumInstance(stream, this, e, constructors);
+    }
   }
   
-  public function getClassDescriptor<C>(c:Class<C>):Null<ClassDescriptor<C>>
+  public function toClassInstance<C>(c:Class<C>):JsonStream->C
   {
-    return cast classDescriptor.get(c.getClassName());
+    var fields = fieldMaps.get(c.getClassName());
+    return function(stream):C
+    {
+      return Typed.toClassInstance(stream, this, c, fields);
+    }
   }
+
+#end
 }

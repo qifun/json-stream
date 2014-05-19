@@ -13,9 +13,8 @@ class Main
 	{
     trace("b11aa".toStream().toInstance());
     trace( { "xx": [ { }, { "t": 23 } ] } .toStream().toInstance());
-    var m = Typed.getToInstanceFunction(["NewClass"]);
-    
-    var nc = m.getClassDescriptor(NewClass);
+    var m = Typed.newDescriptorSet(["NewClass"]);
+    var nc = m.toClassInstance(NewClass);
     
     var a = new A();
     trace(Type.getInstanceFields(A));

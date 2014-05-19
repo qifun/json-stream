@@ -4,7 +4,7 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="bin\haxestructuralize_java" />
+    <movie path="bin\json-stream_java" />
     <movie fps="30" />
     <movie width="800" />
     <movie height="600" />

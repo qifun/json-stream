@@ -10,6 +10,7 @@ class Untyped
 {
 
   @:cps
+  @:protected
   private static function iterateJsonObject(instance:Dynamic, yield:YieldFunction<JsonStream.PairStream>):Void
   {
     for (field in Reflect.fields(instance))
@@ -19,6 +20,7 @@ class Untyped
   }
 
   @:cps
+  @:protected
   private static function iterateJsonArray(instance:Array<Dynamic>, yield:YieldFunction<JsonStream>):Void
   {
     for (element in instance)

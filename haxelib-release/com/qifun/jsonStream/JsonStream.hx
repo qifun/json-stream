@@ -13,11 +13,11 @@ package com.qifun.jsonStream;
 
 enum JsonStream
 {
-  NUMBER(value: Float);
-  STRING(value: String);
+  NUMBER(value:Float);
+  STRING(value:String);
   TRUE;
   FALSE;
   NULL;
   OBJECT(pairs:Iterator<PairStream>);
-  ARRAY(elements: Iterator<JsonStream>);
+  ARRAY(elements:Iterator<JsonStream>);
 }
