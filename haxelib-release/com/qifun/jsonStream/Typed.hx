@@ -11,10 +11,14 @@ import haxe.macro.Type;
 import haxe.Int64;
 using Lambda;
 using StringTools;
-import com.dongxiguo.continuation.utils.Generator.Generator;
+import com.dongxiguo.continuation.utils.Generator;
 import haxe.ds.StringMap;
 
 
+
+#if !macro
+@:build(com.dongxiguo.continuation.Continuation.cpsByMeta(":cps"))
+#end
 @:final
 class Typed
 {
@@ -378,7 +382,7 @@ class Typed
           if (typeDescriptor == null)
           {
             // Unknown field, set untyped json instance.
-            Untyped.toInstance(pair.value);
+            Raw.toRaw(pair.value);
           }
           else
           {
@@ -438,53 +442,49 @@ class Typed
         return toStringInstance(value);
       case "Bool":
         return toBoolInstance(value);
-      case key:
-        if (key.startsWith("Array<") && key.endsWith(">"))
+      case "Dynamic":
+        return Raw.toRaw(value);
+      case "Array":
+        switch (value)
         {
-          var elementKey = key.substring("Array<".length, key.length - ">".length);
-          switch (value)
-          {
-            case ARRAY(elements):
-              var generator = Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
-              if (generator != null)
-              {
-                return
-                [
-                  for (element in generator)
-                  {
-                    pairStreamToDynamicInstance(descriptorSet, elementKey, element);
-                  }
-                ];
-              }
-              else
-              {
-                return
-                [
-                  for (element in elements)
-                  {
-                    pairStreamToDynamicInstance(descriptorSet, elementKey, element);
-                  }
-                ];
-              }
-            case _:
-              return throw "Expect array";
-          }
+          case ARRAY(elements):
+            var generator = Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
+            if (generator != null)
+            {
+              return
+              [
+                for (element in generator)
+                {
+                  toDynamicInstance(element, descriptorSet);
+                }
+              ];
+            }
+            else
+            {
+              return
+              [
+                for (element in elements)
+                {
+                  toDynamicInstance(element, descriptorSet);
+                }
+              ];
+            }
+          case _:
+            return throw "Expect array";
         }
-        else
+      case key:
+        return switch (descriptorSet.fieldMaps.get(key))
         {
-          return switch (descriptorSet.fieldMaps.get(key))
-          {
-            case null:
-              switch (descriptorSet.constructorMaps.get(key))
-              {
-                case null:
-                  throw "Unknown type " + key;
-                case constructors:
-                  toEnumInstance(value, descriptorSet, key.resolveEnum(), constructors);
-              }
-            case fields:
-              toClassInstance(value, descriptorSet, key.resolveClass(), fields);
-          }
+          case null:
+            switch (descriptorSet.constructorMaps.get(key))
+            {
+              case null:
+                throw "Unknown type " + key;
+              case constructors:
+                toEnumInstance(value, descriptorSet, key.resolveEnum(), constructors);
+            }
+          case fields:
+            toClassInstance(value, descriptorSet, key.resolveClass(), fields);
         }
     }
   }
@@ -561,6 +561,11 @@ class Typed
     }
   }
   
+  public static function toRawInstance(stream:JsonStream):Raw
+  {
+    return Raw.toRaw(stream);
+  }
+  
   public static function toFloatInstance(stream:JsonStream):Float
   {
     switch (stream)
@@ -623,6 +628,10 @@ class Typed
         return toBoolInstance(stream);
       case ARRAY(elementDescriptor):
         return toArrayInstance(stream, descriptorSet, elementDescriptor);
+      case RAW:
+        return toRawInstance(stream);
+      case _: // TODO:
+        return throw "Not implemented!";
     }
   }
   
@@ -689,6 +698,87 @@ class Typed
     }
   }
   
+  @:cps
+  @:protected
+  private static function iterateDynamicArray(instance:Array<Dynamic>, descriptorSet:DescriptorSet, yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<JsonStream>):Void
+  {
+    for (element in instance)
+    {
+      yield(dynamicInstanceToJsonStream(element, descriptorSet)).async();
+    }
+  }
+
+  @:extern
+  private static inline function singleElementGenerator<Element>(element:Element):Generator<Element>
+  {
+    return new Generator(
+      function(yield: YieldFunction<Element>, end:Void->Void):Void
+      {
+        yield(element, end);
+      });
+  }
+  
+  @:cps
+  @:protected
+  private static inline function iterateInt64(high:Int, low:Int, yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<JsonStream>):Void
+  {
+    yield(JsonStream.NUMBER(high)).async();
+    yield(JsonStream.NUMBER(low)).async();
+
+  }
+
+  //@:extern
+  //private static inline function int64Generator(int64:Int64):Generator<JsonStream>
+  //{
+    //return new Generator(
+      //function(yield: YieldFunction<JsonStream>, end:Void->Void):Void
+      //{
+        //yield(JsonStream.NUMBER(Int64.getHigh(int64)), function() {
+          //yield(JsonStream.NUMBER(Int64.getLow(int64)), end);
+        //});
+      //});
+  //}
+  //
+  
+  public static inline function stringToJsonStream(instance:String):JsonStream
+  {
+    return JsonStream.STRING(instance);
+  }
+
+  public static inline function int64ToJsonStream(instance:Int64):JsonStream
+  {
+    return JsonStream.ARRAY(new Generator(iterateInt64.bind(Int64.getHigh(instance), Int64.getLow(instance))));
+  }
+
+  public static function dynamicInstanceToJsonStream(instance:Dynamic, descriptorSet:DescriptorSet):JsonStream
+  {
+    switch (instance.typeof())
+    {
+      case TObject:
+        // FIXME: 此处不应使用Untyped
+        return JsonStream.OBJECT(singleElementGenerator(new JsonStream.PairStream("Dynamic", Raw.toStream(instance))));
+      case TClass(String):
+        return JsonStream.OBJECT(singleElementGenerator(new JsonStream.PairStream("String", stringToJsonStream(instance))));
+      case TClass(Array):
+        return JsonStream.OBJECT(singleElementGenerator(new JsonStream.PairStream("Array", JsonStream.ARRAY(new Generator(iterateDynamicArray.bind(instance, descriptorSet))))));
+      case TClass(Int64):
+        return JsonStream.OBJECT(singleElementGenerator(new JsonStream.PairStream("haxe.Int64", int64ToJsonStream(instance))));
+      //case TClass(reflectClass):
+        //return JsonStream.ARRAY(new Generator(iterateJsonArray.bind(instance, _)));
+      //case TInt:
+        //return JsonStream.NUMBER(instance);
+      //case TFloat:
+        //return JsonStream.NUMBER(instance);
+      //case TBool if (instance):
+        //return JsonStream.TRUE;
+      //case TBool if (!instance):
+        //return JsonStream.FALSE;
+      //case TNull:
+        //return JsonStream.NULL;
+      case t:
+        return throw 'Unsupported instance data: $t';
+    }
+  }
   #end
 }
 
@@ -707,6 +797,9 @@ enum TypeDescriptor
   BOOL;
   STRING;
   ARRAY(element:TypeDescriptor);
+  RAW;
+  INT_MAP(element:TypeDescriptor);
+  STRING_MAP(element:TypeDescriptor);
 }
 
 typedef FieldMap = haxe.ds.StringMap<TypeDescriptor>;

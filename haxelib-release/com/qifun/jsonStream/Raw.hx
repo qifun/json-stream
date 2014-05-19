@@ -6,12 +6,12 @@ import com.dongxiguo.continuation.utils.Generator;
  */
 @:build(com.dongxiguo.continuation.Continuation.cpsByMeta(":cps"))
 @:final
-class Untyped
+abstract Raw(Dynamic) from Dynamic to Dynamic
 {
 
   @:cps
   @:protected
-  private static function iterateJsonObject(instance:Dynamic, yield:YieldFunction<JsonStream.PairStream>):Void
+  private static function iterateJsonObject(instance:Raw, yield:YieldFunction<JsonStream.PairStream>):Void
   {
     for (field in Reflect.fields(instance))
     {
@@ -21,7 +21,7 @@ class Untyped
 
   @:cps
   @:protected
-  private static function iterateJsonArray(instance:Array<Dynamic>, yield:YieldFunction<JsonStream>):Void
+  private static function iterateJsonArray(instance:Array<Raw>, yield:YieldFunction<JsonStream>):Void
   {
     for (element in instance)
     {
@@ -32,7 +32,7 @@ class Untyped
   /**
     Returns a stream that reads data from `instance`.
   **/
-  public static function toStream(instance:Dynamic):JsonStream
+  public static function toStream(instance:Raw):JsonStream
   {
     switch (Type.typeof(instance))
     {
@@ -43,12 +43,12 @@ class Untyped
       case TClass(Array):
         return JsonStream.ARRAY(new Generator(iterateJsonArray.bind(instance, _)));
       case TInt:
-        return JsonStream.NUMBER(instance);
+        return JsonStream.NUMBER((instance:Dynamic));
       case TFloat:
-        return JsonStream.NUMBER(instance);
-      case TBool if (instance):
+        return JsonStream.NUMBER((instance:Dynamic));
+      case TBool if ((instance:Dynamic)):
         return JsonStream.TRUE;
-      case TBool if (!instance):
+      case TBool if (!(instance:Dynamic)):
         return JsonStream.FALSE;
       case TNull:
         return JsonStream.NULL;
@@ -60,7 +60,7 @@ class Untyped
   /**
     Writes the data in `stream` to a JSON instance, and returns the instance.
   **/
-  public static function toInstance(stream:JsonStream):Dynamic
+  public static function toRaw(stream:JsonStream):Raw
   {
     switch (stream)
     {
@@ -68,13 +68,13 @@ class Untyped
         var object = { };
         for (entry in entries)
         {
-          Reflect.setField(object, entry.key, toInstance(entry.value));
+          Reflect.setField(object, entry.key, toRaw(entry.value));
         }
         return object;
       case JsonStream.STRING(value):
         return value;
       case JsonStream.ARRAY(elements):
-        return [ for (element in elements) toInstance(element) ];
+        return [ for (element in elements) toRaw(element) ];
       case JsonStream.NUMBER(value):
         return value;
       case JsonStream.TRUE:

@@ -1,7 +1,7 @@
 package  ;
 
 using com.qifun.jsonStream.Typed;
-using com.qifun.jsonStream.Untyped;
+using com.qifun.jsonStream.Raw;
 
 /**
  * @author 杨博
@@ -11,8 +11,8 @@ class Main
 	
 	static function main() 
 	{
-    trace("b11aa".toStream().toInstance());
-    trace( { "xx": [ { }, { "t": 23 } ] } .toStream().toInstance());
+    trace("b11aa".toStream().toRaw());
+    trace( { "xx": [ { }, { "t": 23 } ] } .toStream().toRaw());
     var m = Typed.newDescriptorSet(["NewClass"]);
     var nc = m.toClassInstance(NewClass);
     
