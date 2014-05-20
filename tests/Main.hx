@@ -1,7 +1,10 @@
 package  ;
 
-using com.qifun.jsonStream.Typed;
-using com.qifun.jsonStream.Raw;
+import com.qifun.jsonStream.RawJson;
+using com.qifun.jsonStream.RawDeserializer;
+using com.qifun.jsonStream.RawSerializer;
+using com.qifun.jsonStream.TypedDeserializer;
+import com.qifun.jsonStream.TypedJsonStream;
 
 /**
  * @author 杨博
@@ -11,25 +14,33 @@ class Main
 	
 	static function main() 
 	{
-    trace("b11aa".toStream().toRaw());
-    trace( { "xx": [ { }, { "t": 23 } ] } .toStream().toRaw());
-    var m = Typed.newDescriptorSet(["NewClass"]);
-    var nc = m.toClassInstance(NewClass);
+    trace(new RawJson("b11aa").serialize().deserialize());
+    trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().deserialize());
     
-    var a = new A();
-    trace(Type.getInstanceFields(A));
+    //var b1 = new TypedJsonStream<Array<Array<Int>>>(new RawJson([]).serialize()).deserialize();
+    //
+    //var b2 = new TypedJsonStream<NewClass>(new RawJson([]).serialize()).deserialize();
+    //
+    var b3 = new TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
     
-    var aa = new A();
-    Reflect.setProperty(aa, "xx", 1);
-    
-    var a:Void -> Void;
-    var b:Void -> Void = null;
-    a = function() {
-      b();
-    }
-    b = function() {
-      a();
-    }
+
+    //var m = Typed.newDescriptorSet(["NewClass"]);
+    //var nc = m.toClassInstance(NewClass);
+    //
+    //var a = new A();
+    //trace(Type.getInstanceFields(A));
+    //
+    //var aa = new A();
+    //Reflect.setProperty(aa, "xx", 1);
+    //
+    //var a:Void -> Void;
+    //var b:Void -> Void = null;
+    //a = function() {
+      //b();
+    //}
+    //b = function() {
+      //a();
+    //}
     //function a(i:Int):Int
     //{
       //return i > 0 ? b(i - 1): 0;
