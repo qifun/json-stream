@@ -15,9 +15,9 @@ class NewClass
   
   public var xxx:Int;
   
-  public var bar(default, default):Good;
+  private var bar(default, null):Good;
   
-  public var nc(default, default):NewClass;
+  public var nc(null, null):NewClass;
 }
 
 enum Good

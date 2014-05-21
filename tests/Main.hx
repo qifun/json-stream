@@ -4,7 +4,6 @@ import com.qifun.jsonStream.RawJson;
 using com.qifun.jsonStream.RawDeserializer;
 using com.qifun.jsonStream.RawSerializer;
 using com.qifun.jsonStream.TypedDeserializer;
-import com.qifun.jsonStream.TypedJsonStream;
 
 /**
  * @author 杨博
@@ -12,8 +11,8 @@ import com.qifun.jsonStream.TypedJsonStream;
 class Main 
 {
 	
-	static function main() 
-	{
+  static function main()
+  {
     trace(new RawJson("b11aa").serialize().deserialize());
     trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().deserialize());
     
@@ -21,7 +20,7 @@ class Main
     //
     //var b2 = new TypedJsonStream<NewClass>(new RawJson([]).serialize()).deserialize();
     //
-    var b3 = new TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
+    var b3 = new com.qifun.jsonStream.TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
     
     var m = TypedDeserializer.newDeserializerSet(["NewClass"]);
     trace(m);
@@ -52,7 +51,7 @@ class Main
     //}
     //a(5);
     
-	}
+  }
 	
 }
 

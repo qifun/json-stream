@@ -1,6 +1,7 @@
 package com.qifun.jsonStream;
 
-import com.qifun.jsonStream.TypedDeserializer.TypedDeserializerSet;
+import haxe.macro.Printer;
+import Type in StdType;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
 import haxe.Int64;
@@ -11,6 +12,8 @@ import haxe.macro.ExprTools;
 import haxe.macro.MacroStringTools;
 import haxe.macro.Type;
 import haxe.macro.TypeTools;
+
+using StringTools;
 
 typedef DeserializeFunction = DeserializeFunctionVector->DeserializeFunctionMap->JsonStream->Dynamic;
 
@@ -23,44 +26,9 @@ abstract Reenter(Dynamic) {}
 /**
  * @author 杨博
  */
-@:final
-class TypedDeserializerDetail
+typedef TypedDeserializerSet =
 {
-  
-  public static inline function asGenerator<Element>(iterator:Iterator<Element>):Null<Generator<Element>> return
-  {
-    Std.instance(iterator, (Generator:Class<Generator<Element>>));
-  }
-
-  
-}
-
-@:final
-class TypedDeserializerSet
-{
-  
-  private var deserializeFunctionVector:DeserializeFunctionVector;
-  
-  private var deserializeFunctionMap:StringMap<DeserializeFunction>;
-  
-  private function new() {}
-
-  /**
-   * Workaround for https://github.com/HaxeFoundation/haxe/issues/3024
-   */
-  public static function newInstance(deserializeFunctionVector:DeserializeFunctionVector, deserializeFunctionMap:StringMap<DeserializeFunction>) return
-  {
-    var result = new TypedDeserializerSet();
-    result.deserializeFunctionVector = deserializeFunctionVector;
-    result.deserializeFunctionMap = deserializeFunctionMap;
-    result;
-  }
-  
-  public function dynamicDeserialize(className:String, jsonStream:JsonStream):Dynamic return
-  {
-    throw "TODO:";
-  }
-  
+  function dynamicDeserialize(typeName:String, stream:JsonStream):Dynamic;
 }
 
 #if macro
@@ -76,7 +44,7 @@ private class TypedDeserializerSetBuilder
     macro
     {
       var iterator = $iterator;
-      var generator = com.qifun.jsonStream.TypedDeserializer.TypedDeserializerDetail.asGenerator(iterator);
+      var generator = com.qifun.jsonStream.TypedDeserializer.asGenerator(iterator);
       if (generator != null)
       {
         $extractFromGenerator;
@@ -132,105 +100,142 @@ private class TypedDeserializerSetBuilder
     }
   }
 
-  public static function isType(baseType:BaseType, expectedModule:String, expectedName:String):Bool return
+  public static function matchType(baseType:BaseType, expectedModule:String, expectedName:String):Bool return
   {
     baseType.module == expectedModule && baseType.name == expectedName;
   }
+
+  private var fields(default, null):Array<Field> = [];
   
-  public var idSeed(default, null) = 0;
-  
-  public var functionArray(default, null):Array<Expr> = [];
-  
-  public var idsByType(default, null) = new StringMap<Int>();
+  private var deserializingTypes(default, null) = new StringMap<BaseType>();
   
   public function new() { }
+
+  static var idSeed = 0;
   
-  public function build():ExprOf<TypedDeserializerSet> return
+  static function freshDeserializerSetName():String return
   {
-    var vector = buildFunctionVector();
-    var map = buildFunctionMap(macro typedDeserializerSet.deserializeFunctionVector);
-    macro
+    var id = idSeed++;
+    return "GeneratedTypedDeserializerSet_" + id;
+  }
+  
+  private static var PACKAGE_PREFIX(default, never) = [ "com", "qifun", "jsonStream", "generated" ];
+  
+  private static function getInternalPackage():Array<String> return
+  {
+    function getInternalPackageForBaseType(baseType:BaseType):Array<String> return
     {
-      var typedDeserializerSet = new com.qifun.jsonStream.TypedDeserializer.TypedDeserializerSet();
-      typedDeserializerSet.deserializeFunctionVector = $vector;
-      typedDeserializerSet.deserializeFunctionMap = $map;
-      typedDeserializerSet;
+      PACKAGE_PREFIX.concat(baseType.pack);
+    }
+    switch (Context.getLocalType())
+    {
+      case TInst(t, _): getInternalPackageForBaseType(t.get());
+      case TAbstract(t, _): getInternalPackageForBaseType(t.get());
+      case TEnum(t, _): getInternalPackageForBaseType(t.get());
+      case TType(t, _): getInternalPackageForBaseType(t.get());
+      case unsupportedType: throw "Expect BaseType, actual " + unsupportedType;
     }
   }
-  
-  public function buildFunctionMap(vector:ExprOf<DeserializeFunctionVector>):ExprOf<DeserializeFunctionMap> return
+
+  private static function processName(sb:StringBuf, s:String):Void
   {
-    var pairs =
-    [
-      for (k in idsByType.keys())
+    var i = 0;
+    while (i != -1)
+    {
+      var prev = i;
+      i = s.indexOf("_", prev);
+      if (i != -1)
       {
-        var id = idsByType.get(k);
-        macro $v{k} => $vector.get($v{id});
+        sb.addSub(s, prev, i - prev);
+        sb.add("__");
       }
-    ];
-    macro $a{pairs};
+      else
+      {
+        sb.addSub(s, prev);
+        break;
+      }
+    }
   }
 
-  public function buildFunctionVector():ExprOf<DeserializeFunctionVector> return
+  public static function deserializeMethodName(pack:Array<String>, name:String):String
   {
-    var length = functionArray.length;
-    var i = 0;
-    var initializationBlock =
+    var sb = new StringBuf();
+    sb.add("deserialize_");
+    for (p in pack)
+    {
+      processName(sb, p);
+      sb.add("_");
+    }
+    processName(sb, name);
+    return sb.toString();
+  }
+
+  public function defineDeserializerSet():Expr return
+  {
+    var internalPackage = getInternalPackage();
+    var deserializerSetName = freshDeserializerSetName();
+    var meta =
     [
-      for (expr in functionArray)
+      for (deserializingType in deserializingTypes)
       {
-        var assign = macro v.set($v{i}, $expr);
-        i++;
-        assign;
+        name: ":access",
+        params: [ MacroStringTools.toFieldExpr(deserializingType.module.split(".")) ],
+        pos : Context.currentPos(),
       }
     ];
-    var initialization =
+    var typeDefinition =
     {
+      pack: internalPackage,
+      name: deserializerSetName,
       pos: Context.currentPos(),
-      expr: EBlock(initializationBlock),
+      kind: TDClass(),
+      fields: fields,
+      meta: meta,
+    }
+    Context.defineType(typeDefinition);
+    var internalPackageExpr = MacroStringTools.toFieldExpr(internalPackage);
+    macro $internalPackageExpr.$deserializerSetName;
+  }
+
+  public function tryAddDeserializeMethod(type:Type):Null<BaseType> return
+  {
+    function getOrAddDeserializeFunction(type:Type):ExprOf<JsonStream->Dynamic> return
+    {
+      var typedJsonStream =
+        {
+          pos: Context.currentPos(),
+          expr:
+            ENew(
+              {
+                pack: [ "com", "qifun", "jsonStream" ],
+                name: "TypedJsonStream",
+                params: [ TPType(TypeTools.toComplexType(type)) ],
+              },
+              [ macro jsonStream ]),
+        }
+      var deserializeFunction = macro function(jsonStream:com.qifun.jsonStream.JsonStream) return $typedJsonStream.deserialize();
+      var typedExpr = Context.typeExpr(deserializeFunction);
+      switch (typedExpr.t)
+      {
+        case TFun(_, TAbstract(t, [])) if (matchType(t.get(), "com.qifun.jsonStream.TypedDeserializer", "Reenter")):
+          var bt = tryAddDeserializeMethod(type);
+          var methodName = deserializeMethodName(bt.pack, bt.name);
+          macro $i{methodName}
+        case _:
+          Context.getTypedExpr(typedExpr);
+      }
+    }
+
+    function extractFunction(e:ExprOf<JsonStream->Dynamic>):Function return
+    {
+      switch (e)
+      {
+        case { expr: EFunction(null, f) }: f;
+        case _: throw "Expect Function";
+      }
     }
     
-    macro 
-    {
-      var v = new haxe.ds.Vector<com.qifun.jsonStream.TypedDeserializer.DeserializeFunction>($v{length});
-      $initialization;
-      v;
-    }
-  }
- 
-  public function tryAddDeserializeFunction(type:Type):Null<Int> return 
-  {
-    function deserializeForType(type:Type, stream:ExprOf<JsonStream>):Expr return
-    {
-      function deserializeExpr(expr:ExprOf<JsonStream>) return
-      {
-        var typedJsonStream =
-          {
-            pos: stream.pos,
-            expr:
-              ENew(
-                {
-                  pack: [ "com", "qifun", "jsonStream" ],
-                  name: "TypedJsonStream",
-                  params: [ TPType(TypeTools.toComplexType(type)) ],
-                },
-                [ expr ]),
-          }
-        macro $typedJsonStream.deserialize();
-      };
-
-      switch (Context.typeof(deserializeExpr(macro null)))
-      {
-        case TAbstract(t, []) if (isType(t.get(), "com.qifun.jsonStream.TypedDeserializer", "Reenter")):
-          var id = tryAddDeserializeFunction(type);
-          macro deserializeFunctionVector.get($v{id})(deserializeFunctionVector, deserializeFunctionMap, $stream);
-        case t:
-          var b = deserializeExpr(stream);
-          macro $b;
-      }
-    }
-
-    function newEnumDeserializeFunction(enumType:EnumType):Expr return
+    function newEnumDeserializeFunction(enumType:EnumType):Function return
     {
       var zeroParameterBranch =
       {
@@ -266,14 +271,13 @@ private class TypedDeserializerSetBuilder
             enumPath.push(constructorName);
             cases.push(
               {
-                var i = 0;
                 var transformed =
                 [
-                  for (arg in args)
+                  for (i in 0...args.length)
                   {
                     var parameterName = 'parameter$i';
-                    i++;
-                    deserializeForType(arg.t, macro $i{parameterName});
+                    var f = getOrAddDeserializeFunction(args[i].t);
+                    macro $f($i{parameterName});
                   }
                 ];
                 var declareProcessParameters =
@@ -340,34 +344,35 @@ private class TypedDeserializerSetBuilder
           }
           $extractOne;
         };
-      macro function (deserializeFunctionVector:com.qifun.jsonStream.TypedDeserializer.DeserializeFunctionVector, deserializeFunctionMap:com.qifun.jsonStream.TypedDeserializer.DeserializeFunctionMap, stream:com.qifun.jsonStream.JsonStream) return
-      {
-        switch (stream)
+      extractFunction(
+        macro function (stream:com.qifun.jsonStream.JsonStream) return
         {
-          case STRING(constructorName):
-            $zeroParameterBranch;
-          case OBJECT(pairs):
-            $nonzeroParameterBranch;
-          case _:
-            throw "Expect object or string!";
-        }
-      }
+          switch (stream)
+          {
+            case STRING(constructorName):
+              $zeroParameterBranch;
+            case OBJECT(pairs):
+              $nonzeroParameterBranch;
+            case _:
+              throw "Expect object or string!";
+          }
+        });
     }
 
-    function newClassDeserializeFunction(classType:ClassType):Expr return
+    function newClassDeserializeFunction(classType:ClassType):Function return
     {
       var cases =
       [
         for (field in classType.fields.get())
         {
-          if (field.isPublic)
+          if (field.kind.match(FVar(AccNormal | AccNo, AccNormal | AccNo)))
           {
             var fieldName = field.name;
-            var valueExpr = deserializeForType(field.type, macro pair.value);
+            var f = getOrAddDeserializeFunction(field.type);
             {
               values: [ macro $v{fieldName} ],
               guard: null,
-              expr: macro result.$fieldName = $valueExpr,
+              expr: macro result.$fieldName = $f(pair.value),
             }
           }
         }
@@ -389,47 +394,67 @@ private class TypedDeserializerSetBuilder
         pos: Context.currentPos(),
         expr: ESwitch(macro pair.key, cases, null),
       }
-      macro function (deserializeFunctionVector:com.qifun.jsonStream.TypedDeserializer.DeserializeFunctionVector, deserializeFunctionMap:com.qifun.jsonStream.TypedDeserializer.DeserializeFunctionMap, stream:com.qifun.jsonStream.JsonStream) return
-      {
-        switch (stream)
+      extractFunction(
+        macro function (stream:com.qifun.jsonStream.JsonStream) return
         {
-          case OBJECT(pairs):
-            var result = $newInstance;
-            for (pair in pairs)
-            {
-              $switchKey;
-            }
-            result;
-          case _:
-            throw "Expect object!";
-        }
-      }
+          switch (stream)
+          {
+            case OBJECT(pairs):
+              var result = $newInstance;
+              var generator = com.qifun.jsonStream.TypedDeserializer.asGenerator(pairs);
+              if (generator != null)
+              {
+                for (pair in generator)
+                {
+                  $switchKey;
+                }
+              }
+              else
+              {
+                for (pair in pairs)
+                {
+                  $switchKey;
+                }
+              }
+              result;
+            case _:
+              throw "Expect object!";
+          }
+        });
     }
     
     switch (type)
     {
       case TInst(t, params):
         var classType = t.get();
-        var sign = MacroStringTools.toDotPath(classType.pack, classType.name);
-        var id = idsByType.get(sign);
-        if (id == null)
+        var methodName = deserializeMethodName(classType.pack, classType.name);
+        if (deserializingTypes.get(methodName) == null)
         {
-          id = idSeed++;
-          idsByType.set(sign, id);
-          functionArray[id] = newClassDeserializeFunction(classType);
+          deserializingTypes.set(methodName, classType);
+          fields.push(
+            {
+              name: methodName,
+              pos: Context.currentPos(),
+              access: [ APublic, AStatic ],
+              kind: FFun(newClassDeserializeFunction(classType)),
+            });
         }
-        id;
+        classType;
       case TEnum(t, params):
         var enumType = t.get();
-        var sign = MacroStringTools.toDotPath(enumType.pack, enumType.name);
-        var id = idsByType.get(sign);
-        if (id == null)
+        var methodName = deserializeMethodName(enumType.pack, enumType.name);
+        if (deserializingTypes.get(methodName) == null)
         {
-          id = idSeed++;
-          idsByType.set(sign, id);
-          functionArray[id] = newEnumDeserializeFunction(enumType);
+          deserializingTypes.set(methodName, enumType);
+          fields.push(
+            {
+              name: methodName,
+              pos: Context.currentPos(),
+              access: [ APublic, AStatic ],
+              kind: FFun(newEnumDeserializeFunction(enumType)),
+            });
         }
-        id;
+        enumType;
       case unsupported:
         null;
     }
@@ -441,6 +466,13 @@ private class TypedDeserializerSetBuilder
 @:final
 class TypedDeserializer
 {
+  
+  @:extern
+  @:allow(com.qifun.jsonStream.generated)
+  private static inline function asGenerator<Element>(iterator:Iterator<Element>):Null<Generator<Element>> return
+  {
+    Std.instance(iterator, (Generator:Class<Generator<Element>>));
+  }
   
   #if macro
 
@@ -463,23 +495,17 @@ class TypedDeserializer
       var deserializerSetBuilder = new TypedDeserializerSetBuilder();
       var rootExpr = switch (Context.follow(Context.typeof(stream)))
       {
-        case TAbstract(t, [ resultType ]) if (TypedDeserializerSetBuilder.isType(t.get(), "com.qifun.jsonStream.TypedJsonStream", "TypedJsonStream")):
+        case TAbstract(t, [ resultType ]) if (TypedDeserializerSetBuilder.matchType(t.get(), "com.qifun.jsonStream.TypedJsonStream", "TypedJsonStream")):
         {
-          var id = deserializerSetBuilder.tryAddDeserializeFunction(resultType);
-          var vector = deserializerSetBuilder.buildFunctionVector();
-          var map = deserializerSetBuilder.buildFunctionMap(macro vector);
-          macro
-          {
-            var vector = $vector;
-            var map = $map;
-            vector.get($v{id})(vector, map, $stream);
-          }
+          var bt = deserializerSetBuilder.tryAddDeserializeMethod(resultType);
+          var methodName = TypedDeserializerSetBuilder.deserializeMethodName(bt.pack, bt.name);
+          var deserializerSet = deserializerSetBuilder.defineDeserializerSet();
+          macro $deserializerSet.$methodName($stream);
         }
         case _:
           throw "Expect abstract!";
       }
       reenter = false;
-      trace(ExprTools.toString(rootExpr));
       rootExpr;
     }
   }
@@ -498,10 +524,10 @@ class TypedDeserializer
       {
         for (rootType in Context.getModule(moduleName))
         {
-          deserializerSetBuilder.tryAddDeserializeFunction(rootType);
+          deserializerSetBuilder.tryAddDeserializeMethod(rootType);
         }
       }
-      var result = deserializerSetBuilder.build();
+      var result = deserializerSetBuilder.defineDeserializerSet();
       reenter = false;
       result;
     }
