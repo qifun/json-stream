@@ -34,8 +34,10 @@
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
     <compile path="src\Main.hx" />
-    <compile path="tests\Main.hx" />
     <compile path="haxelib-release\com\qifun\structuralizaion\Structuralization.hx" />
+    <compile path="tests\Main2.hx" />
+    <compile path="tests\HaxeJavaCrash.hx" />
+    <compile path="tests\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>

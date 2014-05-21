@@ -23,8 +23,9 @@ class Main
     //
     var b3 = new TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
     
+    var m = TypedDeserializer.newDeserializerSet(["NewClass"]);
+    trace(m);
 
-    //var m = Typed.newDescriptorSet(["NewClass"]);
     //var nc = m.toClassInstance(NewClass);
     //
     //var a = new A();
