@@ -100,11 +100,6 @@ private class TypedDeserializerSetBuilder
     }
   }
 
-  public static function matchType(baseType:BaseType, expectedModule:String, expectedName:String):Bool return
-  {
-    baseType.module == expectedModule && baseType.name == expectedName;
-  }
-
   private var fields(default, null):Array<Field> = [];
   
   private var deserializingTypes(default, null) = new StringMap<BaseType>();
@@ -183,6 +178,17 @@ private class TypedDeserializerSetBuilder
         pos : Context.currentPos(),
       }
     ];
+    fields.push(
+      {
+        name: "dynamicDeserialize",
+        pos: Context.currentPos(),
+        access: [ APublic, AStatic ],
+        kind: FFun(extractFunction(macro function(typeName:String, stream:JsonStream):Dynamic return
+        {
+          // TODO:
+          //$dynamicDeserialize
+        })),
+      });
     var typeDefinition =
     {
       pack: internalPackage,
@@ -192,11 +198,23 @@ private class TypedDeserializerSetBuilder
       fields: fields,
       meta: meta,
     }
+    
+    trace(new Printer().printTypeDefinition(typeDefinition));
+    fields = null;
     Context.defineType(typeDefinition);
     var internalPackageExpr = MacroStringTools.toFieldExpr(internalPackage);
     macro $internalPackageExpr.$deserializerSetName;
   }
 
+  private static function extractFunction(e:ExprOf<JsonStream->Dynamic>):Function return
+  {
+    switch (e)
+    {
+      case { expr: EFunction(null, f) }: f;
+      case _: throw "Expect Function";
+    }
+  }
+    
   public function tryAddDeserializeMethod(type:Type):Null<BaseType> return
   {
     function getOrAddDeserializeFunction(type:Type):ExprOf<JsonStream->Dynamic> return
@@ -217,7 +235,7 @@ private class TypedDeserializerSetBuilder
       var typedExpr = Context.typeExpr(deserializeFunction);
       switch (typedExpr.t)
       {
-        case TFun(_, TAbstract(t, [])) if (matchType(t.get(), "com.qifun.jsonStream.TypedDeserializer", "Reenter")):
+        case TFun(_, TAbstract(_.get() => { module: "com.qifun.jsonStream.TypedDeserializer", name: "Reenter" }, [])):
           var bt = tryAddDeserializeMethod(type);
           var methodName = deserializeMethodName(bt.pack, bt.name);
           macro $i{methodName}
@@ -226,15 +244,6 @@ private class TypedDeserializerSetBuilder
       }
     }
 
-    function extractFunction(e:ExprOf<JsonStream->Dynamic>):Function return
-    {
-      switch (e)
-      {
-        case { expr: EFunction(null, f) }: f;
-        case _: throw "Expect Function";
-      }
-    }
-    
     function newEnumDeserializeFunction(enumType:EnumType):Function return
     {
       var zeroParameterBranch =
@@ -425,8 +434,7 @@ private class TypedDeserializerSetBuilder
     
     switch (type)
     {
-      case TInst(t, params):
-        var classType = t.get();
+      case TInst(_.get() => classType, params):
         var methodName = deserializeMethodName(classType.pack, classType.name);
         if (deserializingTypes.get(methodName) == null)
         {
@@ -440,8 +448,7 @@ private class TypedDeserializerSetBuilder
             });
         }
         classType;
-      case TEnum(t, params):
-        var enumType = t.get();
+      case TEnum(_.get() => enumType, params):
         var methodName = deserializeMethodName(enumType.pack, enumType.name);
         if (deserializingTypes.get(methodName) == null)
         {
@@ -463,6 +470,7 @@ private class TypedDeserializerSetBuilder
 
 #end
 
+
 @:final
 class TypedDeserializer
 {
@@ -481,7 +489,7 @@ class TypedDeserializer
   #end
 
   /**
-   * The fallback deserializeFunction for classes and enums
+   * The fallback deserializeFunction for classes and enums.
    */
   macro public static function deserialize<Element>(stream:ExprOf<TypedJsonStream<Element>>):ExprOf<Element> return
   {
@@ -492,15 +500,16 @@ class TypedDeserializer
     else
     {
       reenter = true;
-      var deserializerSetBuilder = new TypedDeserializerSetBuilder();
       var rootExpr = switch (Context.follow(Context.typeof(stream)))
       {
-        case TAbstract(t, [ resultType ]) if (TypedDeserializerSetBuilder.matchType(t.get(), "com.qifun.jsonStream.TypedJsonStream", "TypedJsonStream")):
+        case TAbstract(_.get() => { module: "com.qifun.jsonStream.TypedJsonStream", name: "TypedJsonStream" }, [ resultType ]):
         {
+          var deserializerSetBuilder = new TypedDeserializerSetBuilder();
+          trace(resultType);
           var bt = deserializerSetBuilder.tryAddDeserializeMethod(resultType);
           var methodName = TypedDeserializerSetBuilder.deserializeMethodName(bt.pack, bt.name);
           var deserializerSet = deserializerSetBuilder.defineDeserializerSet();
-          macro $deserializerSet.$methodName($stream);
+          macro $deserializerSet.$methodName($stream.toUntypedStream());
         }
         case _:
           throw "Expect abstract!";
@@ -510,6 +519,7 @@ class TypedDeserializer
     }
   }
   
+  @:noUsing
   macro public static function newDeserializerSet(modules:Array<String>):ExprOf<TypedDeserializerSet> return
   {
     if (reenter)
@@ -593,7 +603,7 @@ class Int64Deserializer
 
   public static function deserialize(stream:TypedJsonStream<Int64>):Int64 return
   {
-    switch (stream:JsonStream)
+    switch (stream.toUntypedStream())
     {
       case ARRAY(elements):
         optimizedJsonArrayStreamToInt64(elements);
@@ -609,7 +619,7 @@ class IntDeserializer
   // inline // Haxe compiler warns for Java or C# targets if I add the inline modifier
   public static function deserialize(stream:TypedJsonStream<Int>):Int return
   {
-    switch (stream:JsonStream)
+    switch (stream.toUntypedStream())
     {
       case NUMBER(value):
         cast value;
@@ -624,7 +634,7 @@ class UIntDeserializer
 {
   public static function deserialize(stream:TypedJsonStream<UInt>):UInt return
   {
-    switch (stream:JsonStream)
+    switch (stream.toUntypedStream())
     {
       case NUMBER(value):
         cast value;
@@ -640,7 +650,7 @@ class UIntDeserializer
   {
     public static function deserialize(stream:TypedJsonStream<Single>):Single return
     {
-      switch (stream:JsonStream)
+      switch (stream.toUntypedStream())
       {
         case NUMBER(value):
           value;
@@ -654,10 +664,9 @@ class UIntDeserializer
 @:final
 class FloatDeserializer
 {
-  @:extern
   public static function deserialize(stream:TypedJsonStream<Float>):Float return
   {
-    switch (stream:JsonStream)
+    switch (stream.toUntypedStream())
     {
       case NUMBER(value):
         value;
@@ -672,7 +681,7 @@ class BoolDeserializer
 {
   public static function deserialize(stream:TypedJsonStream<Bool>):Bool return
   {
-    switch (stream:JsonStream)
+    switch (stream.toUntypedStream())
     {
       case FALSE: false;
       case TRUE: true;
@@ -686,7 +695,7 @@ class StringDeserializer
 {
   public static function deserialize(stream:TypedJsonStream<String>):String return
   {
-    switch (stream:JsonStream)
+    switch (stream.toUntypedStream())
     {
       case STRING(value):
         value;
@@ -701,7 +710,7 @@ class ArrayDeserializer
 {
   public static function deserializeForElement<Element>(stream:TypedJsonStream<Array<Element>>, elementDeserializeFunction:TypedJsonStream<Element>->Element):Array<Element> return
   {
-    switch (stream:JsonStream)
+    switch (stream.toUntypedStream())
     {
       case ARRAY(value):
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
@@ -734,3 +743,17 @@ class ArrayDeserializer
   }
 }
 
+abstract LowPriorityDynamic(Dynamic) from Dynamic to Dynamic {}
+
+@:final
+class LowPriorityDynamicDeserializer
+{
+  // 由于Haxe对Dynamic特殊处理，如果直接匹配Dynamic，会匹配到其他所有类型
+  // 使用LowPriorityDynamic就只能精确匹配Dynamic，所以优先级低于其他能够明确匹配的Deserializer
+  public static function deserialize(stream:TypedJsonStream<LowPriorityDynamic>):LowPriorityDynamic
+  {
+    throw "Cannot deserialize Dynamic type without a TypedDeserializerSet";
+  }
+}
+
+// TODO: 支持 typedef 和 abstract

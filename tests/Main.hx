@@ -1,25 +1,67 @@
 package  ;
 
+import haxe.macro.Context;
+import haxe.macro.Expr;
+import haxe.macro.ExprTools;
+import haxe.macro.TypeTools;
+#if !macro
 import com.qifun.jsonStream.RawJson;
 using com.qifun.jsonStream.RawDeserializer;
 using com.qifun.jsonStream.RawSerializer;
 using com.qifun.jsonStream.TypedDeserializer;
+#end
+class InlineVar
+{
+  public static var NotInline = "not" + "inline";
+  public static inline var Inline = "inline";
+  public static inline function inlineFunction() return "inlineFunction";
+}
 
 /**
  * @author 杨博
  */
 class Main 
 {
-	
+  macro static function forceTyped(e:Expr):Expr return
+  {
+    trace(TypeTools.toString(Context.typeof(macro function (x) return x.deserialize())));
+    //var r = Context.getTypedExpr(Context.typeExpr(e));
+    //trace(ExprTools.toString(r));
+    //r;
+    e;
+  }
+	#if !macro
   static function main()
   {
+    forceTyped(
+    var f = function (x) return x.deserialize()
+    );
+//    $type(f);
+//    StringDeserializer.deserialize.bind();
+    var n = switch ("")
+    {
+      case InlineVar.Inline: 2;
+      case "3": 3;
+      case InlineVar.NotInline: 1;
+      case _: 4;
+    }
     trace(new RawJson("b11aa").serialize().deserialize());
     trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().deserialize());
     
-    //var b1 = new TypedJsonStream<Array<Array<Int>>>(new RawJson([]).serialize()).deserialize();
-    //
-    //var b2 = new TypedJsonStream<NewClass>(new RawJson([]).serialize()).deserialize();
-    //
+    try
+    {
+      new com.qifun.jsonStream.TypedJsonStream<Array<Array<Dynamic>>>(new RawJson([[[]]]).serialize()).deserialize();
+    }
+    catch(error:String)
+    {
+      trace(error);
+    }
+    
+    var b1 = new com.qifun.jsonStream.TypedJsonStream<Array<Array<Int>>>(new RawJson([]).serialize()).deserialize();
+    
+    
+    var b2 = new com.qifun.jsonStream.TypedJsonStream<NewClass>(new RawJson({}).serialize()).deserialize();
+    
     var b3 = new com.qifun.jsonStream.TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
     
     var m = TypedDeserializer.newDeserializerSet(["NewClass"]);
@@ -52,7 +94,7 @@ class Main
     //a(5);
     
   }
-	
+	#end
 }
 
 interface C<T>

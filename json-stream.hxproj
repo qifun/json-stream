@@ -4,13 +4,13 @@
   <output>
     <movie outputType="Application" />
     <movie input="" />
-    <movie path="bin\json-stream_java" />
+    <movie path="bin\json-stream.swf" />
     <movie fps="30" />
     <movie width="800" />
     <movie height="600" />
-    <movie version="1" />
+    <movie version="11" />
     <movie minorVersion="0" />
-    <movie platform="Java" />
+    <movie platform="Flash Player" />
     <movie background="#FFFFFF" />
   </output>
   <!-- Other classes to be compiled into your SWF -->
@@ -20,7 +20,7 @@
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="no-compilation" />
+    <option directives="" />
     <option flashStrict="False" />
     <option noInlineOnDebug="False" />
     <option mainClass="Main" />
@@ -39,6 +39,10 @@
     <compile path="tests\HaxeJavaCrash.hx" />
     <compile path="tests\Main.hx" />
   </compileTargets>
+  <!-- Assets to embed into the output SWF -->
+  <library>
+    <!-- example: <asset path="..." id="..." update="..." glyphs="..." mode="..." place="..." sharepoint="..." /> -->
+  </library>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
     <hidden path="obj" />
@@ -50,7 +54,7 @@
   <!-- Other project options -->
   <options>
     <option showHiddenPaths="False" />
-    <option testMovie="Unknown" />
+    <option testMovie="Default" />
     <option testMovieCommand="" />
   </options>
   <!-- Plugin storage -->

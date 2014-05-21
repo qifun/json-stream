@@ -11,7 +11,6 @@ class RawSerializer
 {
 
   @:cps
-  @:protected
   private static function iterateJsonObject(instance:Dynamic, yield:YieldFunction<JsonStream.PairStream>):Void
   {
     for (field in Reflect.fields(instance))
@@ -21,7 +20,6 @@ class RawSerializer
   }
 
   @:cps
-  @:protected
   private static function iterateJsonArray(instance:Array<RawJson>, yield:YieldFunction<JsonStream>):Void
   {
     for (element in instance)
