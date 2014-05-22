@@ -6,9 +6,9 @@ import haxe.macro.ExprTools;
 import haxe.macro.TypeTools;
 #if !macro
 import com.qifun.jsonStream.RawJson;
-using com.qifun.jsonStream.RawDeserializer;
 using com.qifun.jsonStream.RawSerializer;
-using com.qifun.jsonStream.TypedDeserializer;
+using com.qifun.jsonStream.JsonDeserializer;
+using com.qifun.jsonStream.Plugins;
 #end
 class InlineVar
 {
@@ -48,28 +48,28 @@ class Main
       case InlineVar.NotInline: 1;
       case _: 4;
     }
-    trace(new RawJson("b11aa").serialize().deserialize());
-    trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().deserialize());
-    
-    try
-    {
-      new com.qifun.jsonStream.TypedJsonStream<Array<Array<Dynamic>>>(new RawJson([[[]]]).serialize()).deserialize();
-    }
-    catch(error:String)
-    {
-      trace(error);
-    }
-    
-    var b1 = new com.qifun.jsonStream.TypedJsonStream<Array<Array<Int>>>(new RawJson([]).serialize()).deserialize();
-    
-    
-    var b2 = new com.qifun.jsonStream.TypedJsonStream<NewClass>(new RawJson({}).serialize()).deserialize();
-    
-    var b3 = new com.qifun.jsonStream.TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
-    
-    var m = TypedDeserializerSetBuilder.newDeserializerSet(["NewClass"]);
-    trace(m);
-
+    trace((new RawJson("b11aa").serialize().deserialize():RawJson));
+    //trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().deserialize());
+    //
+    //try
+    //{
+      var aad:Array<Array<Dynamic>> = new RawJson([[[]]]).serialize().deserialize();
+    //}
+    //catch(error:String)
+    //{
+      //trace(error);
+    //}
+    //
+    //var b1 = new com.qifun.jsonStream.TypedJsonStream<Array<Array<Int>>>(new RawJson([]).serialize()).deserialize();
+    //
+    //
+    var b2:NewClass = new RawJson({}).serialize().deserialize();
+    //
+    //var b3 = new com.qifun.jsonStream.TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
+    //
+    //var m = TypedDeserializerSetBuilder.newDeserializerSet(["NewClass"]);
+    //trace(m);
+//
     //var nc = m.toClassInstance(NewClass);
     //
     //var a = new A();
