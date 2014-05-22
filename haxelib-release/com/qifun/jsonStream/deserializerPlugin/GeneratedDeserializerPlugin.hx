@@ -3,6 +3,7 @@ package com.qifun.jsonStream.deserializerPlugin;
 import com.qifun.jsonStream.JsonDeserializer;
 #if macro
 import haxe.macro.Expr;
+import haxe.macro.ComplexTypeTools;
 import haxe.macro.Context;
 #end
 
@@ -25,8 +26,16 @@ class GeneratedDeserializerPlugin
   macro public static function deserialize<Element>(stream:ExprOf<TypedJsonStream<Element>>):ExprOf<Element> return
   {
     var builder = JsonDeserializerSetBuilder.getContextBuilder();
-    var methodName = builder.tryAddDeserializeMethod(Context.getExpectedType());
-    macro currentJsonDeserializerSet().$methodName($stream.underlying);
+    var expectedType = Context.getExpectedType();
+    var methodName = builder.tryAddDeserializeMethod(expectedType);
+    if (methodName == null)
+    {
+      macro currentJsonDeserializerSet().dynamicDeserialize($stream.underlying);
+    }
+    else
+    {
+      macro currentJsonDeserializerSet().$methodName($stream.underlying);
+    }
   }
 
 }

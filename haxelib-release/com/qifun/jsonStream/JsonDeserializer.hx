@@ -53,7 +53,15 @@ class JsonDeserializer
   @:noUsing
   macro public static function newDeserializerSet(modules:Array<String>):ExprOf<JsonDeserializerSet> return
   {
-    macro throw "TODO";
+    var deserializerSetBuilder = new JsonDeserializerSetBuilder();
+    for (moduleName in modules)
+    {
+      for (rootType in Context.getModule(moduleName))
+      {
+        deserializerSetBuilder.tryAddDeserializeMethod(rootType);
+      }
+    }
+    deserializerSetBuilder.defineDeserializerSet();
   }
   
   macro public static function deserialize<Element>(stream:ExprOf<JsonStream>):ExprOf<Element> return
@@ -128,7 +136,7 @@ class JsonDeserializerSetBuilder
     }
   }
 
-  public function defineDeserializerSet():Void
+  public function defineDeserializerSet():ExprOf<JsonDeserializerSet> return
   {
     var meta =
     [
@@ -224,6 +232,8 @@ class JsonDeserializerSetBuilder
     Context.defineType(typeDefinition);
     fields = null;
     allBuilders.remove(id);
+    var internalPackageExpr = MacroStringTools.toFieldExpr(internalPackage);
+    macro $internalPackageExpr.$deserializerSetName;
   }
   
   private static inline var DESERIALIZER_SET_PLACEHOLDER_PREFIX = "DeserializerSetPlaceholder_";
@@ -536,7 +546,7 @@ class JsonDeserializerSetBuilder
     
     switch (type)
     {
-      case TInst(_.get() => classType, params):
+      case TInst(_.get() => classType, params) if (!classType.isInterface):
         var methodName = deserializeMethodName(classType.pack, classType.name);
         if (deserializingTypes.get(methodName) == null)
         {
@@ -549,7 +559,14 @@ class JsonDeserializerSetBuilder
               kind: FFun(newClassDeserializeFunction(classType)),
             });
         }
-        methodName;
+        if (classType.meta.has(":final"))
+        {
+          methodName;
+        }
+        else
+        {
+          null;
+        }
       case TEnum(_.get() => enumType, params):
         var methodName = deserializeMethodName(enumType.pack, enumType.name);
         if (deserializingTypes.get(methodName) == null)
@@ -570,14 +587,14 @@ class JsonDeserializerSetBuilder
   }
 
 
-  public function deserializeForType(expectType:ComplexType, stream:ExprOf<JsonStream>):Expr return
+  public function deserializeForType(expectedType:ComplexType, stream:ExprOf<JsonStream>):Expr return
   {
     var typedJsonStreamTypePath =
     {
       pack: [ "com", "qifun", "jsonStream" ],
       name: "JsonDeserializer",
       sub: "TypedJsonStream",
-      params: [ TPType(expectType) ],
+      params: [ TPType(expectedType) ],
     };
     var typedJsonStreamType = TPath(typedJsonStreamTypePath);
     var placeholderType = TPath(
@@ -590,7 +607,7 @@ class JsonDeserializerSetBuilder
     {
       // 提供一个假的currentJsonDeserializerSet，以避免编译错误，然后后续处理时，再替换掉它
       function currentJsonDeserializerSet():$placeholderType return null;
-      function(typedJsonStream:$typedJsonStreamType):$expectType return typedJsonStream.deserialize();
+      function(typedJsonStream:$typedJsonStreamType):$expectedType return typedJsonStream.deserialize();
     }
     switch (Context.getTypedExpr(Context.typeExpr(placeholderExpr)))
     {
@@ -645,4 +662,4 @@ extern class DynamicTypedDeserializer
   }
 }
 
-// TODO: 支持 typedef、abstract和类型参数
+// TODO: 支持 typedef、abstract、interface和类型参数

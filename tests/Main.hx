@@ -51,51 +51,26 @@ class Main
     trace((new RawJson("b11aa").serialize().deserialize():RawJson));
     //trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().deserialize());
     //
-    //try
-    //{
+    try
+    {
       var aad:Array<Array<Dynamic>> = new RawJson([[[]]]).serialize().deserialize();
-    //}
-    //catch(error:String)
-    //{
-      //trace(error);
-    //}
+    }
+    catch(error:String)
+    {
+      trace(error);
+    }
     //
-    //var b1 = new com.qifun.jsonStream.TypedJsonStream<Array<Array<Int>>>(new RawJson([]).serialize()).deserialize();
-    //
-    //
+    var b1:Array<Array<Int>> = new RawJson([]).serialize().deserialize();
+
     var b2:NewClass = new RawJson({}).serialize().deserialize();
-    //
-    //var b3 = new com.qifun.jsonStream.TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
-    //
-    //var m = TypedDeserializerSetBuilder.newDeserializerSet(["NewClass"]);
-    //trace(m);
-//
-    //var nc = m.toClassInstance(NewClass);
-    //
-    //var a = new A();
-    //trace(Type.getInstanceFields(A));
-    //
-    //var aa = new A();
-    //Reflect.setProperty(aa, "xx", 1);
-    //
-    //var a:Void -> Void;
-    //var b:Void -> Void = null;
-    //a = function() {
-      //b();
-    //}
-    //b = function() {
-      //a();
-    //}
-    //function a(i:Int):Int
-    //{
-      //return i > 0 ? b(i - 1): 0;
-    //}
-    //function b(i:Int):Int
-    //{
-      //return a(i - 1);
-    //}
-    //a(5);
     
+    var b3:Array<NewClass> = new RawJson([]).serialize().deserialize();
+    
+    var m = JsonDeserializer.newDeserializerSet(["NewClass"]);
+    trace(m);
+    
+    var nc = function(x) return m.deserialize_NewClass(x);
+
   }
 	#end
 }
