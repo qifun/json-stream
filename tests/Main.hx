@@ -17,6 +17,7 @@ class InlineVar
   public static inline function inlineFunction() return "inlineFunction";
 }
 
+typedef F<A> = Array<A>->A;
 /**
  * @author 杨博
  */
@@ -24,7 +25,9 @@ class Main
 {
   macro static function forceTyped(e:Expr):Expr return
   {
-    trace(TypeTools.toString(Context.typeof(macro function (x) return x.deserialize())));
+    //trace(TypeTools.toString(Context.typeof(macro function (x) return x.deserialize())));
+    
+    
     //var r = Context.getTypedExpr(Context.typeExpr(e));
     //trace(ExprTools.toString(r));
     //r;
@@ -64,7 +67,7 @@ class Main
     
     var b3 = new com.qifun.jsonStream.TypedJsonStream<Array<NewClass>>(new RawJson([]).serialize()).deserialize();
     
-    var m = TypedDeserializer.newDeserializerSet(["NewClass"]);
+    var m = TypedDeserializerSetBuilder.newDeserializerSet(["NewClass"]);
     trace(m);
 
     //var nc = m.toClassInstance(NewClass);
