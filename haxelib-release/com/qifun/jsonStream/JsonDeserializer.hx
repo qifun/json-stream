@@ -81,11 +81,11 @@ class JsonDeserializerSetBuilder
   
   private var deserializingTypes(default, null) = new StringMap<BaseType>();
   
-  static var idSeed = 0;
+  private static var idSeed = 0;
   
-  static var allBuilders = new IntMap<JsonDeserializerSetBuilder>();
+  private static var allBuilders = new IntMap<JsonDeserializerSetBuilder>();
   
-  var id = idSeed++;
+  private var id = idSeed++;
 
   private static var PACKAGE_PREFIX(default, never) = [ "com", "qifun", "jsonStream", "generated" ];
   
@@ -214,10 +214,7 @@ class JsonDeserializerSetBuilder
         name: "dynamicDeserialize",
         pos: Context.currentPos(),
         access: [ APublic, AStatic ],
-        kind: FFun(extractFunction(macro function(stream:com.qifun.jsonStream.JsonStream):Dynamic return
-        {
-          $dynamicDeserialize;
-        })),
+        kind: FFun(extractFunction(macro function(stream:com.qifun.jsonStream.JsonStream):Dynamic return $dynamicDeserialize)),
       });
     var typeDefinition =
     {
@@ -228,7 +225,7 @@ class JsonDeserializerSetBuilder
       fields: fields,
       meta: meta,
     }
-    trace(new haxe.macro.Printer().printTypeDefinition(typeDefinition));
+    //trace(new haxe.macro.Printer().printTypeDefinition(typeDefinition));
     Context.defineType(typeDefinition);
     fields = null;
     allBuilders.remove(id);
@@ -515,6 +512,38 @@ class JsonDeserializerSetBuilder
         params: enumParams,
       }
     }
+    function newAbstractDeserializeFunction(abstractType:AbstractType):Function return
+    {
+      var params: Array<TypeParamDecl> =
+      [
+        for (tp in abstractType.params)
+        {
+          name: tp.name,
+          // TODO: constraits
+        }
+      ];
+      var implExpr = deserializeForType(TypeTools.toComplexType(abstractType.type), macro stream, params);
+      var abstractModule = abstractType.module;
+      var expectedTypePath =
+      {
+        pack: abstractType.pack,
+        name: abstractModule.substring(abstractType.module.lastIndexOf(".")),
+        sub: abstractType.name,
+        params: [ for (p in params) TPType(TPath({ pack: [], name: p.name})) ]
+      };
+      {
+        args:
+        [
+          {
+            name:"stream",
+            type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+          },
+        ],
+        ret: TPath(expectedTypePath),
+        expr: macro return cast $implExpr,
+        params: params,
+      }
+    }
 
     function newClassDeserializeFunction(classType:ClassType):Function return
     {
@@ -597,9 +626,9 @@ class JsonDeserializerSetBuilder
         params: params,
       }
     }
-    switch (type)
+    switch (Context.follow(type))
     {
-      case TInst(_.get() => classType, params) if (!classType.isInterface && classType.kind.match(KNormal)):
+      case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
         var methodName = deserializeMethodName(classType.pack, classType.name);
         if (deserializingTypes.get(methodName) == null)
         {
@@ -620,7 +649,7 @@ class JsonDeserializerSetBuilder
         {
           null;
         }
-      case TEnum(_.get() => enumType, params):
+      case TEnum(_.get() => enumType, _):
         var methodName = deserializeMethodName(enumType.pack, enumType.name);
         if (deserializingTypes.get(methodName) == null)
         {
@@ -634,7 +663,21 @@ class JsonDeserializerSetBuilder
             });
         }
         methodName;
-      case unsupported:
+      case TAbstract(_.get() => abstractType, _):
+        var methodName = deserializeMethodName(abstractType.pack, abstractType.name);
+        if (deserializingTypes.get(methodName) == null)
+        {
+          deserializingTypes.set(methodName, abstractType);
+          fields.push(
+            {
+              name: methodName,
+              pos: Context.currentPos(),
+              access: [ APublic, AStatic ],
+              kind: FFun(newAbstractDeserializeFunction(abstractType)),
+            });
+        }
+        methodName;
+      case _:
         null;
     }
   }
@@ -734,5 +777,3 @@ extern class DynamicTypedDeserializer
     throw "Used at compile-time only!";
   }
 }
-
-// TODO: 支持 typedef、abstract、interface和类型参数

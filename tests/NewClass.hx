@@ -21,12 +21,28 @@ class NewClass
   
   private var yyy:Array<NewClass>;
   
+  public var abs0:Abs2<Int>;
+  
+  public var abs1:Abs2<NewClass>;
+  
+  public var abs2:Abs2<Dynamic>;
+  
+  public var abs3:Abs;
+  
   public var xxx:Int;
+  
+  public var foo:D<Int>;
   
   private var bar(default, null):Good;
   
   public var nc(null, null):NewClass;
 }
+
+typedef D<A> = E3<Good>;
+
+abstract Abs2<T>(Array<T>) { }
+
+abstract Abs(String) {}
 
 enum E3<T>
 {
