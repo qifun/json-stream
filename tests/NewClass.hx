@@ -28,6 +28,12 @@ class NewClass
   public var nc(null, null):NewClass;
 }
 
+enum E3<T>
+{
+  A;
+  B<C>(c:C);
+}
+
 enum Good
 {
   MORNING;

@@ -70,6 +70,7 @@ class Main
     trace(m);
     var nc = function(x) return m.deserialize_NewClass(x);
     var m2 = JsonDeserializer.newDeserializerSet(["Ref"]);
+    var m3 = JsonDeserializer.newDeserializerSet(["NewEnum"]);
 
   }
 	#end

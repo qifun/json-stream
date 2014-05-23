@@ -359,6 +359,14 @@ class JsonDeserializerSetBuilder
 
     function newEnumDeserializeFunction(enumType:EnumType):Function return
     {
+      var enumParams: Array<TypeParamDecl> =
+      [
+        for (tp in enumType.params)
+        {
+          name: tp.name,
+          // TODO: constraits
+        }
+      ];
       var zeroParameterBranch =
       {
         pos: Context.currentPos(),
@@ -387,6 +395,14 @@ class JsonDeserializerSetBuilder
         switch (constructor.type)
         {
           case TFun(args, _):
+            var valueParams: Array<TypeParamDecl> =
+            [
+              for (tp in constructor.params)
+              {
+                name: tp.name,
+                // TODO: constraits
+              }
+            ];
             var constructorName = constructor.name;
             var enumPath = enumType.module.split(".");
             enumPath.push(enumType.name);
@@ -398,7 +414,19 @@ class JsonDeserializerSetBuilder
                   for (i in 0...args.length)
                   {
                     var parameterName = 'parameter$i';
-                    deserializeForType(TypeTools.toComplexType(args[i].t), macro $i{parameterName});
+                    var result = deserializeForType(TypeTools.toComplexType(args[i].t), macro $i { parameterName }, enumParams.concat(valueParams));
+                    var f = {
+                      pos: Context.currentPos(),
+                      expr: EFunction(
+                        "inline_temporaryEnumDeserialize",
+                        {
+                          params: valueParams,
+                          ret: null,
+                          args: [],
+                          expr: macro return $result,
+                        })
+                    }
+                    macro { $f; temporaryEnumDeserialize(); }
                   }
                 ];
                 var declareProcessParameters =
@@ -465,19 +493,27 @@ class JsonDeserializerSetBuilder
           }
           $extractOne;
         };
-      extractFunction(
-        macro function (stream:com.qifun.jsonStream.JsonStream) return
-        {
-          switch (stream)
+      var methodBody = macro switch (stream)
+      {
+        case STRING(constructorName):
+          $zeroParameterBranch;
+        case OBJECT(pairs):
+          $nonzeroParameterBranch;
+        case _:
+          throw "Expect object or string!";
+      }
+      {
+        args:
+        [
           {
-            case STRING(constructorName):
-              $zeroParameterBranch;
-            case OBJECT(pairs):
-              $nonzeroParameterBranch;
-            case _:
-              throw "Expect object or string!";
-          }
-        });
+            name:"stream",
+            type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+          },
+        ],
+        ret: null,
+        expr: macro return $methodBody,
+        params: enumParams,
+      }
     }
 
     function newClassDeserializeFunction(classType:ClassType):Function return
