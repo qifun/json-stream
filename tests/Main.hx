@@ -59,17 +59,17 @@ class Main
     {
       trace(error);
     }
-    //
+ 
     var b1:Array<Array<Int>> = new RawJson([]).serialize().deserialize();
 
     var b2:NewClass = new RawJson({}).serialize().deserialize();
     
     var b3:Array<NewClass> = new RawJson([]).serialize().deserialize();
     
-    var m = JsonDeserializer.newDeserializerSet(["NewClass"]);
+    var m = JsonDeserializer.newDeserializerSet(["Ref", "NewClass"]);
     trace(m);
-    
     var nc = function(x) return m.deserialize_NewClass(x);
+    var m2 = JsonDeserializer.newDeserializerSet(["Ref"]);
 
   }
 	#end

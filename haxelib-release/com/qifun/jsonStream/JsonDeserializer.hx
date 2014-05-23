@@ -118,7 +118,7 @@ class JsonDeserializerSetBuilder
       pack: internalPackage,
       name: placeholderName,
       pos: Context.currentPos(),
-      kind: TDAlias(TPath({pack: [], name: "Dynamic"})),
+      kind: TDAlias(TPath({pack: [], sub: "Dynamic", name: "StdTypes"})),
       fields: [],
     }
     Context.defineType(typeDefinition);
@@ -190,7 +190,7 @@ class JsonDeserializerSetBuilder
       dynamicCases.push(
         {
           values: [ macro $v{ fullName } ],
-          expr: macro ($i{methodName}(pair.value):Dynamic),
+          expr: macro (cast $i{methodName}(pair.value):Dynamic),
         });
     }
     
@@ -214,7 +214,7 @@ class JsonDeserializerSetBuilder
         name: "dynamicDeserialize",
         pos: Context.currentPos(),
         access: [ APublic, AStatic ],
-        kind: FFun(extractFunction(macro function(stream:JsonStream):Dynamic return
+        kind: FFun(extractFunction(macro function(stream:com.qifun.jsonStream.JsonStream):Dynamic return
         {
           $dynamicDeserialize;
         })),
@@ -228,7 +228,7 @@ class JsonDeserializerSetBuilder
       fields: fields,
       meta: meta,
     }
-    //trace(new haxe.macro.Printer().printTypeDefinition(typeDefinition));
+    trace(new haxe.macro.Printer().printTypeDefinition(typeDefinition));
     Context.defineType(typeDefinition);
     fields = null;
     allBuilders.remove(id);
@@ -482,6 +482,14 @@ class JsonDeserializerSetBuilder
 
     function newClassDeserializeFunction(classType:ClassType):Function return
     {
+      var params: Array<TypeParamDecl> =
+      [
+        for (tp in classType.params)
+        {
+          name: tp.name,
+          // TODO: constraits
+        }
+      ];
       var cases =
       [
         for (field in classType.fields.get())
@@ -489,7 +497,7 @@ class JsonDeserializerSetBuilder
           if (field.kind.match(FVar(AccNormal | AccNo, AccNormal | AccNo)))
           {
             var fieldName = field.name;
-            var d = deserializeForType(TypeTools.toComplexType(field.type), macro pair.value);
+            var d = deserializeForType(TypeTools.toComplexType(field.type), macro pair.value, params);
             {
               values: [ macro $v{fieldName} ],
               guard: null,
@@ -499,54 +507,63 @@ class JsonDeserializerSetBuilder
         }
       ];
       var classModule = classType.module;
+      var expectedTypePath =
+      {
+        pack: classType.pack,
+        name: classModule.substring(classModule.lastIndexOf(".")),
+        sub: classType.name,
+      };
       var newInstance =
       {
         pos: Context.currentPos(),
-        expr: ENew(
-          {
-            pack: classType.pack,
-            name: classModule.substring(classModule.lastIndexOf(".")),
-            sub: classType.name,
-          },
-          []),
+        expr: ENew(expectedTypePath, []),
       }
       var switchKey =
       {
         pos: Context.currentPos(),
         expr: ESwitch(macro pair.key, cases, null),
       }
-      extractFunction(
-        macro function (stream:com.qifun.jsonStream.JsonStream) return
-        {
-          switch (stream)
+      
+      var switchStream = macro switch (stream)
+      {
+        case OBJECT(pairs):
+          var result = $newInstance;
+          var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.asGenerator(pairs);
+          if (generator != null)
           {
-            case OBJECT(pairs):
-              var result = $newInstance;
-              var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.asGenerator(pairs);
-              if (generator != null)
-              {
-                for (pair in generator)
-                {
-                  $switchKey;
-                }
-              }
-              else
-              {
-                for (pair in pairs)
-                {
-                  $switchKey;
-                }
-              }
-              result;
-            case _:
-              throw "Expect object!";
+            for (pair in generator)
+            {
+              $switchKey;
+            }
           }
-        });
+          else
+          {
+            for (pair in pairs)
+            {
+              $switchKey;
+            }
+          }
+          result;
+        case _:
+          throw "Expect object!";
+      }
+      
+      {
+        args:
+        [
+          {
+            name:"stream",
+            type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+          },
+        ],
+        ret: null,
+        expr: macro return $switchStream,
+        params: params,
+      }
     }
-    
     switch (type)
     {
-      case TInst(_.get() => classType, params) if (!classType.isInterface):
+      case TInst(_.get() => classType, params) if (!classType.isInterface && classType.kind.match(KNormal)):
         var methodName = deserializeMethodName(classType.pack, classType.name);
         if (deserializingTypes.get(methodName) == null)
         {
@@ -587,7 +604,7 @@ class JsonDeserializerSetBuilder
   }
 
 
-  public function deserializeForType(expectedType:ComplexType, stream:ExprOf<JsonStream>):Expr return
+  public function deserializeForType(expectedType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedJsonStreamTypePath =
     {
@@ -603,15 +620,29 @@ class JsonDeserializerSetBuilder
       name: placeholderName,
     });
     var p = MacroStringTools.toFieldExpr(internalPackage);
+    var f = 
+    {
+      expr: 
+        EFunction("temporaryDeserialize",
+        {
+          args: [ { name: "typedJsonStream", type: typedJsonStreamType } ],
+          ret: expectedType,
+          expr: macro return typedJsonStream.deserialize(),
+          params: params,
+        }),
+      pos: Context.currentPos()
+    }
     var placeholderExpr = macro
     {
       // 提供一个假的currentJsonDeserializerSet，以避免编译错误，然后后续处理时，再替换掉它
       function currentJsonDeserializerSet():$placeholderType return null;
-      function(typedJsonStream:$typedJsonStreamType):$expectedType return typedJsonStream.deserialize();
+      $f;
+      null;
     }
+    //trace(ExprTools.toString(Context.getTypedExpr(Context.typeExpr(placeholderExpr))));
     switch (Context.getTypedExpr(Context.typeExpr(placeholderExpr)))
     {
-      case { expr: EBlock([_, resolved]) } :
+      case { expr: EBlock([ _, { expr: EFunction(_, resolved) | EVars([ { expr: {expr: EFunction(null, resolved)}}])}, _ ]) } :
         var typedJsonStream =
         {
           pos: Context.currentPos(),
@@ -619,10 +650,16 @@ class JsonDeserializerSetBuilder
             ENew(typedJsonStreamTypePath,
               [ stream ]),
         }
+        var f =
+        {
+          expr: EFunction("inline_temporaryDeserialize", resolved),
+          pos: Context.currentPos(),
+        }
         macro
         {
           inline function currentJsonDeserializerSet() return $p.$deserializerSetName;
-          $resolved($typedJsonStream);
+          $f;
+          temporaryDeserialize($typedJsonStream);
         }
       case t:
         throw "Expect EBlock, actual " + ExprTools.toString(t);

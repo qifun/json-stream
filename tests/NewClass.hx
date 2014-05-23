@@ -1,10 +1,12 @@
 package ;
 import haxe.Int64;
 
+
 /**
  * ...
  * @author 杨博
  */
+@:final
 class NewClass
 {
 
@@ -12,6 +14,12 @@ class NewClass
   {
     
   }
+  
+  private var r1:Ref<Int>;
+  private var r2:Ref<Dynamic>;
+  private var r3:Ref<NewClass>;
+  
+  private var yyy:Array<NewClass>;
   
   public var xxx:Int;
   
