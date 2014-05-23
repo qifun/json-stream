@@ -8,66 +8,20 @@ import haxe.Int64;
 @:final
 class Int64DeserializerPlugin
 {
-  
-  macro private static function jsonArrayStreamToInt64(streamIterator:ExprOf<Iterator<JsonStream>>):ExprOf<Int64>
+
+  macro private static function optimizedJsonArrayStreamToInt64(streamIterator:ExprOf<Iterator<JsonStream>>):ExprOf<Int64> return
   {
-    return macro
-    {
-      if ($streamIterator.hasNext())
-      {
-        var highStream = $streamIterator.next();
-        if ($streamIterator.hasNext())
-        {
-          var lowStream = $streamIterator.next();
-          if ($streamIterator.hasNext())
-          {
-            (throw "Expect exact two elements in the array for Int64":Int64);
-          }
-          else
-          {
-            switch ([ highStream, lowStream ])
-            {
-              case [ NUMBER(high), NUMBER(low) ]:
-                Int64.make(cast high, cast low);
-              case _:
-                (throw "Expect exact two number in the array for Int64":Int64);
-            }
-          }
-        }
-        else
-        {
-          (throw "Expect exact two elements in the array for Int64":Int64);
-        }
-      }
-      else
-      {
-        (throw "Expect exact two elements in the array for Int64":Int64);
-      }
-      
-    }
-    
-  }
-  
-  @:protected
-  private static function optimizedJsonArrayStreamToInt64(streamIterator:Iterator<JsonStream>):Int64
-  {
-    var generator = Std.instance(streamIterator, (Generator:Class<Generator<JsonStream>>));
-    if (generator !=  null)
-    {
-      return jsonArrayStreamToInt64(generator);
-    }
-    else
-    {
-      return jsonArrayStreamToInt64(streamIterator);
-    }
+    IteratorExtractor.optimizedExtract(streamIterator, 2, macro function(high, low) return Int64.make(cast high, cast low));
   }
 
-  public static function deserialize(stream:JsonDeserializerPluginStream<Int64>):Int64 return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Int64>):Null<Int64> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(elements):
         optimizedJsonArrayStreamToInt64(elements);
+      case NULL:
+        null;
       case _:
         throw "Expect number";
     }
@@ -77,12 +31,14 @@ class Int64DeserializerPlugin
 @:final
 class IntDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<Int>):Int return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Int>):Null<Int> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.NUMBER(value):
         cast value;
+      case NULL:
+        null;
       case _:
         throw "Expect number";
     }
@@ -92,12 +48,14 @@ class IntDeserializerPlugin
 @:final
 class UIntDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<UInt>):UInt return
+  public static function deserialize(stream:JsonDeserializerPluginStream<UInt>):Null<UInt> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.NUMBER(value):
         cast value;
+      case NULL:
+        null;
       case _:
         throw "Expect number";
     }
@@ -108,12 +66,14 @@ class UIntDeserializerPlugin
   @:final
   class SingleDeserializerPlugin
   {
-    public static function deserialize(stream:JsonDeserializerPluginStream<Single>):Single return
+    public static function deserialize(stream:JsonDeserializerPluginStream<Single>):Null<Single> return
     {
       switch (stream.underlying)
       {
         case com.qifun.jsonStream.JsonStream.NUMBER(value):
           value;
+        case NULL:
+          null;
         case _:
           throw "Expect number";
       }
@@ -124,12 +84,14 @@ class UIntDeserializerPlugin
 @:final
 class FloatDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<Float>):Float return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Float>):Null<Float> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.NUMBER(value):
         value;
+      case NULL:
+        null;
       case _:
         throw "Expect number";
     }
@@ -139,12 +101,14 @@ class FloatDeserializerPlugin
 @:final
 class BoolDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<Bool>):Bool return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Bool>):Null<Bool> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.FALSE: false;
       case com.qifun.jsonStream.JsonStream.TRUE: true;
+      case NULL:
+        null;
       case _: throw "Expect false | true";
     }
   }
@@ -153,12 +117,14 @@ class BoolDeserializerPlugin
 @:final
 class StringDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<String>):String return
+  public static function deserialize(stream:JsonDeserializerPluginStream<String>):Null<String> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.STRING(value):
         value;
+      case NULL:
+        null;
       case _:
         throw "Expect string";
     }
@@ -170,7 +136,7 @@ class ArrayDeserializerPlugin
 {
 
   @:extern
-  public static function getDynamicDeserializerPluginType():Array<Dynamic> return
+  public static function getDynamicDeserializerPluginType():Null<Array<Dynamic>> return
   {
     throw "Used at compile-time only!";
   }
@@ -199,6 +165,8 @@ class ArrayDeserializerPlugin
             }
           ];
         }
+      case NULL:
+        null;
       case _:
         throw "Expect array";
     }

@@ -204,7 +204,7 @@ class JsonDeserializerSetBuilder
               case TEnum(_.get() => { module: module, name: name }, _): getFullName(module, name);
               case _: continue;
             }
-          var expr = deserializeForType(TypeTools.toComplexType(dynamicType), macro pair.value);
+          var expr = deserializeForType(TypeTools.toComplexType(dynamicType), macro valueStream);
           dynamicCases.push(
             {
               values: [ macro $v{ fullName } ],
@@ -222,31 +222,21 @@ class JsonDeserializerSetBuilder
       dynamicCases.push(
         {
           values: [ macro $v{ fullName } ],
-          expr: macro (cast $i{methodName}(pair.value):Dynamic),
+          expr: macro (cast $i{methodName}(valueStream):Dynamic),
         });
     }
     
     var switchExpr =
     {
       pos: Context.currentPos(),
-      expr: ESwitch(macro pair.key, dynamicCases, macro throw "Unknown type "+ pair.key),
+      expr: ESwitch(macro dynamicTypeName, dynamicCases, macro null),
     }
-    var extractOne = optimizedExtract(macro pairs, 1, macro processDynamicPair);
-    var dynamicDeserialize =
-      macro switch (stream)
-      {
-        case com.qifun.jsonStream.JsonStream.OBJECT(pairs):
-          inline function processDynamicPair(pair) return $switchExpr;
-          $extractOne;
-        case _:
-          throw "Expect object!";
-      }
     fields.push(
       {
         name: "dynamicDeserialize",
         pos: Context.currentPos(),
         access: [ APublic, AStatic ],
-        kind: FFun(extractFunction(macro function(stream:com.qifun.jsonStream.JsonStream):Dynamic return $dynamicDeserialize)),
+        kind: FFun(extractFunction(macro function(dynamicTypeName:String, valueStream:com.qifun.jsonStream.JsonStream):Dynamic return $switchExpr)),
       });
     var typeDefinition =
     {
@@ -275,69 +265,6 @@ class JsonDeserializerSetBuilder
         allBuilders.get(module.substring(0, module.length - DESERIALIZER_SET_PLACEHOLDER_SUFFIX.length));
       case _:
         throw "Cannot find a context JsonDeserializerSetBuilder!";
-    }
-  }
-    
-  private static function extract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
-  {
-    var block =
-    [
-      for (i in 0...numParametersExpected)
-      {
-        var varName = 'extract$i';
-        macro var $varName = if ($iterator.hasNext())
-        {
-          $iterator.next();
-        }
-        else
-        {
-          throw 'Expect $numParametersExpected elements, actual $i elements.';
-        }
-      }
-    ];
-    var result =
-    {
-      pos: handler.pos,
-      expr: ECall(handler,
-        [
-          for (i in 0...numParametersExpected) 
-          {
-            var varName = 'extract$i';
-            macro $i{varName};
-          }
-        ]),
-    }
-    block.push(
-      macro if ($iterator.hasNext())
-      {
-        throw 'Expect $numParametersExpected elements, actual too many elements.';
-      }
-      else
-      {
-        $result;
-      });
-    {
-      pos: handler.pos,
-      expr: EBlock(block),
-    }
-  }
-
-  private static function optimizedExtract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
-  {
-    var extractFromIterator = extract(macro iterator, numParametersExpected, handler);
-    var extractFromGenerator = extract(macro generator, numParametersExpected, handler);
-    macro
-    {
-      var iterator = $iterator;
-      var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.asGenerator(iterator);
-      if (generator != null)
-      {
-        $extractFromGenerator;
-      }
-      else
-      {
-        $extractFromIterator;
-      }
     }
   }
 
@@ -416,7 +343,7 @@ class JsonDeserializerSetBuilder
           ],
           macro throw "Unknown enum value" + constructorName + "!"),
       }
-      var extractOne = optimizedExtract(macro pairs, 1, macro processObject);
+      var extractOne = IteratorExtractor.optimizedExtract(macro pairs, 1, macro processObject);
       var cases = [];
       
       for (constructor in enumType.constructs)
@@ -488,7 +415,7 @@ class JsonDeserializerSetBuilder
                         }
                       }),
                 }
-                var extractParameters = optimizedExtract(macro parameters, args.length, macro processParameters);
+                var extractParameters = IteratorExtractor.optimizedExtract(macro parameters, args.length, macro processParameters);
                 ({
                   values: [ macro $v{constructorName} ],
                   expr: macro
@@ -787,7 +714,7 @@ class JsonDeserializerSetBuilder
 
 typedef JsonDeserializerSet =
 {
-  function dynamicDeserialize(typeName:String, stream:JsonStream):Dynamic;
+  function dynamicDeserialize(typeName:String, stream:JsonStream):Null<Dynamic>;
 }
 
 
