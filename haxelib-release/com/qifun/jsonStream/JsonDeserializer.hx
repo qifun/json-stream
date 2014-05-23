@@ -343,9 +343,7 @@ class JsonDeserializerSetBuilder
           ],
           macro throw "Unknown enum value" + constructorName + "!"),
       }
-      var extractOne = IteratorExtractor.optimizedExtract(macro pairs, 1, macro processObject);
       var cases = [];
-      
       for (constructor in enumType.constructs)
       {
         switch (constructor.type)
@@ -389,7 +387,7 @@ class JsonDeserializerSetBuilder
                 {
                   pos: Context.currentPos(),
                   expr:
-                    EFunction("processParameters",
+                    EFunction(null,
                       {
                         args:
                         [
@@ -415,7 +413,7 @@ class JsonDeserializerSetBuilder
                         }
                       }),
                 }
-                var extractParameters = IteratorExtractor.optimizedExtract(macro parameters, args.length, macro processParameters);
+                var numArguments = args.length;
                 ({
                   values: [ macro $v{constructorName} ],
                   expr: macro
@@ -423,8 +421,8 @@ class JsonDeserializerSetBuilder
                     switch (pair.value)
                     {
                       case com.qifun.jsonStream.JsonStream.ARRAY(parameters):
-                        $declareProcessParameters;
-                        $extractParameters;
+                        com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
+                          parameters, $v{numArguments}, $declareProcessParameters);
                       case _:
                         throw "Expect array!";
                     }
@@ -439,22 +437,16 @@ class JsonDeserializerSetBuilder
         pos: Context.currentPos(),
         expr: ESwitch(macro pair.key, cases, macro throw "Unknown enum value" + pair.key + "!"),
       }
-     
-      var nonzeroParameterBranch =
-        macro
-        {
-          function processObject(pair) return
-          {
-            $processObjectBody;
-          }
-          $extractOne;
-        };
       var methodBody = macro switch (stream)
       {
         case STRING(constructorName):
           $zeroParameterBranch;
         case OBJECT(pairs):
-          $nonzeroParameterBranch;
+          function selectEnumValue(pair) return $processObjectBody;
+          com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
+            pairs,
+            1,
+            selectEnumValue);
         case _:
           throw "Expect object or string!";
       }

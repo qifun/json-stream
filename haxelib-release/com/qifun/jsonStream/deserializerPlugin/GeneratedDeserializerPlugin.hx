@@ -30,16 +30,15 @@ class GeneratedDeserializerPlugin
     var methodName = builder.tryAddDeserializeMethod(expectedType);
     if (methodName == null)
     {
-      var extractOne = IteratorExtractor.optimizedExtract(macro pairs, 1, macro function(pair) return currentJsonDeserializerSet().dynamicDeserialize(pair.key, pair.value));
       macro
       {
         // 如果加上inline，会导致haxe -java警告
-        function internalDeserialize(stream:com.qifun.jsonStream.JsonStream):Dynamic return
+        function(stream:com.qifun.jsonStream.JsonStream):Dynamic return
         {
           switch (stream)
           {
             case OBJECT(pairs):
-              switch ($extractOne)
+              switch (com.qifun.jsonStream.IteratorExtractor.optimizedExtract(pairs, 1, function(pair) return currentJsonDeserializerSet().dynamicDeserialize(pair.key, pair.value)))
               {
                 case null: JsonDeserializer.deserializeRaw(stream);
                 case notNull: notNull;
@@ -49,8 +48,7 @@ class GeneratedDeserializerPlugin
             case _:
               throw "Expect object!";
           }
-        }
-        internalDeserialize($stream.underlying);
+        }($stream.underlying);
       }
     }
     else

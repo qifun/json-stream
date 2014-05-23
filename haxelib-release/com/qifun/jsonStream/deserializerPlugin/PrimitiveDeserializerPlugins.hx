@@ -9,17 +9,13 @@ import haxe.Int64;
 class Int64DeserializerPlugin
 {
 
-  macro private static function optimizedJsonArrayStreamToInt64(streamIterator:ExprOf<Iterator<JsonStream>>):ExprOf<Int64> return
-  {
-    IteratorExtractor.optimizedExtract(streamIterator, 2, macro function(high, low) return Int64.make(cast high, cast low));
-  }
-
   public static function deserialize(stream:JsonDeserializerPluginStream<Int64>):Null<Int64> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(elements):
-        optimizedJsonArrayStreamToInt64(elements);
+        com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
+          elements, 2, function(high, low) return Int64.make(cast high, cast low));
       case NULL:
         null;
       case _:

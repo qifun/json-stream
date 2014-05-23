@@ -1,6 +1,13 @@
 package com.qifun.jsonStream;
 
+
 import haxe.macro.Expr;
+
+enum IteratorExtractorError<Element>
+{
+  NotEnoughElements(iterator:Iterator<Element>, expected:Int, actual:Int);
+  TooManyElements(iterator:Iterator<Element>, expected:Int);
+}
 
 /**
   @author 杨博
@@ -8,7 +15,7 @@ import haxe.macro.Expr;
 class IteratorExtractor
 {
   
-  public static function extract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
+  macro public static function extract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
   {
     var block =
     [
@@ -21,7 +28,7 @@ class IteratorExtractor
         }
         else
         {
-          throw 'Expect $numParametersExpected elements, actual $i elements.';
+          throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.NotEnoughElements($iterator, $v{numParametersExpected}, $v{i});
         }
       }
     ];
@@ -40,7 +47,7 @@ class IteratorExtractor
     block.push(
       macro if ($iterator.hasNext())
       {
-        throw 'Expect $numParametersExpected elements, actual too many elements.';
+        throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.TooManyElements($iterator, $v{numParametersExpected});
       }
       else
       {
@@ -52,25 +59,23 @@ class IteratorExtractor
     }
   }
 
-  public static function optimizedExtract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
+  macro public static function optimizedExtract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
   {
-    var extractFromIterator = extract(macro iterator, numParametersExpected, handler);
-    var extractFromGenerator = extract(macro generator, numParametersExpected, handler);
     macro
     {
-      var iterator = $iterator;
       inline function asGenerator<Element>(iterator:Iterator<Element>) return
       {
         Std.instance(iterator, (com.dongxiguo.continuation.utils.Generator:Class<com.dongxiguo.continuation.utils.Generator<Element>>));
       }
-      var generator = asGenerator(iterator);
+      var extractingIterator = $iterator;
+      var generator = asGenerator(extractingIterator);
       if (generator != null)
       {
-        $extractFromGenerator;
+        com.qifun.jsonStream.IteratorExtractor.extract(generator, $v{numParametersExpected}, $handler);
       }
       else
       {
-        $extractFromIterator;
+        com.qifun.jsonStream.IteratorExtractor.extract(extractingIterator, $v{numParametersExpected}, $handler);
       }
     }
   }

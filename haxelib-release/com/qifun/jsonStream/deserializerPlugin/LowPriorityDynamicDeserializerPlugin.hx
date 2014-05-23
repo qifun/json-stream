@@ -19,15 +19,16 @@ class LowPriorityDynamicDeserializerPlugin
   // 使用LowPriorityDynamic就只能精确匹配Dynamic，所以优先级低于其他能够明确匹配的Deserializer
   macro public static function deserialize(stream:ExprOf<JsonDeserializerPluginStream<LowPriorityDynamic>>):ExprOf<Dynamic> return
   {
-    var extractOne = IteratorExtractor.optimizedExtract(macro pairs, 1, macro function(pair) return currentJsonDeserializerSet().dynamicDeserialize(pair.key, pair.value));
     macro
     {
-      function internalDeserialize(stream:com.qifun.jsonStream.JsonStream):Dynamic return
+      function(stream:com.qifun.jsonStream.JsonStream):Dynamic return
       {
         switch (stream)
         {
           case OBJECT(pairs):
-            switch ($extractOne)
+            switch (
+              com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
+                pairs, 1, function(pair) return currentJsonDeserializerSet().dynamicDeserialize(pair.key, pair.value)))
             {
               case null: JsonDeserializer.deserializeRaw(stream);
               case notNull: notNull;
@@ -37,8 +38,7 @@ class LowPriorityDynamicDeserializerPlugin
           case _:
             throw "Expect object!";
         }
-      }
-      internalDeserialize($stream.underlying);
+      }($stream.underlying);
     }
   }
 
