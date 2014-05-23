@@ -15,7 +15,7 @@ class GeneratedDeserializerPlugin
 {
 
   @:extern
-  public static function getDynamicDeserializerType():NotADynamicTypedDeserializer return
+  public static function getDynamicDeserializerType():NonDynamicDeserializer return
   {
     throw "Used at compile-time only!";
   }
@@ -23,7 +23,7 @@ class GeneratedDeserializerPlugin
   /**
    * The fallback deserializeFunction for classes and enums.
    */
-  macro public static function deserialize<Element>(stream:ExprOf<TypedJsonStream<Element>>):ExprOf<Element> return
+  macro public static function deserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Element>>):ExprOf<Element> return
   {
     var builder = JsonDeserializerSetBuilder.getContextBuilder();
     var expectedType = Context.getExpectedType();

@@ -1,8 +1,8 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
 import com.dongxiguo.continuation.utils.Generator;
-import com.qifun.jsonStream.JsonDeserializer.TypedJsonStream;
 import com.qifun.jsonStream.JsonStream;
+import com.qifun.jsonStream.JsonDeserializer;
 import haxe.Int64;
 
 @:final
@@ -62,7 +62,7 @@ class Int64DeserializerPlugin
     }
   }
 
-  public static function deserialize(stream:TypedJsonStream<Int64>):Int64 return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Int64>):Int64 return
   {
     switch (stream.underlying)
     {
@@ -77,7 +77,7 @@ class Int64DeserializerPlugin
 @:final
 class IntDeserializerPlugin
 {
-  public static function deserialize(stream:TypedJsonStream<Int>):Int return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Int>):Int return
   {
     switch (stream.underlying)
     {
@@ -92,7 +92,7 @@ class IntDeserializerPlugin
 @:final
 class UIntDeserializerPlugin
 {
-  public static function deserialize(stream:TypedJsonStream<UInt>):UInt return
+  public static function deserialize(stream:JsonDeserializerPluginStream<UInt>):UInt return
   {
     switch (stream.underlying)
     {
@@ -108,7 +108,7 @@ class UIntDeserializerPlugin
   @:final
   class SingleDeserializerPlugin
   {
-    public static function deserialize(stream:TypedJsonStream<Single>):Single return
+    public static function deserialize(stream:JsonDeserializerPluginStream<Single>):Single return
     {
       switch (stream.underlying)
       {
@@ -124,7 +124,7 @@ class UIntDeserializerPlugin
 @:final
 class FloatDeserializerPlugin
 {
-  public static function deserialize(stream:TypedJsonStream<Float>):Float return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Float>):Float return
   {
     switch (stream.underlying)
     {
@@ -139,7 +139,7 @@ class FloatDeserializerPlugin
 @:final
 class BoolDeserializerPlugin
 {
-  public static function deserialize(stream:TypedJsonStream<Bool>):Bool return
+  public static function deserialize(stream:JsonDeserializerPluginStream<Bool>):Bool return
   {
     switch (stream.underlying)
     {
@@ -153,7 +153,7 @@ class BoolDeserializerPlugin
 @:final
 class StringDeserializerPlugin
 {
-  public static function deserialize(stream:TypedJsonStream<String>):String return
+  public static function deserialize(stream:JsonDeserializerPluginStream<String>):String return
   {
     switch (stream.underlying)
     {
@@ -175,7 +175,7 @@ class ArrayDeserializerPlugin
     throw "Used at compile-time only!";
   }
 
-  public static function deserializeForElement<Element>(stream:TypedJsonStream<Array<Element>>, elementDeserializeFunction:TypedJsonStream<Element>->Element):Array<Element> return
+  public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Array<Element> return
   {
     switch (stream.underlying)
     {
@@ -186,7 +186,7 @@ class ArrayDeserializerPlugin
           [
             for (element in generator)
             {
-              elementDeserializeFunction(new TypedJsonStream(element));
+              elementDeserializeFunction(new JsonDeserializerPluginStream(element));
             }
           ];
         }
@@ -195,7 +195,7 @@ class ArrayDeserializerPlugin
           [
             for (element in value)
             {
-              elementDeserializeFunction(new TypedJsonStream(element));
+              elementDeserializeFunction(new JsonDeserializerPluginStream(element));
             }
           ];
         }
@@ -204,7 +204,7 @@ class ArrayDeserializerPlugin
     }
   }
   
-  macro public static function deserialize<Element>(stream:ExprOf<TypedJsonStream<Array<Element>>>):ExprOf<Array<Element>> return
+  macro public static function deserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Array<Element>> return
   {
     macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($stream, function(substream) return substream.deserialize());
   }

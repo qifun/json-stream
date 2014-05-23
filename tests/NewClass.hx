@@ -36,6 +36,10 @@ class NewClass
   private var bar(default, null):Good;
   
   public var nc(null, null):NewClass;
+  
+  var f:FinalClass;
+  
+  var b:BaseClass<Int>;
 }
 
 typedef D<A> = E3<Good>;
@@ -55,3 +59,12 @@ enum Good
   MORNING;
   EVENING(message:String, nc:NewClass, self:Good, i:Int, u:UInt, f:Float, i64:Int64, b:Bool);
 }
+
+class BaseClass<T>
+{
+  public function new() {}
+  public var a:Array<T>;
+}
+
+@:final
+class FinalClass extends BaseClass<Good> {}

@@ -18,30 +18,35 @@ import haxe.macro.TypeTools;
 using StringTools;
 using Lambda;
 
-/**
- * Internal type for deserializer plugins.
- * @author 杨博
- */
-abstract TypedJsonStream<ResultType>(JsonStream)
-{
-
-  public inline function new(underlying:JsonStream) 
-  {
-    this = underlying;
-  }
-  
-  public var underlying(get, never):JsonStream;
-  
-  inline function get_underlying():JsonStream return
-  {
-    this;
-  }
-  
-}
-
 @:final
 class JsonDeserializer
 {
+  public static function deserializeRaw(stream:JsonStream):RawJson return
+  {
+    new RawJson(switch (stream)
+    {
+      case JsonStream.OBJECT(entries):
+        var object = { };
+        for (entry in entries)
+        {
+          Reflect.setField(object, entry.key, deserializeRaw(entry.value));
+        }
+        object;
+      case JsonStream.STRING(value):
+        value;
+      case JsonStream.ARRAY(elements):
+        [ for (element in elements) deserializeRaw(element) ];
+      case JsonStream.NUMBER(value):
+        value;
+      case JsonStream.TRUE:
+        true;
+      case JsonStream.FALSE:
+        false;
+      case JsonStream.NULL:
+        null;
+    });
+  }
+  
   @:extern
   @:allow(com.qifun.jsonStream.generated)
   @:noUsing
@@ -51,9 +56,9 @@ class JsonDeserializer
   }
   
   @:noUsing
-  macro public static function newDeserializerSet(modules:Array<String>):ExprOf<JsonDeserializerSet> return
+  macro public static function newDeserializerSet(modules:Array<String>, ?fullName:String):ExprOf<JsonDeserializerSet> return
   {
-    var deserializerSetBuilder = new JsonDeserializerSetBuilder();
+    var deserializerSetBuilder = new JsonDeserializerSetBuilder(fullName != null ? fullName : defaultDeserializerSetFullName());
     for (moduleName in modules)
     {
       for (rootType in Context.getModule(moduleName))
@@ -66,11 +71,38 @@ class JsonDeserializer
   
   macro public static function deserialize<Element>(stream:ExprOf<JsonStream>):ExprOf<Element> return
   {
-    var deserializerSetBuilder = new JsonDeserializerSetBuilder();
+    var deserializerSetBuilder = new JsonDeserializerSetBuilder(defaultDeserializerSetFullName());
     var result = deserializerSetBuilder.deserializeForType(TypeTools.toComplexType(Context.getExpectedType()), stream);
     deserializerSetBuilder.defineDeserializerSet();
     result;
   }
+  
+  #if macro
+  
+    private static var idSeed = 0;
+
+    private static function defaultDeserializerSetFullName() return
+    {
+      function generateName(baseType:BaseType):String return
+      {
+        var id = idSeed++;
+        var sb = [ "com.qifun.jsonStream.generated" ].concat(baseType.pack);
+        sb.push("JsonDeserializerSet_" + id);
+        sb.join(".");
+      }
+
+      switch (Context.getLocalType())
+      {
+        case TInst(t, _): generateName(t.get());
+        case TAbstract(t, _): generateName(t.get());
+        case TEnum(t, _): generateName(t.get());
+        case TType(t, _): generateName(t.get());
+        case unsupportedType: throw "Expect BaseType, actual " + unsupportedType;
+      }
+    }
+
+  #end
+
 }
 
 #if macro
@@ -81,37 +113,33 @@ class JsonDeserializerSetBuilder
   
   private var deserializingTypes(default, null) = new StringMap<BaseType>();
   
-  private static var idSeed = 0;
+  private static var allBuilders = new StringMap<JsonDeserializerSetBuilder>();
   
-  private static var allBuilders = new IntMap<JsonDeserializerSetBuilder>();
-  
-  private var id = idSeed++;
-
-  private static var PACKAGE_PREFIX(default, never) = [ "com", "qifun", "jsonStream", "generated" ];
-  
-  private var internalPackage:Array<String> =
+  var internalPackage(get, never):Array<String>;
+  function get_internalPackage():Array<String> return
   {
-    function getInternalPackageForBaseType(baseType:BaseType):Array<String> return
-    {
-      PACKAGE_PREFIX.concat(baseType.pack);
-    }
-    switch (Context.getLocalType())
-    {
-      case TInst(t, _): getInternalPackageForBaseType(t.get());
-      case TAbstract(t, _): getInternalPackageForBaseType(t.get());
-      case TEnum(t, _): getInternalPackageForBaseType(t.get());
-      case TType(t, _): getInternalPackageForBaseType(t.get());
-      case unsupportedType: throw "Expect BaseType, actual " + unsupportedType;
-    }
+    var p = id.split(".");
+    p.pop();
+    p;
   }
   
-  var placeholderName(get, never):String;
-  function get_placeholderName() return DESERIALIZER_SET_PLACEHOLDER_PREFIX + id;
-  var deserializerSetName(get, never):String;
-  function get_deserializerSetName() return "JsonDeserializerSet_" + id;
+  var id:String;
   
-  public function new()
+  var placeholderName(get, never):String;
+  function get_placeholderName() return
   {
+    deserializerSetName + DESERIALIZER_SET_PLACEHOLDER_SUFFIX;
+  }
+  
+  var deserializerSetName(get, never):String;
+  function get_deserializerSetName() return
+  {
+    id.substring(id.lastIndexOf(".") + 1);
+  }
+  
+  public function new(deserializerSetFullName:String)
+  {
+    this.id = deserializerSetFullName;
     allBuilders.set(id, this);
     var typeDefinition =
     {
@@ -142,9 +170,13 @@ class JsonDeserializerSetBuilder
     [
       for (deserializingType in deserializingTypes)
       {
-        name: ":access",
-        params: [ MacroStringTools.toFieldExpr(deserializingType.module.split(".")) ],
-        pos : Context.currentPos(),
+        //var m = MacroStringTools.toFieldExpr(getFullName(deserializingType.module, deserializingType.name));
+        //var n = deserializingType.name;
+        {
+          name: ":access",
+          params: [ MacroStringTools.toFieldExpr(getFullName(deserializingType.module, deserializingType.name).split(".")) ],
+          pos : Context.currentPos(),
+        }
       }
     ];
 
@@ -161,7 +193,7 @@ class JsonDeserializerSetBuilder
       var nameField = baseType.name;
       switch (Context.follow(Context.typeof(macro $moduleExpr.$nameField.getDynamicDeserializerType)))
       {
-        case TFun([], TInst(_.get() => { module: "com.qifun.jsonStream.JsonDeserializer", name: "NotADynamicTypedDeserializer" }, _)):
+        case TFun([], TAbstract(_.get() => { module: "com.qifun.jsonStream.JsonDeserializer", name: "NonDynamicDeserializer" }, _)):
           continue;
         case TFun([], dynamicType):
           var fullName =
@@ -233,14 +265,14 @@ class JsonDeserializerSetBuilder
     macro $internalPackageExpr.$deserializerSetName;
   }
   
-  private static inline var DESERIALIZER_SET_PLACEHOLDER_PREFIX = "DeserializerSetPlaceholder_";
+  private static inline var DESERIALIZER_SET_PLACEHOLDER_SUFFIX = "__Placeholder";
   
   public static function getContextBuilder():JsonDeserializerSetBuilder return
   {
     switch (Context.typeof(macro currentJsonDeserializerSet()))
     {
-      case TType(_.get() => { name: name }, _) if (name.startsWith(DESERIALIZER_SET_PLACEHOLDER_PREFIX)):
-        allBuilders.get(Std.parseInt(name.substring(DESERIALIZER_SET_PLACEHOLDER_PREFIX.length)));
+      case TType(_.get() => { module: module }, _) if (module.endsWith(DESERIALIZER_SET_PLACEHOLDER_SUFFIX)):
+        allBuilders.get(module.substring(0, module.length - DESERIALIZER_SET_PLACEHOLDER_SUFFIX.length));
       case _:
         throw "Cannot find a context JsonDeserializerSetBuilder!";
     }
@@ -527,7 +559,7 @@ class JsonDeserializerSetBuilder
       var expectedTypePath =
       {
         pack: abstractType.pack,
-        name: abstractModule.substring(abstractType.module.lastIndexOf(".")),
+        name: abstractModule.substring(abstractType.module.lastIndexOf(".") + 1),
         sub: abstractType.name,
         params: [ for (p in params) TPType(TPath({ pack: [], name: p.name})) ]
       };
@@ -583,10 +615,15 @@ class JsonDeserializerSetBuilder
         pos: Context.currentPos(),
         expr: ENew(expectedTypePath, []),
       }
+      var unknownFieldBranch =
+        macro Reflect.setProperty(
+          result,
+          pair.key,
+          com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.deserializeRaw(pair.value));
       var switchKey =
       {
         pos: Context.currentPos(),
-        expr: ESwitch(macro pair.key, cases, null),
+        expr: ESwitch(macro pair.key, cases, unknownFieldBranch),
       }
       
       var switchStream = macro switch (stream)
@@ -689,7 +726,7 @@ class JsonDeserializerSetBuilder
     {
       pack: [ "com", "qifun", "jsonStream" ],
       name: "JsonDeserializer",
-      sub: "TypedJsonStream",
+      sub: "JsonDeserializerPluginStream",
       params: [ TPType(expectedType) ],
     };
     var typedJsonStreamType = TPath(typedJsonStreamTypePath);
@@ -753,23 +790,20 @@ typedef JsonDeserializerSet =
   function dynamicDeserialize(typeName:String, stream:JsonStream):Dynamic;
 }
 
-typedef JsonDeserializerPlugin<Value> =
-{
-  function deserialize(stream:TypedJsonStream<Value>):Value;
-}
 
 @:final
-extern class NotADynamicTypedDeserializer
+extern class GetDynamicDeserializerTypeNonDynamicDeserializer
 {
   @:extern
-  public static function getDynamicDeserializerType(deserializer:Dynamic):NotADynamicTypedDeserializer return
+  public static function getDynamicDeserializerType(deserializer:Dynamic):NonDynamicDeserializer return
   {
     throw "Used at compile-time only!";
   }
 }
 
+
 @:final
-extern class DynamicTypedDeserializer
+extern class GetDynamicDeserializerType
 {
   @:extern
   public static function getDynamicDeserializerType<Value>(deserializer:JsonDeserializerPlugin<Value>):Value return
@@ -777,3 +811,32 @@ extern class DynamicTypedDeserializer
     throw "Used at compile-time only!";
   }
 }
+
+/**
+ * Internal type for deserializer plugins.
+ * @author 杨博
+ */
+abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
+{
+
+  public inline function new(underlying:JsonStream) 
+  {
+    this = underlying;
+  }
+  
+  public var underlying(get, never):JsonStream;
+  
+  inline function get_underlying():JsonStream return
+  {
+    this;
+  }
+  
+}
+
+typedef JsonDeserializerPlugin<Value> =
+{
+  function deserialize(stream:JsonDeserializerPluginStream<Value>):Value;
+}
+
+abstract NonDynamicDeserializer(Dynamic) {}
+// TODO: 支持继承
