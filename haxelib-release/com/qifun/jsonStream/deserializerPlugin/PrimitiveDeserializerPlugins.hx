@@ -14,8 +14,8 @@ class Int64DeserializerPlugin
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(elements):
-        com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
-          elements, 2, function(high, low) return Int64.make(cast high, cast low));
+        com.qifun.jsonStream.IteratorExtractor.optimizedExtract2(
+          elements, function(high, low) return Int64.make(cast high, cast low));
       case NULL:
         null;
       case _:

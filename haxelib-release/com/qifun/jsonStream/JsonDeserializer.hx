@@ -443,9 +443,8 @@ class JsonDeserializerSetBuilder
           $zeroParameterBranch;
         case OBJECT(pairs):
           function selectEnumValue(pair) return $processObjectBody;
-          com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
+          com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(
             pairs,
-            1,
             selectEnumValue);
         case _:
           throw "Expect object or string!";
@@ -758,4 +757,20 @@ typedef JsonDeserializerPlugin<Value> =
 }
 
 abstract NonDynamicDeserializer(Dynamic) {}
+
+typedef UnknownFieldHandler<Parent> =
+{
+  function handleUnknownField(parent:Parent, fieldName: String, fieldValue: JsonStream):Void;
+}
+
+@:final
+class FallbackUnknownFieldHandler
+{
+  // 默认抛出异常
+  public static function handleUnknownField<Parent>(parent:Parent, fieldName: String, fieldValue: JsonStream):Void
+  {
+    throw 'Unknown field $fieldName: ${JsonDeserializer.deserializeRaw(fieldValue)} is received when deserializing $parent!';
+  };
+}
+
 // TODO: 支持继承

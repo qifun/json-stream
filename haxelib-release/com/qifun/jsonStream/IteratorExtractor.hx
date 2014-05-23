@@ -1,12 +1,15 @@
 package com.qifun.jsonStream;
 
 
+import com.dongxiguo.continuation.Continuation;
+import com.dongxiguo.continuation.utils.Generator.Generator;
+import com.dongxiguo.continuation.utils.Generator.YieldFunction;
 import haxe.macro.Expr;
 
 enum IteratorExtractorError<Element>
 {
-  NotEnoughElements(iterator:Iterator<Element>, expected:Int, actual:Int);
-  TooManyElements(iterator:Iterator<Element>, expected:Int);
+  NotEnoughElements(restoredIterator:Iterator<Element>, expected:Int, actual:Int);
+  TooManyElements(restoredIterator:Iterator<Element>, expected:Int);
 }
 
 /**
@@ -14,22 +17,37 @@ enum IteratorExtractorError<Element>
 **/
 class IteratorExtractor
 {
+  public static function restoredIterator<Element>(extracted:Array<Element>, rest:Iterator<Element>) return
+  {
+    new Generator(Continuation.cpsFunction(function(yield:YieldFunction<Element>):Void
+    {
+      for (element in extracted) { yield(element).async(); }
+      for (element in rest) { yield(element).async(); }
+    }));
+  }
   
   macro public static function extract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
   {
+    var extracted = [];
     var block =
     [
       for (i in 0...numParametersExpected)
       {
         var varName = 'extract$i';
-        macro var $varName = if ($iterator.hasNext())
+        var step = macro var $varName = if ($iterator.hasNext())
         {
           $iterator.next();
         }
         else
         {
-          throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.NotEnoughElements($iterator, $v{numParametersExpected}, $v{i});
+          throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.NotEnoughElements(
+            $a{extracted}.iterator(),
+            $v{numParametersExpected},
+            $v{i});
         }
+        extracted = extracted.copy();
+        extracted.push(macro $i{varName});
+        step;
       }
     ];
     var result =
@@ -47,7 +65,9 @@ class IteratorExtractor
     block.push(
       macro if ($iterator.hasNext())
       {
-        throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.TooManyElements($iterator, $v{numParametersExpected});
+        throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.TooManyElements(
+          com.qifun.jsonStream.IteratorExtractor.restoredIterator($a{extracted}, $iterator),
+          $v{numParametersExpected});
       }
       else
       {
@@ -57,6 +77,16 @@ class IteratorExtractor
       pos: handler.pos,
       expr: EBlock(block),
     }
+  }
+
+  public static inline function optimizedExtract1<Element, Return>(iterator:Iterator<Element>, handler:Element->Return):Return return
+  {
+    optimizedExtract(iterator, 1, handler);
+  }
+
+  public static inline function optimizedExtract2<Element, Return>(iterator:Iterator<Element>, handler:Element->Element->Return):Return return
+  {
+    optimizedExtract(iterator, 2, handler);
   }
 
   macro public static function optimizedExtract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
@@ -80,6 +110,4 @@ class IteratorExtractor
     }
   }
 
-
-  
 }
