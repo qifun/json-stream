@@ -6,27 +6,135 @@ import com.dongxiguo.continuation.utils.Generator.Generator;
 import com.dongxiguo.continuation.utils.Generator.YieldFunction;
 import haxe.macro.Expr;
 
-enum IteratorExtractorError<Element>
+@:final class UntranslatableElement<InputElement, TranslatedElement> implements IStreamException<Iterator<InputElement>>
 {
-  NotEnoughElements(restoredIterator:Iterator<Element>, expected:Int, actual:Int);
-  TooManyElements(restoredIterator:Iterator<Element>, expected:Int);
+  
+  private var translatedElements:Array<TranslatedElement>;
+  
+  private var underlyingException:IStreamException<InputElement>;
+  
+  public var rebuildInput(default, null):TranslatedElement->InputElement;
+
+  private var rest:Iterator<InputElement>;
+  
+  public function new(translatedElements:Array<TranslatedElement>, underlyingException:IStreamException<InputElement>, rebuildInput:TranslatedElement->InputElement, rest:Iterator<InputElement>)
+  {
+    this.translatedElements = translatedElements;
+    this.underlyingException = underlyingException;
+    this.rebuildInput = rebuildInput;
+    this.rest = rest;
+  }
+  
+  public function toString() return
+  {
+    'Cannot translate the ${translatedElements.length}-th element.';
+  }
+  
+  public function recover():Generator<InputElement> return
+  {
+    new Generator(Continuation.cpsFunction(function(yield:YieldFunction<InputElement>):Void
+    {
+      for (translatedElement in translatedElements)
+      {
+        yield(rebuildInput(translatedElement)).async();
+      }
+      yield(underlyingException.recover()).async();
+      for (e in rest)
+      {
+        yield(e).async();
+      }
+    }));
+  }
+  
+}  
+
+@:final
+class NotEnoughElements<InputElement, TranslatedElement> implements IStreamException<Iterator<InputElement>>
+{
+  
+  private var translatedElements:Array<TranslatedElement>;
+  
+  public var expected(default, null):Int;
+  
+  public var rebuildInput(default, null):TranslatedElement->InputElement;
+  
+  public function new(translatedElements:Array<TranslatedElement>, rebuildInput:TranslatedElement->InputElement, expected:Int)
+  {
+    this.translatedElements = translatedElements;
+    this.rebuildInput = rebuildInput;
+    this.expected = expected;
+  }
+  
+  public function toString() return
+  {
+    'Expect $expected elements, actual ${translatedElements.length} elements.';
+  }
+  
+  public function recover():Iterator<InputElement> return
+  {
+    new Generator(Continuation.cpsFunction(function(yield:YieldFunction<InputElement>):Void
+    {
+      for (translatedElement in translatedElements)
+      {
+        yield(rebuildInput(translatedElement)).async();
+      }
+    }));
+  }
+  
 }
+
+@:final
+class TooManyElements<InputElement, TranslatedElement> implements IStreamException<Iterator<InputElement>>
+{
+  
+  private var translatedElements:Array<TranslatedElement>;
+  
+  public var rebuildInput(default, null):TranslatedElement->InputElement;
+
+  private var rest:Iterator<InputElement>;
+  
+  public function new(translatedElements:Array<TranslatedElement>, rebuildInput:TranslatedElement->InputElement, rest:Iterator<InputElement>)
+  {
+    this.translatedElements = translatedElements;
+    this.rebuildInput = rebuildInput;
+    this.rest = rest;
+  }
+  
+  public function toString() return
+  {
+    'Expect ${translatedElements.length} elements, actual more than ${translatedElements.length} elements.';
+  }
+  
+  public function recover():Generator<InputElement> return
+  {
+    new Generator(Continuation.cpsFunction(function(yield:YieldFunction<InputElement>):Void
+    {
+      for (translatedElement in translatedElements)
+      {
+        yield(rebuildInput(translatedElement)).async();
+      }
+      for (e in rest)
+      {
+        yield(e).async();
+      }
+    }));
+  }
+  
+}
+
 
 /**
   @author 杨博
 **/
 class IteratorExtractor
 {
-  public static function restoredIterator<Element>(extracted:Array<Element>, rest:Iterator<Element>) return
-  {
-    new Generator(Continuation.cpsFunction(function(yield:YieldFunction<Element>):Void
-    {
-      for (element in extracted) { yield(element).async(); }
-      for (element in rest) { yield(element).async(); }
-    }));
-  }
-  
-  macro public static function extract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
+
+  macro public static function extract<InputElement, TranslatedElement>(
+    iterator:ExprOf<Iterator<InputElement>>,
+    numParametersExpected:Int,
+    translate:ExprOf<InputElement->TranslatedElement>,
+    rebuildInput:ExprOf<TranslatedElement->InputElement>,
+    handler:Expr):Expr return
   {
     var extracted = [];
     var block =
@@ -36,14 +144,26 @@ class IteratorExtractor
         var varName = 'extract$i';
         var step = macro var $varName = if ($iterator.hasNext())
         {
-          $iterator.next();
+          var input = $iterator.next();
+          try
+          {
+            $translate(input);
+          }
+          catch (e:com.qifun.jsonStream.IStreamException<Dynamic>)
+          {
+            throw new com.qifun.jsonStream.IteratorExtractor.UntranslatableElement(
+              $a{extracted},
+              e,
+              $rebuildInput,
+              $iterator);
+          }
         }
         else
         {
-          throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.NotEnoughElements(
-            $a{extracted}.iterator(),
-            $v{numParametersExpected},
-            $v{i});
+          throw new com.qifun.jsonStream.IteratorExtractor.NotEnoughElements(
+            $a{extracted},
+            $rebuildInput,
+            $v{numParametersExpected});
         }
         extracted = extracted.copy();
         extracted.push(macro $i{varName});
@@ -65,9 +185,10 @@ class IteratorExtractor
     block.push(
       macro if ($iterator.hasNext())
       {
-        throw com.qifun.jsonStream.IteratorExtractor.IteratorExtractorError.TooManyElements(
-          com.qifun.jsonStream.IteratorExtractor.restoredIterator($a{extracted}, $iterator),
-          $v{numParametersExpected});
+        throw new com.qifun.jsonStream.IteratorExtractor.TooManyElements(
+            $a{extracted},
+            $rebuildInput,
+            $iterator);
       }
       else
       {
@@ -78,18 +199,35 @@ class IteratorExtractor
       expr: EBlock(block),
     }
   }
+  
 
-  public static inline function optimizedExtract1<Element, Return>(iterator:Iterator<Element>, handler:Element->Return):Return return
+  
+  public static inline function identity<A, B>(a:A):A return a;
+
+  public static inline function optimizedExtract1<InputElement, TranslatedElement, Return>(
+    iterator:Iterator<InputElement>,
+    translate:InputElement->TranslatedElement,
+    rebuildInput:TranslatedElement->InputElement,
+    handler:TranslatedElement->Return):Return return
   {
-    optimizedExtract(iterator, 1, handler);
+    optimizedExtract(iterator, 1, translate, rebuildInput, handler);
   }
 
-  public static inline function optimizedExtract2<Element, Return>(iterator:Iterator<Element>, handler:Element->Element->Return):Return return
+  public static inline function optimizedExtract2<InputElement, TranslatedElement, Return>(
+    iterator:Iterator<InputElement>,
+    ?translate:InputElement->TranslatedElement,
+    ?rebuildInput:TranslatedElement->InputElement,
+    handler:TranslatedElement->TranslatedElement->Return):Return return
   {
-    optimizedExtract(iterator, 2, handler);
+    optimizedExtract(iterator, 2, translate, rebuildInput, handler);
   }
 
-  macro public static function optimizedExtract<Element>(iterator:ExprOf<Iterator<Element>>, numParametersExpected:Int, handler:Expr):Expr return
+  macro public static function optimizedExtract<InputElement, TranslatedElement>(
+    iterator:ExprOf<Iterator<InputElement>>,
+    numParametersExpected:Int,
+    translate:ExprOf<InputElement->TranslatedElement>,
+    rebuildInput:ExprOf<TranslatedElement->InputElement>,
+    handler:Expr):Expr return
   {
     macro
     {
@@ -101,11 +239,11 @@ class IteratorExtractor
       var generator = asGenerator(extractingIterator);
       if (generator != null)
       {
-        com.qifun.jsonStream.IteratorExtractor.extract(generator, $v{numParametersExpected}, $handler);
+        com.qifun.jsonStream.IteratorExtractor.extract(generator, $v{numParametersExpected}, $translate, $rebuildInput, $handler);
       }
       else
       {
-        com.qifun.jsonStream.IteratorExtractor.extract(extractingIterator, $v{numParametersExpected}, $handler);
+        com.qifun.jsonStream.IteratorExtractor.extract(extractingIterator, $v{numParametersExpected}, $translate, $rebuildInput, $handler);
       }
     }
   }

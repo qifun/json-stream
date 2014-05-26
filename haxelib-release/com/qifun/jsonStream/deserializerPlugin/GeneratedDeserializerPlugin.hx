@@ -38,7 +38,11 @@ class GeneratedDeserializerPlugin
           switch (stream)
           {
             case OBJECT(pairs):
-              switch (com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(pairs, function(pair) return currentJsonDeserializerSet().dynamicDeserialize(pair.key, pair.value)))
+              switch (com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(
+                pairs, 
+                com.qifun.jsonStream.IteratorExtractor.identity,
+                com.qifun.jsonStream.IteratorExtractor.identity,
+                function(pair) return currentJsonDeserializerSet().dynamicDeserialize(pair.key, pair.value)))
               {
                 case null: JsonDeserializer.deserializeRaw(stream);
                 case notNull: notNull;

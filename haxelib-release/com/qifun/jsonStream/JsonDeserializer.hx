@@ -422,7 +422,11 @@ class JsonDeserializerSetBuilder
                     {
                       case com.qifun.jsonStream.JsonStream.ARRAY(parameters):
                         com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
-                          parameters, $v{numArguments}, $declareProcessParameters);
+                          parameters,
+                          $v{numArguments},
+                          com.qifun.jsonStream.IteratorExtractor.identity, // FIXME:
+                          com.qifun.jsonStream.IteratorExtractor.identity, // FIXME:
+                          $declareProcessParameters);
                       case _:
                         throw "Expect array!";
                     }
@@ -445,6 +449,8 @@ class JsonDeserializerSetBuilder
           function selectEnumValue(pair) return $processObjectBody;
           com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(
             pairs,
+            com.qifun.jsonStream.IteratorExtractor.identity,
+            com.qifun.jsonStream.IteratorExtractor.identity,
             selectEnumValue);
         case _:
           throw "Expect object or string!";
@@ -761,6 +767,7 @@ abstract NonDynamicDeserializer(Dynamic) {}
 typedef UnknownFieldHandler<Parent> =
 {
   function handleUnknownField(parent:Parent, fieldName: String, fieldValue: JsonStream):Void;
+  function handleUnknownArrayElement<Element>(parent:Array<Element>, index: Int, fieldValue: JsonStream):Void;
 }
 
 @:final

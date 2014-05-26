@@ -3,6 +3,7 @@ package com.qifun.jsonStream.deserializerPlugin;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
+import com.qifun.jsonStream.UnexpectedJsonType;
 import haxe.Int64;
 
 @:final
@@ -15,7 +16,14 @@ class Int64DeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(elements):
         com.qifun.jsonStream.IteratorExtractor.optimizedExtract2(
-          elements, function(high, low) return Int64.make(cast high, cast low));
+          elements,
+          function(jsonStream:JsonStream):Float return switch (jsonStream)
+          {
+            case NUMBER(value): value;
+            case _: throw new UnexpectedJsonType.ExpectNumber(jsonStream);
+          },
+          function(value:Float) return JsonStream.NUMBER(value),
+          function(high, low) return Int64.make(cast high, cast low));
       case NULL:
         null;
       case _:
