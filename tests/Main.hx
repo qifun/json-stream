@@ -25,7 +25,7 @@ class Main
 {
   macro static function forceTyped(e:Expr):Expr return
   {
-    //trace(TypeTools.toString(Context.typeof(macro function (x) return x.deserialize())));
+    //trace(TypeTools.toString(Context.typeof(macro function (x) return x.pluginDeserialize())));
     
     
     //var r = Context.getTypedExpr(Context.typeExpr(e));
@@ -36,42 +36,42 @@ class Main
 	#if !macro
   static function main()
   {
-    forceTyped(
-    var f = function (x) return x.deserialize()
-    );
-//    $type(f);
-//    StringDeserializer.deserialize.bind();
-    var n = switch ("")
-    {
-      case InlineVar.Inline: 2;
-      case "3": 3;
-      case InlineVar.NotInline: 1;
-      case _: 4;
-    }
-    trace((new RawJson("b11aa").serialize().deserialize():RawJson));
-    //trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().deserialize());
+    //forceTyped(
+    //var f = function (x) return x.pluginDeserialize()
+    //);
+////    $type(f);
+////    StringDeserializer.pluginDeserialize.bind();
+    //var n = switch ("")
+    //{
+      //case InlineVar.Inline: 2;
+      //case "3": 3;
+      //case InlineVar.NotInline: 1;
+      //case _: 4;
+    //}
+    //trace((new RawJson("b11aa").serialize().pluginDeserialize():RawJson));
+    ////trace(new RawJson( { "xx": [ { }, { "t": 23 } ] } ).serialize().pluginDeserialize());
+    ////
+    //try
+    //{
+      //var aad:Array<Array<Dynamic>> = new RawJson([[[]]]).serialize().pluginDeserialize();
+    //}
+    //catch(error:String)
+    //{
+      //trace(error);
+    //}
+ //
+    //var b1:Array<Array<Int>> = new RawJson([]).serialize().pluginDeserialize();
+//
+    //var b2:NewClass = new RawJson({}).serialize().pluginDeserialize();
     //
-    try
-    {
-      var aad:Array<Array<Dynamic>> = new RawJson([[[]]]).serialize().deserialize();
-    }
-    catch(error:String)
-    {
-      trace(error);
-    }
- 
-    var b1:Array<Array<Int>> = new RawJson([]).serialize().deserialize();
-
-    var b2:NewClass = new RawJson({}).serialize().deserialize();
-    
-    var b3:Array<NewClass> = new RawJson([]).serialize().deserialize();
-    
-    var m = JsonDeserializer.newDeserializerSet(["Ref", "NewClass"]);
-    trace(m);
-    var nc = function(x) return m.deserialize_NewClass(x);
-    var m2 = JsonDeserializer.newDeserializerSet(["Ref"]);
-    var m3 = JsonDeserializer.newDeserializerSet(["NewEnum"]);
-
+    //var b3:Array<NewClass> = new RawJson([]).serialize().pluginDeserialize();
+    //
+    //var m = JsonDeserializer.newDeserializerSet(["Ref", "NewClass"]);
+    //trace(m);
+    //var nc = function(x) return m.deserialize_NewClass(x);
+    //var m2 = JsonDeserializer.newDeserializerSet(["Ref"]);
+    //var m3 = JsonDeserializer.newDeserializerSet(["NewEnum"]);
+//
   }
 	#end
 }

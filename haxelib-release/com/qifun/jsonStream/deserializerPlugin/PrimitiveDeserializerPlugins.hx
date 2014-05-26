@@ -10,7 +10,7 @@ import haxe.Int64;
 class Int64DeserializerPlugin
 {
 
-  public static function deserialize(stream:JsonDeserializerPluginStream<Int64>):Null<Int64> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int64>):Null<Int64> return
   {
     switch (stream.underlying)
     {
@@ -35,7 +35,7 @@ class Int64DeserializerPlugin
 @:final
 class IntDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<Int>):Null<Int> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int>):Null<Int> return
   {
     switch (stream.underlying)
     {
@@ -52,7 +52,7 @@ class IntDeserializerPlugin
 @:final
 class UIntDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<UInt>):Null<UInt> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<UInt>):Null<UInt> return
   {
     switch (stream.underlying)
     {
@@ -70,7 +70,7 @@ class UIntDeserializerPlugin
   @:final
   class SingleDeserializerPlugin
   {
-    public static function deserialize(stream:JsonDeserializerPluginStream<Single>):Null<Single> return
+    public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Single>):Null<Single> return
     {
       switch (stream.underlying)
       {
@@ -88,7 +88,7 @@ class UIntDeserializerPlugin
 @:final
 class FloatDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<Float>):Null<Float> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Float>):Null<Float> return
   {
     switch (stream.underlying)
     {
@@ -105,7 +105,7 @@ class FloatDeserializerPlugin
 @:final
 class BoolDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<Bool>):Null<Bool> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Bool>):Null<Bool> return
   {
     switch (stream.underlying)
     {
@@ -121,7 +121,7 @@ class BoolDeserializerPlugin
 @:final
 class StringDeserializerPlugin
 {
-  public static function deserialize(stream:JsonDeserializerPluginStream<String>):Null<String> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<String>):Null<String> return
   {
     switch (stream.underlying)
     {
@@ -176,9 +176,9 @@ class ArrayDeserializerPlugin
     }
   }
   
-  macro public static function deserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Array<Element>> return
+  macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Array<Element>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($stream, function(substream) return substream.deserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($stream, function(substream) return substream.pluginDeserialize());
   }
 }
 

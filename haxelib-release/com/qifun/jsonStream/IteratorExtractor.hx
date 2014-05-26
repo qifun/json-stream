@@ -153,7 +153,7 @@ class IteratorExtractor
           {
             throw new com.qifun.jsonStream.IteratorExtractor.UntranslatableElement(
               $a{extracted},
-              e,
+              cast e,
               $rebuildInput,
               $iterator);
           }

@@ -13,7 +13,7 @@ class RawDeserializerPlugin
   /**
     Writes the data in `stream` to a JSON instance, and returns the instance.
   **/
-  public static function deserialize(stream:JsonDeserializerPluginStream<RawJson>):RawJson return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<RawJson>):RawJson return
   {
     JsonDeserializer.deserializeRaw(stream.underlying);
   }

@@ -23,7 +23,7 @@ class GeneratedDeserializerPlugin
   /**
    * The fallback deserializeFunction for classes and enums.
    */
-  macro public static function deserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Element>>):ExprOf<Element> return
+  macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Element>>):ExprOf<Element> return
   {
     var builder = JsonDeserializerSetBuilder.getContextBuilder();
     var expectedType = Context.getExpectedType();

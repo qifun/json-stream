@@ -68,14 +68,14 @@ class JsonDeserializer
     }
     deserializerSetBuilder.defineDeserializerSet();
   }
-  
-  macro public static function deserialize<Element>(stream:ExprOf<JsonStream>):ExprOf<Element> return
-  {
-    var deserializerSetBuilder = new JsonDeserializerSetBuilder(defaultDeserializerSetFullName());
-    var result = deserializerSetBuilder.deserializeForType(TypeTools.toComplexType(Context.getExpectedType()), stream);
-    deserializerSetBuilder.defineDeserializerSet();
-    result;
-  }
+
+  //macro public static function deserialize<Element>(stream:ExprOf<JsonStream>):ExprOf<Element> return
+  //{
+    //var deserializerSetBuilder = new JsonDeserializerSetBuilder(defaultDeserializerSetFullName());
+    //var result = deserializerSetBuilder.deserializeForType(TypeTools.toComplexType(Context.getExpectedType()), stream);
+    //deserializerSetBuilder.defineDeserializerSet();
+    //result;
+  //}
   
   #if macro
   
@@ -667,7 +667,7 @@ class JsonDeserializerSetBuilder
         {
           args: [ { name: "typedJsonStream", type: typedJsonStreamType } ],
           ret: expectedType,
-          expr: macro return typedJsonStream.deserialize(),
+          expr: macro return typedJsonStream.pluginDeserialize(),
           params: params,
         }),
       pos: Context.currentPos()
@@ -759,7 +759,7 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 
 typedef JsonDeserializerPlugin<Value> =
 {
-  function deserialize(stream:JsonDeserializerPluginStream<Value>):Value;
+  function pluginDeserialize(stream:JsonDeserializerPluginStream<Value>):Value;
 }
 
 abstract NonDynamicDeserializer(Dynamic) {}
