@@ -204,15 +204,6 @@ class IteratorExtractor
   
   public static inline function identity<A, B>(a:A):A return a;
 
-  public static inline function optimizedExtract1<InputElement, TranslatedElement, Return>(
-    iterator:Iterator<InputElement>,
-    translate:InputElement->TranslatedElement,
-    rebuildInput:TranslatedElement->InputElement,
-    handler:TranslatedElement->Return):Return return
-  {
-    optimizedExtract(iterator, 1, translate, rebuildInput, handler);
-  }
-
   public static inline function optimizedExtract2<InputElement, TranslatedElement, Return>(
     iterator:Iterator<InputElement>,
     ?translate:InputElement->TranslatedElement,

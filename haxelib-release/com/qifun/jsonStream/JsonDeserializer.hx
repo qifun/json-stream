@@ -46,13 +46,6 @@ class JsonDeserializer
         null;
     });
   }
-
-  @:extern
-  @:noUsing
-  private static inline function asGenerator<Element>(iterator:Iterator<Element>):Null<Generator<Element>> return
-  {
-    Std.instance(iterator, (Generator:Class<Generator<Element>>));
-  }
   
   @:noUsing
   macro public static function buildDeserializer(modules:Array<String>):Array<Field> return
@@ -87,11 +80,58 @@ class JsonDeserializer
   
 }
 
+enum JsonDeserializeErrorCode
+{
+  TooManyFields<Element>(iterator:Iterator<Element>, expected:Int);
+  NotEnoughFields<Element>(iterator:Iterator<Element>, expected:Int, actual:Int);
+  UnmatchedJsonType(stream:JsonStream, expected: Array<String>);
+}
 
-#if macro
 @:final
 class JsonDeserializerBuilder
 {
+
+  @:extern
+  @:noUsing
+  private static inline function asGenerator<Element>(iterator:Iterator<Element>):Null<Generator<Element>> return
+  {
+    Std.instance(iterator, (Generator:Class<Generator<Element>>));
+  }
+  
+  @:extern
+  @:noUsing
+  private static inline function extract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    if (iterator.hasNext())
+    {
+      var element = iterator.next();
+      if (iterator.hasNext())
+      {
+        throw TooManyFields(iterator, 1);
+      }
+      else
+      {
+        handler(element);
+      }
+    }
+    else
+    {
+      throw NotEnoughFields(iterator, 1, 0);
+    }
+  }
+
+  @:extern
+  @:noUsing
+  private static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    switch (Std.instance(iterator, (Generator:Class<Generator<Element>>)))
+    {
+      case null: extract1(iterator, handler);
+      case generator: extract1(generator, handler);
+    }
+  }
+  
+#if macro
   private var buildingFields:Array<Field>;
 
   private var deserializingTypes(default, null) = new StringMap<BaseType>();
@@ -116,7 +156,7 @@ class JsonDeserializerBuilder
   
     meta.add(
       ":access",
-      [ MacroStringTools.toFieldExpr("com.qifun.jsonStream.JsonDeserializer".split(".")) ],
+      [ MacroStringTools.toFieldExpr("com.qifun.jsonStream.JsonDeserializerBuilder".split(".")) ],
       Context.currentPos());
 
     for (deserializingType in deserializingTypes)
@@ -266,31 +306,24 @@ class JsonDeserializerBuilder
         // TODO: constraits
       }
     ];
-    var zeroParameterBranch =
-    {
-      pos: Context.currentPos(),
-      expr: ESwitch(
-        macro constructorName,
-        [
-          for (constructor in enumType.constructs) if (constructor.type.match(TEnum(_, _)))
-          {
-            var constructorName = constructor.name;
-            var enumPath = enumType.module.split(".");
-            enumPath.push(enumType.name);
-            enumPath.push(constructorName);
-            {
-              values: [ macro $v{constructorName} ],
-              expr: MacroStringTools.toFieldExpr(enumPath),
-            }
-          }
-        ],
-        macro throw "Unknown enum value" + constructorName + "!"),
-    }
     var cases = [];
+    var unknownEnumValueConstructor = null;
     for (constructor in enumType.constructs)
     {
       switch (constructor.type)
       {
+        case TFun([ { t: TEnum(_.get() => { module: "com.qifun.jsonStream.unknownValue.UnknownEnumValue", name: "UnknownEnumValue" }, _) } ], _):
+        {
+          // 支持UnknownEnumValue!
+          if (unknownEnumValueConstructor == null)
+          {
+            unknownEnumValueConstructor = constructor.name;
+          }
+          else
+          {
+            Context.error("Expect zero or one UnknownEnumValue in enum constructor list!", constructor.pos);
+          }
+        }
         case TFun(args, _):
           var valueParams: Array<TypeParamDecl> =
           [
@@ -319,12 +352,12 @@ class JsonDeserializerBuilder
               {
                 var parameterName = 'parameter$i';
                 var arg = args[i];
-                if (Context.unify(arg.t, Context.getType("com.qifun.jsonStream.UnknownFieldMap")))
+                if (Context.unify(arg.t, Context.getType("com.qifun.jsonStream.unknownValue.UnknownFieldMap")))
                 {
                   if (unknownFieldSetName == null)
                   {
                     unknownFieldSetName = parameterName;
-                    block.push(macro $i{parameterName} = new com.qifun.jsonStream.UnknownFieldMap());
+                    block.push(macro $i{parameterName} = new com.qifun.jsonStream.unknownValue.UnknownFieldMap(new haxe.ds.StringMap()));
                   }
                   else
                   {
@@ -371,7 +404,7 @@ class JsonDeserializerBuilder
                   }
                   else
                   {
-                    macro $i{unknownFieldSetName}.set(parameterPair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(parameterPair.value));
+                    macro $i{unknownFieldSetName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(parameterPair.value));
                   }),
               };
               var newEnum =
@@ -390,7 +423,7 @@ class JsonDeserializerBuilder
               block.push(
                 macro
                 {
-                  var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.asGenerator(parameterPairs);
+                  var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.asGenerator(parameterPairs);
                   if (generator != null)
                   {
                     for (parameterPair in generator)
@@ -421,7 +454,7 @@ class JsonDeserializerBuilder
                     case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
                       $blockExpr;
                     case _:
-                      throw "Expect object!";
+                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(pair.value, [ "OBJECT" ]);
                   }
                 },
               }:Case);
@@ -432,7 +465,46 @@ class JsonDeserializerBuilder
     var processObjectBody =
     {
       pos: Context.currentPos(),
-      expr: ESwitch(macro pair.key, cases, macro throw "Unknown enum value" + pair.key + "!"),
+      expr: ESwitch(
+        macro pair.key,
+        cases,
+        if (unknownEnumValueConstructor == null)
+        {
+          macro null;
+        }
+        else
+        {
+          macro com.qifun.jsonStream.unknownValue.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
+            pair.key,
+            com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value));
+        }),
+    }
+    var zeroParameterBranch =
+    {
+      pos: Context.currentPos(),
+      expr: ESwitch(
+        macro constructorName,
+        [
+          for (constructor in enumType.constructs) if (constructor.type.match(TEnum(_, _)))
+          {
+            var constructorName = constructor.name;
+            var enumPath = enumType.module.split(".");
+            enumPath.push(enumType.name);
+            enumPath.push(constructorName);
+            {
+              values: [ macro $v{constructorName} ],
+              expr: MacroStringTools.toFieldExpr(enumPath),
+            }
+          }
+        ],
+        if (unknownEnumValueConstructor == null)
+        {
+          macro null;
+        }
+        else
+        {
+          macro com.qifun.jsonStream.unknownValue.UnknownEnumValue.UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName);
+        }),
     }
     var methodBody = macro switch (stream)
     {
@@ -440,13 +512,13 @@ class JsonDeserializerBuilder
         $zeroParameterBranch;
       case OBJECT(pairs):
         function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.PairStream) return $processObjectBody;
-        com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(
+        com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.optimizedExtract1(
           pairs,
-          com.qifun.jsonStream.IteratorExtractor.identity,
-          com.qifun.jsonStream.IteratorExtractor.identity,
           selectEnumValue);
+      case NULL:
+        null;
       case _:
-        throw "Expect object or string!";
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(stream, [ "STRING", "OBJECT", "NULL" ]);
     }
     {
       args:
@@ -547,7 +619,7 @@ class JsonDeserializerBuilder
     {
       case OBJECT(pairs):
         var result = $newInstance;
-        var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.asGenerator(pairs);
+        var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.asGenerator(pairs);
         if (generator != null)
         {
           for (pair in generator)
@@ -564,7 +636,7 @@ class JsonDeserializerBuilder
         }
         result;
       case _:
-        throw "Expect object!";
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(stream, [ "OBJECT" ]);
     }
     
     {
@@ -682,15 +754,13 @@ class JsonDeserializerBuilder
       switch (stream)
       {
         case OBJECT(pairs):
-          com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(
-            pairs, 
-            com.qifun.jsonStream.IteratorExtractor.identity,
-            com.qifun.jsonStream.IteratorExtractor.identity,
+          com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.optimizedExtract1(
+            pairs,
             function(dynamicPair) return $processDynamic);
         case NULL:
           null;
         case _:
-          throw "Expect object!";
+          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(stream, [ "OBJECT", "NULL" ]);
       }
     })($stream);
   }
@@ -880,8 +950,8 @@ class JsonDeserializerBuilder
     };
   }
 
-}
 #end
+}
 
 
 @:final
