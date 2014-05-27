@@ -352,7 +352,7 @@ class JsonDeserializerBuilder
               {
                 var parameterName = 'parameter$i';
                 var arg = args[i];
-                if (Context.unify(arg.t, Context.getType("com.qifun.jsonStream.unknownValue.UnknownFieldMap")))
+                if (Context.follow(arg.t).match(TAbstract(_.get() => {module: "com.qifun.jsonStream.unknownValue.UnknownFieldMap", name: "UnknownFieldMap"}, [])))
                 {
                   if (unknownFieldSetName == null)
                   {
@@ -700,8 +700,9 @@ class JsonDeserializerBuilder
     }
   }
   
-  public static function dynamicDeserialize(stream:ExprOf<JsonStream>):Expr return
+  public static function dynamicDeserialize(stream:ExprOf<JsonStream>, expectedComplexType:ComplexType):Expr return
   {
+    // TODO: 支持UnknownType
     var localUsings = Context.getLocalUsing();
     function createFunction(i:Int, key:ExprOf<String>, value:ExprOf<JsonStream>):Expr return
     {
@@ -737,14 +738,20 @@ class JsonDeserializerBuilder
         var contextBuilder = getContextBuilder();
         if (contextBuilder == null)
         {
-          macro null;
+          macro new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).pluginDeserializeUnknown($key);
         }
         else
         {
           var classType = getContextBuilder().buildingClass;
           var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
           var className = classType.name;
-          macro untyped($modulePath.$className).dynamicDeserialize($key, $value);
+          macro switch (untyped($modulePath.$className).dynamicDeserialize($key, $value))
+          {
+            case null:
+              new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).pluginDeserializeUnknown($key);
+            case knownValue:
+              knownValue;
+          }
         }
       }
     }
@@ -795,7 +802,7 @@ class JsonDeserializerBuilder
             }
             else
             {
-              return dynamicDeserialize(stream);
+              return dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
             }
           }
         }
@@ -818,7 +825,7 @@ class JsonDeserializerBuilder
         }
         else
         {
-          dynamicDeserialize(stream);
+          dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
         }
       case TEnum(_.get() => enumType, _):
         var methodName = deserializeMethodName(enumType.pack, enumType.name);
@@ -865,7 +872,7 @@ class JsonDeserializerBuilder
             }
             else
             {
-              return dynamicDeserialize(stream);
+              return dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
             }
           }
         }
@@ -888,10 +895,10 @@ class JsonDeserializerBuilder
         }
         else
         {
-          dynamicDeserialize(stream);
+          dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
         }
       case t:
-        dynamicDeserialize(stream);
+        dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
     }
   }
 

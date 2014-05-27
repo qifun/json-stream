@@ -38,5 +38,11 @@ class GeneratedDeserializerPlugin
     }
   }
 
+  @:extern
+  public inline static function pluginDeserializeUnknown<Element>(stream:JsonDeserializerPluginStream<Element>, type:String):Null<Element> return
+  {
+    null;
+  }
+
 }
 
