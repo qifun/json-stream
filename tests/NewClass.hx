@@ -58,7 +58,7 @@ enum Good
 {
   MORNING;
   EVENING(message:String, nc:NewClass, self:Good, i:Int, u:UInt, f:Float, i64:Int64, b:Bool, d:Dynamic);
-  AFTER_NOON(unknownFields:com.qifun.jsonStream.unknownValue.UnknownFieldMap, xxx:String);
+  AFTER_NOON(unknownFieldMap:com.qifun.jsonStream.unknownValue.UnknownFieldMap, xxx:String);
 }
 
 class BaseClass<T>
