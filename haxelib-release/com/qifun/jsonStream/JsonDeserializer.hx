@@ -16,8 +16,8 @@ using Lambda;
 using StringTools;
 
 /**
- * @author 杨博
- */
+  @author 杨博
+**/
 class JsonDeserializer
 {
 
@@ -189,12 +189,12 @@ class JsonDeserializerBuilder
     buildingFields;
   }
   
-  var buildingClass:ClassType;
+  private var buildingClass:ClassType;
   
   // id的格式：packageNames.ModuleName.ClassName
-  var id(get, never):String;
+  private var id(get, never):String;
 
-  public function get_id() return
+  private function get_id() return
   {
     buildingClass.module + "." + buildingClass.name;
   }
@@ -206,7 +206,7 @@ class JsonDeserializerBuilder
     allBuilders.set(id, this);
   }
 
-  public static function getContextBuilder():JsonDeserializerBuilder return
+  private static function getContextBuilder():JsonDeserializerBuilder return
   {
     var localClass = Context.getLocalClass().get();
     allBuilders.get(localClass.module + "." + localClass.name);
@@ -298,19 +298,42 @@ class JsonDeserializerBuilder
               // TODO: constraits
             }
           ];
+          var enumAndValueParams = enumParams.concat(valueParams);
           var constructorName = constructor.name;
           var enumPath = enumType.module.split(".");
           enumPath.push(enumType.name);
           enumPath.push(constructorName);
           cases.push(
             {
-              var transformed =
-              [
-                for (i in 0...args.length)
+              var block = [];
+              var unknownFieldSetName = null;
+              for (i in 0...args.length)
+              {
+                var parameterName = 'parameter$i';
+                block.push(macro var $parameterName = null);
+              }
+              var parameterCases:Array<Case> = [];
+              for (i in 0...args.length)
+              {
+                var parameterName = 'parameter$i';
+                var arg = args[i];
+                if (Context.unify(arg.t, Context.getType("com.qifun.jsonStream.UnknownFieldMap")))
                 {
-                  var parameterName = 'parameter$i';
-                  var result = resolvedDeserialize(TypeTools.toComplexType(args[i].t), macro $i { parameterName }, enumParams.concat(valueParams));
-                  var f = {
+                  if (unknownFieldSetName == null)
+                  {
+                    unknownFieldSetName = parameterName;
+                    block.push(macro $i{parameterName} = new com.qifun.jsonStream.UnknownFieldMap());
+                  }
+                  else
+                  {
+                    Context.error("Expect zero or one UnknownFieldMap in enum parameter list!", constructor.pos);
+                  }
+                }
+                else
+                {
+                  var parameterValue = resolvedDeserialize(TypeTools.toComplexType(arg.t), macro parameterPair.value, enumAndValueParams);
+                  var f =
+                  {
                     pos: Context.currentPos(),
                     expr: EFunction(
                       "inline_temporaryEnumDeserialize",
@@ -318,60 +341,87 @@ class JsonDeserializerBuilder
                         params: valueParams,
                         ret: null,
                         args: [],
-                        expr: macro return $result,
+                        expr: macro return $parameterValue,
                       })
-                  }
-                  macro { $f; temporaryEnumDeserialize(); }
+                  };
+                  parameterCases.push(
+                    {
+                      values: [ Context.makeExpr(arg.name, Context.currentPos()) ],
+                      expr: macro
+                      {
+                        $f;
+                        inline function nullize<T>(t:T):Null<T> return t;
+                        $i{parameterName} = nullize(temporaryEnumDeserialize());
+                      }
+                    });
                 }
-              ];
-              var declareProcessParameters =
+              }
+              var switchKey =
               {
                 pos: Context.currentPos(),
-                expr:
-                  EFunction(null,
+                expr: ESwitch(
+                  macro parameterPair.key,
+                  parameterCases,
+                  if (unknownFieldSetName == null)
+                  {
+                    expr: EBlock([]),
+                    pos: Context.currentPos(),
+                  }
+                  else
+                  {
+                    macro $i{unknownFieldSetName}.set(parameterPair.key, parameterPair.value);
+                  }),
+              };
+              var newEnum =
+              {
+                pos: Context.currentPos(),
+                expr: ECall(
+                  MacroStringTools.toFieldExpr(enumPath), 
+                  [
+                    for (i in 0...args.length)
                     {
-                      args:
-                      [
-                        for (i in 0...args.length)
-                        {
-                          name: 'parameter$i',
-                          type: TPath(
-                            {
-                              pack: [ "com", "qifun", "jsonStream" ],
-                              name: "JsonStream",
-                            }),
-                        }
-                      ],
-                      ret: null,
-                      expr:
-                      {
-                        pos: Context.currentPos(),
-                        expr: EReturn(
-                        {
-                          pos: Context.currentPos(),
-                          expr: ECall(MacroStringTools.toFieldExpr(enumPath), transformed),
-                        }),
-                      }
-                    }),
-              }
-              var numArguments = args.length;
+                      var parameterName = 'parameter$i';
+                      macro $i{parameterName};
+                    }
+                  ]),
+              };
+              block.push(
+                macro
+                {
+                  var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.asGenerator(parameterPairs);
+                  if (generator != null)
+                  {
+                    for (parameterPair in generator)
+                    {
+                      $switchKey;
+                    }
+                  }
+                  else
+                  {
+                    for (parameterPair in parameterPairs)
+                    {
+                      $switchKey;
+                    }
+                  }
+                  $newEnum;
+                });
+              var blockExpr =
+              {
+                pos: Context.currentPos(),
+                expr: EBlock(block),
+              };
               ({
                 values: [ macro $v{constructorName} ],
                 expr: macro
                 {
                   switch (pair.value)
                   {
-                    case com.qifun.jsonStream.JsonStream.ARRAY(parameters):
-                      com.qifun.jsonStream.IteratorExtractor.optimizedExtract(
-                        parameters,
-                        $v{numArguments},
-                        com.qifun.jsonStream.IteratorExtractor.identity, // FIXME:
-                        com.qifun.jsonStream.IteratorExtractor.identity, // FIXME:
-                        $declareProcessParameters);
+                    case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
+                      $blockExpr;
                     case _:
-                      throw "Expect array!";
+                      throw "Expect object!";
                   }
-                }
+                },
               }:Case);
             });
         case _: // 没有参数的枚举值，前面已经处理过了。
@@ -387,7 +437,7 @@ class JsonDeserializerBuilder
       case STRING(constructorName):
         $zeroParameterBranch;
       case OBJECT(pairs):
-        function selectEnumValue(pair) return $processObjectBody;
+        function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.PairStream) return $processObjectBody;
         com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(
           pairs,
           com.qifun.jsonStream.IteratorExtractor.identity,
@@ -898,3 +948,4 @@ class FallbackUnknownFieldHandler
 }
 
 // TODO: 支持继承
+// TODO: Unknown fields
