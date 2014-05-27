@@ -1,7 +1,11 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
 import com.qifun.jsonStream.JsonDeserializer;
+import haxe.macro.ExprTools;
+import haxe.macro.MacroStringTools;
 #if macro
+using Lambda;
+import haxe.macro.TypeTools;
 import haxe.macro.Expr;
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.Context;
@@ -19,45 +23,18 @@ class GeneratedDeserializerPlugin
   {
     throw "Used at compile-time only!";
   }
-  
+
   /**
    * The fallback deserializeFunction for classes and enums.
    */
   macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Element>>):ExprOf<Element> return
   {
-    var builder = JsonDeserializerSetBuilder.getContextBuilder();
-    var expectedType = Context.getExpectedType();
-    var methodName = builder.tryAddDeserializeMethod(expectedType);
-    if (methodName == null)
+    switch (Context.follow(Context.typeof(stream)))
     {
-      macro
-      {
-        // 如果加上inline，会导致haxe -java警告
-        function(stream:com.qifun.jsonStream.JsonStream):Dynamic return
-        {
-          switch (stream)
-          {
-            case OBJECT(pairs):
-              switch (com.qifun.jsonStream.IteratorExtractor.optimizedExtract1(
-                pairs, 
-                com.qifun.jsonStream.IteratorExtractor.identity,
-                com.qifun.jsonStream.IteratorExtractor.identity,
-                function(pair) return currentJsonDeserializerSet().dynamicDeserialize(pair.key, pair.value)))
-              {
-                case null: JsonDeserializer.deserializeRaw(stream);
-                case notNull: notNull;
-              }
-            case NULL:
-              null;
-            case _:
-              throw "Expect object!";
-          }
-        }($stream.underlying);
-      }
-    }
-    else
-    {
-      macro currentJsonDeserializerSet().$methodName($stream.underlying);
+      case TAbstract(_, [ expectedType ]):
+        JsonDeserializerBuilder.generatedDeserialize(expectedType, macro $stream.underlying);
+      case _:
+        throw "Expected JsonDeserializerPluginStream";
     }
   }
 

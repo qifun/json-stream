@@ -10,12 +10,21 @@ using com.qifun.jsonStream.RawSerializer;
 using com.qifun.jsonStream.JsonDeserializer;
 using com.qifun.jsonStream.Plugins;
 #end
+
+using Main;
+
 class InlineVar
 {
   public static var NotInline = "not" + "inline";
   public static inline var Inline = "inline";
   public static inline function inlineFunction() return "inlineFunction";
 }
+
+@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref"]))
+class RefDeserializer { }
+
+@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref","NewClass","NewEnum"]))
+class AllDeserializer {}
 
 typedef F<A> = Array<A>->A;
 /**
@@ -36,6 +45,7 @@ class Main
 	#if !macro
   static function main()
   {
+    var ref:Ref<Dynamic> = JsonDeserializer.deserialize(null);
     //forceTyped(
     //var f = function (x) return x.pluginDeserialize()
     //);
