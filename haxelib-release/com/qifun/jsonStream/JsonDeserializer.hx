@@ -1004,8 +1004,6 @@ abstract NonDynamicDeserializer(Dynamic) {}
 
 
 // TODO: 支持继承
-// TODO: Unknown fields
-
 class FallbackUnknownTypeJsonDeserializer
 {
   @:extern
