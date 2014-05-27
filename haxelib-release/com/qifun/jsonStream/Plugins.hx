@@ -17,7 +17,4 @@ typedef BoolDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Primiti
 typedef StringDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.StringDeserializerPlugin;
 typedef ArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin;
 
-typedef UnknownTypeFieldDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.UnknownTypeDeserializerPlugins.UnknownTypeFieldDeserializerPlugin;
-typedef UnknownTypeSetterDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.UnknownTypeDeserializerPlugins.UnknownTypeSetterDeserializerPlugin;
-
 typedef LowPriorityDynamicDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.LowPriorityDynamicDeserializerPlugin;

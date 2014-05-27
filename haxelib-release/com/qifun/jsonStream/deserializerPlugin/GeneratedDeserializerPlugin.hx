@@ -19,7 +19,7 @@ class GeneratedDeserializerPlugin
 {
 
   @:extern
-  public static function getDynamicDeserializerType():NonDynamicDeserializer return
+  public static function getPluginDynamicType():NonDynamicDeserializer return
   {
     throw "Used at compile-time only!";
   }
@@ -36,12 +36,6 @@ class GeneratedDeserializerPlugin
       case _:
         throw "Expected JsonDeserializerPluginStream";
     }
-  }
-
-  @:extern
-  public inline static function pluginDeserializeUnknown<Element>(stream:JsonDeserializerPluginStream<Element>, type:String):Null<Element> return
-  {
-    null;
   }
 
 }

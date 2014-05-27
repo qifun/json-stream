@@ -11,7 +11,7 @@ class LowPriorityDynamicDeserializerPlugin
 {
 
   @:extern
-  public static function getDynamicDeserializerType():NonDynamicDeserializer return
+  public static function getPluginDynamicType():NonDynamicDeserializer return
   {
     throw "Used at compile-time only!";
   }
@@ -21,12 +21,6 @@ class LowPriorityDynamicDeserializerPlugin
   macro public static function pluginDeserialize(stream:ExprOf<JsonDeserializerPluginStream<LowPriorityDynamic>>) return
   {
     macro com.qifun.jsonStream.JsonDeserializer.dynamicDeserialize(macro stream.underlying);
-  }
-
-  @:extern
-  public static inline function pluginDeserializeUnknown<T:LowPriorityDynamic>(stream:JsonDeserializerPluginStream<T>, type:String):Dynamic return
-  {
-    new com.qifun.jsonStream.unknownValue.UnknownType(type, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(stream.underlying));
   }
 
 }

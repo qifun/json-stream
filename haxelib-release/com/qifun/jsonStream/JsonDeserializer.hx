@@ -1,6 +1,9 @@
 package com.qifun.jsonStream;
 
 import com.dongxiguo.continuation.utils.Generator;
+import com.qifun.jsonStream.unknownValue.UnknownFieldMap;
+import com.qifun.jsonStream.unknownValue.UnknownType;
+
 #if macro
 import haxe.ds.StringMap;
 import haxe.macro.ComplexTypeTools;
@@ -180,7 +183,7 @@ class JsonDeserializerBuilder
       }
       var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
       var nameField = baseType.name;
-      switch (Context.follow(Context.typeof(macro $moduleExpr.$nameField.getDynamicDeserializerType)))
+      switch (Context.follow(Context.typeof(macro $moduleExpr.$nameField.getPluginDynamicType)))
       {
         case TFun([], TAbstract(_.get() => { module: "com.qifun.jsonStream.JsonDeserializer", name: "NonDynamicDeserializer" }, _)):
           continue;
@@ -310,21 +313,14 @@ class JsonDeserializerBuilder
     var unknownEnumValueConstructor = null;
     for (constructor in enumType.constructs)
     {
-      switch (constructor.type)
+      switch (constructor)
       {
-        case TFun([ { t: TEnum(_.get() => { module: "com.qifun.jsonStream.unknownValue.UnknownEnumValue", name: "UnknownEnumValue" }, _) } ], _):
+        case { name: "UNKNOWN_ENUM_VALUE", type: TFun([ { t: TEnum(_.get() => { module: "com.qifun.jsonStream.unknownValue.UnknownEnumValue", name: "UnknownEnumValue" }, _) } ], _) }:
         {
           // 支持UnknownEnumValue!
-          if (unknownEnumValueConstructor == null)
-          {
-            unknownEnumValueConstructor = constructor.name;
-          }
-          else
-          {
-            Context.error("Expect zero or one UnknownEnumValue in enum constructor list!", constructor.pos);
-          }
+          unknownEnumValueConstructor = constructor.name;
         }
-        case TFun(args, _):
+        case { type: TFun(args, _) }:
           var valueParams: Array<TypeParamDecl> =
           [
             for (tp in constructor.params)
@@ -341,7 +337,7 @@ class JsonDeserializerBuilder
           cases.push(
             {
               var block = [];
-              var unknownFieldSetName = null;
+              var unknownFieldMapName = null;
               for (i in 0...args.length)
               {
                 var parameterName = 'parameter$i';
@@ -352,12 +348,12 @@ class JsonDeserializerBuilder
               {
                 var parameterName = 'parameter$i';
                 var arg = args[i];
-                if (Context.follow(arg.t).match(TAbstract(_.get() => {module: "com.qifun.jsonStream.unknownValue.UnknownFieldMap", name: "UnknownFieldMap"}, [])))
+                if (arg.name == "unknownFieldMap" && Context.follow(arg.t).match(TAbstract(_.get() => {module: "com.qifun.jsonStream.unknownValue.UnknownFieldMap", name: "UnknownFieldMap"}, [])))
                 {
-                  if (unknownFieldSetName == null)
+                  if (unknownFieldMapName == null)
                   {
-                    unknownFieldSetName = parameterName;
-                    block.push(macro $i{parameterName} = new com.qifun.jsonStream.unknownValue.UnknownFieldMap(new haxe.ds.StringMap()));
+                    unknownFieldMapName = parameterName;
+                    block.push(macro $i{parameterName} = new com.qifun.jsonStream.unknownValue.UnknownFieldMap(new haxe.ds.StringMap.StringMap()));
                   }
                   else
                   {
@@ -397,14 +393,14 @@ class JsonDeserializerBuilder
                 expr: ESwitch(
                   macro parameterPair.key,
                   parameterCases,
-                  if (unknownFieldSetName == null)
+                  if (unknownFieldMapName == null)
                   {
                     expr: EBlock([]),
                     pos: Context.currentPos(),
                   }
                   else
                   {
-                    macro $i{unknownFieldSetName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(parameterPair.value));
+                    macro $i{unknownFieldMapName}.set(parameterPair.key, parameterPair.value);
                   }),
               };
               var newEnum =
@@ -604,15 +600,10 @@ class JsonDeserializerBuilder
       pos: Context.currentPos(),
       expr: ENew(expectedTypePath, []),
     }
-    var unknownFieldBranch =
-      macro Reflect.setProperty(
-        result,
-        pair.key,
-        com.qifun.jsonStream.JsonDeserializer.JsonDeserializer.deserializeRaw(pair.value));
     var switchKey =
     {
       pos: Context.currentPos(),
-      expr: ESwitch(macro pair.key, cases, unknownFieldBranch),
+      expr: ESwitch(macro pair.key, cases, macro result.get_unknownFieldMap().set(pair.key, pair.value)),
     }
     
     var switchStream = macro switch (stream)
@@ -702,7 +693,6 @@ class JsonDeserializerBuilder
   
   public static function dynamicDeserialize(stream:ExprOf<JsonStream>, expectedComplexType:ComplexType):Expr return
   {
-    // TODO: 支持UnknownType
     var localUsings = Context.getLocalUsing();
     function createFunction(i:Int, key:ExprOf<String>, value:ExprOf<JsonStream>):Expr return
     {
@@ -738,7 +728,7 @@ class JsonDeserializerBuilder
         var contextBuilder = getContextBuilder();
         if (contextBuilder == null)
         {
-          macro new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).pluginDeserializeUnknown($key);
+          macro new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).deserializeUnknown($key);
         }
         else
         {
@@ -748,7 +738,7 @@ class JsonDeserializerBuilder
           macro switch (untyped($modulePath.$className).dynamicDeserialize($key, $value))
           {
             case null:
-              new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).pluginDeserializeUnknown($key);
+              new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).deserializeUnknown($key);
             case knownValue:
               knownValue;
           }
@@ -962,10 +952,10 @@ class JsonDeserializerBuilder
 
 
 @:final
-extern class GetDynamicDeserializerTypeNonDynamicDeserializer
+extern class FallbackGetPluginDynamicType0
 {
   @:extern
-  public static function getDynamicDeserializerType(deserializer:Dynamic):NonDynamicDeserializer return
+  public static function getPluginDynamicType(deserializer:Dynamic):NonDynamicDeserializer return
   {
     throw "Used at compile-time only!";
   }
@@ -973,10 +963,10 @@ extern class GetDynamicDeserializerTypeNonDynamicDeserializer
 
 
 @:final
-extern class GetDynamicDeserializerType
+extern class FallbackGetPluginDynamicType1
 {
   @:extern
-  public static function getDynamicDeserializerType<Value>(deserializer:JsonDeserializerPlugin<Value>):Value return
+  public static function getPluginDynamicType<Value>(deserializer:JsonDeserializerPlugin<Value>):Value return
   {
     throw "Used at compile-time only!";
   }
@@ -989,6 +979,7 @@ extern class GetDynamicDeserializerType
 abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 {
 
+  @:extern
   public inline function new(underlying:JsonStream) 
   {
     this = underlying;
@@ -996,6 +987,7 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
   
   public var underlying(get, never):JsonStream;
   
+  @:extern
   inline function get_underlying():JsonStream return
   {
     this;
@@ -1010,21 +1002,83 @@ typedef JsonDeserializerPlugin<Value> =
 
 abstract NonDynamicDeserializer(Dynamic) {}
 
-typedef UnknownFieldHandler<Parent> =
-{
-  function handleUnknownField(parent:Parent, fieldName: String, fieldValue: JsonStream):Void;
-  function handleUnknownArrayElement<Element>(parent:Array<Element>, index: Int, fieldValue: JsonStream):Void;
-}
-
-@:final
-class FallbackUnknownFieldHandler
-{
-  // 默认抛出异常
-  public static function handleUnknownField<Parent>(parent:Parent, fieldName: String, fieldValue: JsonStream):Void
-  {
-    throw 'Unknown field $fieldName: ${JsonDeserializer.deserializeRaw(fieldValue)} is received when deserializing $parent!';
-  };
-}
 
 // TODO: 支持继承
 // TODO: Unknown fields
+
+class FallbackUnknownTypeJsonDeserializer
+{
+  @:extern
+  public inline static function deserializeUnknown<Element>(stream:JsonDeserializerPluginStream<Element>, type:String):Dynamic return
+  {
+    null;
+  }
+}
+  
+class UnknownTypeSetterJsonDeserializer
+{
+
+  @:generic
+  @:extern
+  public static inline function deserializeUnknown<Result:{ function new():Void; var unkownType(never, set):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
+  {
+    var result = new Result();
+    result.unkownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
+    result;
+  }
+
+  
+}
+
+class UnknownTypeFieldJsonDeserializer
+{
+
+  @:generic
+  @:extern
+  public static inline function deserializeUnknown<Result:{ function new():Void; var unkownType(null, default):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
+  {
+    var result = new Result();
+    result.unkownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
+    result;
+  }
+
+}
+
+abstract DynamicUnknownType(Dynamic) {}
+
+class DynamicUnknownTypeJsonDeserializer
+{
+  @:extern
+  public static inline function deserializeUnknown<T:DynamicUnknownType>(stream:JsonDeserializerPluginStream<T>, type:String):Dynamic return
+  {
+    new com.qifun.jsonStream.unknownValue.UnknownType(type, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(stream.underlying));
+  }
+}
+
+class FallbackGetUnknownFieldMap
+{
+
+  @:extern
+  public static inline function get_unknownFieldMap(d:Dynamic) return FallbackGetUnknownFieldMap;
+
+  @:extern
+  @:noUsing
+  public static inline function set(key:String, value:JsonStream):Void {}
+
+}
+
+class HasUnknownFieldMapField
+{
+  
+  @:extern
+  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(default, null):UnknownFieldMap; } ) return o.unknownFieldMap;
+
+}
+
+class HasUnknownFieldMapGetter
+{
+  
+  @:extern
+  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(get, never):UnknownFieldMap; } ) return o.unknownFieldMap;
+
+}
