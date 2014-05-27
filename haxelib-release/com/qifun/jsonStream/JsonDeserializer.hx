@@ -121,9 +121,11 @@ class JsonDeserializerBuilder
 
     for (deserializingType in deserializingTypes)
     {
+      var accessPack = MacroStringTools.toFieldExpr(deserializingType.pack);
+      var accessName = deserializingType.name;
       meta.add(
         ":access",
-        [ MacroStringTools.toFieldExpr(getFullName(deserializingType.module, deserializingType.name).split(".")) ],
+        [ accessPack == null ? macro $i{accessName} : macro $accessPack.$accessName ],
         Context.currentPos());
     }
 
@@ -369,7 +371,7 @@ class JsonDeserializerBuilder
                   }
                   else
                   {
-                    macro $i{unknownFieldSetName}.set(parameterPair.key, parameterPair.value);
+                    macro $i{unknownFieldSetName}.set(parameterPair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(parameterPair.value));
                   }),
               };
               var newEnum =

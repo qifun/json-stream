@@ -58,12 +58,13 @@ enum Good
 {
   MORNING;
   EVENING(message:String, nc:NewClass, self:Good, i:Int, u:UInt, f:Float, i64:Int64, b:Bool);
+  AFTER_NOON(unknownFields:com.qifun.jsonStream.UnknownFieldMap, xxx:String);
 }
 
 class BaseClass<T>
 {
   public function new() {}
-  public var a:Array<T>;
+  private var a:Array<T>;
 }
 
 @:final

@@ -23,7 +23,7 @@ class InlineVar
 @:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref"]))
 class RefDeserializer { }
 
-@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref","NewClass","NewEnum"]))
+@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref", "NewClass", "NewEnum"]))
 class AllDeserializer {}
 
 typedef F<A> = Array<A>->A;
