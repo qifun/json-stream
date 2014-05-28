@@ -6,7 +6,7 @@ import haxe.macro.ExprTools;
 import haxe.macro.TypeTools;
 #if !macro
 import com.qifun.jsonStream.RawJson;
-using com.qifun.jsonStream.RawSerializer;
+using com.qifun.jsonStream.JsonSerializer;
 using com.qifun.jsonStream.JsonDeserializer;
 using com.qifun.jsonStream.Plugins;
 #end
