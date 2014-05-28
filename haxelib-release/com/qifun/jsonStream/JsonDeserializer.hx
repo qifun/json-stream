@@ -86,9 +86,9 @@ class JsonDeserializer
 
 enum JsonDeserializeErrorCode
 {
-  TooManyFields<Element>(iterator:Iterator<Element>, expected:Int);
-  NotEnoughFields<Element>(iterator:Iterator<Element>, expected:Int, actual:Int);
-  UnmatchedJsonType(stream:JsonStream, expected: Array<String>);
+  TOO_MANY_FIELDS<Element>(iterator:Iterator<Element>, expected:Int);
+  NOT_ENOUGH_FIELDS<Element>(iterator:Iterator<Element>, expected:Int, actual:Int);
+  UNMATCHED_JSON_TYPE(stream:JsonStream, expected: Array<String>);
 }
 
 #if macro
@@ -411,7 +411,7 @@ class JsonDeserializerBuilder
                     case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
                       $blockExpr;
                     case _:
-                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(pair.value, [ "OBJECT" ]);
+                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(pair.value, [ "OBJECT" ]);
                   }
                 },
               }:Case);
@@ -475,7 +475,7 @@ class JsonDeserializerBuilder
       case NULL:
         null;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(stream, [ "STRING", "OBJECT", "NULL" ]);
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
     }
     
     var expectedTypePath =
@@ -637,7 +637,7 @@ class JsonDeserializerBuilder
         }
         result;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(stream, [ "OBJECT" ]);
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
     }
     
     {
@@ -775,7 +775,7 @@ class JsonDeserializerBuilder
         case NULL:
           null;
         case _:
-          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(stream, [ "OBJECT", "NULL" ]);
+          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
       }
     })($stream);
   }
@@ -1075,7 +1075,7 @@ class JsonDeserializerRuntime
       var element = iterator.next();
       if (iterator.hasNext())
       {
-        throw TooManyFields(iterator, 1);
+        throw TOO_MANY_FIELDS(iterator, 1);
       }
       else
       {
@@ -1084,7 +1084,7 @@ class JsonDeserializerRuntime
     }
     else
     {
-      throw NotEnoughFields(iterator, 1, 0);
+      throw NOT_ENOUGH_FIELDS(iterator, 1, 0);
     }
   }
 

@@ -23,7 +23,7 @@ class Int64DeserializerPlugin
         case NUMBER(high):
           if (iterator.hasNext())
           {
-            throw JsonDeserializeErrorCode.TooManyFields(iterator, 2);
+            throw JsonDeserializeErrorCode.TOO_MANY_FIELDS(iterator, 2);
           }
           else
           {
@@ -35,28 +35,28 @@ class Int64DeserializerPlugin
                 case NUMBER(low):
                   if (iterator.hasNext())
                   {
-                    throw JsonDeserializeErrorCode.TooManyFields(iterator, 2);
+                    throw JsonDeserializeErrorCode.TOO_MANY_FIELDS(iterator, 2);
                   }
                   else
                   {
                     Int64.make(cast high, cast low);
                   }
                 case _:
-                  throw JsonDeserializeErrorCode.UnmatchedJsonType(element1, [ "NUMBER" ]);
+                  throw JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(element1, [ "NUMBER" ]);
               }
             }
             else
             {
-              throw JsonDeserializeErrorCode.NotEnoughFields(iterator, 2, 1);
+              throw JsonDeserializeErrorCode.NOT_ENOUGH_FIELDS(iterator, 2, 1);
             }
           }
         case _:
-          throw JsonDeserializeErrorCode.UnmatchedJsonType(element0, [ "NUMBER" ]);
+          throw JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(element0, [ "NUMBER" ]);
       }
     }
     else
     {
-      throw JsonDeserializeErrorCode.NotEnoughFields(iterator, 2, 0);
+      throw JsonDeserializeErrorCode.NOT_ENOUGH_FIELDS(iterator, 2, 0);
     }
   }
 
