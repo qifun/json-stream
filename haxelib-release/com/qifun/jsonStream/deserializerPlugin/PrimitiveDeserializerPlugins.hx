@@ -28,7 +28,6 @@ class Int64DeserializerPlugin
             if (iterator.hasNext())
             {
               var element1 = iterator.next();
-              
               switch (element1)
               {
                 case NUMBER(low):
@@ -43,7 +42,6 @@ class Int64DeserializerPlugin
                 case _:
                   throw JsonDeserializeErrorCode.UnmatchedJsonType(element1, [ "NUMBER" ]);
               }
-             
             }
             else
             {
