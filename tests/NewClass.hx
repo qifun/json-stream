@@ -1,4 +1,5 @@
 package ;
+import com.qifun.jsonStream.unknownValue.UnknownFieldMap;
 import haxe.Int64;
 
 
@@ -71,6 +72,11 @@ class BaseClass<T>
 class BaseClass2<T> extends BaseClass<BaseClass<T>>
 {
   private var c:Array<T>;
+  public var unknownFieldMap(get, never):UnknownFieldMap;
+  function get_unknownFieldMap():UnknownFieldMap
+  {
+    return null;
+  }
 }
 
 class BaseClass3<T> extends BaseClass<BaseClass3<T>>

@@ -51,10 +51,10 @@ class JsonDeserializer
   }
   
   @:noUsing
-  macro public static function buildDeserializer(modules:Array<String>):Array<Field> return
+  macro public static function buildDeserializer(includeModules:Array<String>):Array<Field> return
   {
     var deserializer = new JsonDeserializerBuilder(Context.getLocalClass().get(), Context.getBuildFields());
-    for (moduleName in modules)
+    for (moduleName in includeModules)
     {
       for (rootType in Context.getModule(moduleName))
       {
@@ -83,6 +83,7 @@ class JsonDeserializer
   
 }
 
+
 enum JsonDeserializeErrorCode
 {
   TooManyFields<Element>(iterator:Iterator<Element>, expected:Int);
@@ -90,55 +91,11 @@ enum JsonDeserializeErrorCode
   UnmatchedJsonType(stream:JsonStream, expected: Array<String>);
 }
 
+#if macro
 @:final
 class JsonDeserializerBuilder
 {
-
-  @:extern
-  @:noUsing
-  private static inline function asGenerator<Element>(iterator:Iterator<Element>):Null<Generator<Element>> return
-  {
-    Std.instance(iterator, (Generator:Class<Generator<Element>>));
-  }
   
-  @:extern
-  @:noUsing
-  private static inline function extract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
-  {
-    if (iterator.hasNext())
-    {
-      var element = iterator.next();
-      if (iterator.hasNext())
-      {
-        throw TooManyFields(iterator, 1);
-      }
-      else
-      {
-        handler(element);
-      }
-    }
-    else
-    {
-      throw NotEnoughFields(iterator, 1, 0);
-    }
-  }
-
-  @:extern
-  @:noUsing
-  private static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
-  {
-    var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
-    if (generator == null)
-    {
-      extract1(iterator, handler);
-    }
-    else
-    {
-      extract1(generator, handler);
-    }
-  }
-  
-#if macro
   private var buildingFields:Array<Field>;
 
   private var deserializingTypes(default, null) = new StringMap<BaseType>();
@@ -163,7 +120,7 @@ class JsonDeserializerBuilder
   
     meta.add(
       ":access",
-      [ MacroStringTools.toFieldExpr("com.qifun.jsonStream.JsonDeserializerBuilder".split(".")) ],
+      [ macro com.qifun.jsonStream.JsonDeserializerRuntime ],
       Context.currentPos());
 
     for (deserializingType in deserializingTypes)
@@ -187,27 +144,25 @@ class JsonDeserializerBuilder
       }
       var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
       var nameField = baseType.name;
-      switch (Context.follow(Context.typeof(macro $moduleExpr.$nameField.getPluginDynamicType)))
+      var pluginDeserializeField = TypeTools.findField(localUsing.get(), "pluginDeserialize", true);
+      if (pluginDeserializeField != null && !pluginDeserializeField.meta.has(":noDynamicDeserialize"))
       {
-        case TFun([], TAbstract(_.get() => { module: "com.qifun.jsonStream.JsonDeserializer", name: "NonDynamicDeserializer" }, _)):
-          continue;
-        case TFun([], dynamicType):
-          var fullName =
-            switch (dynamicType)
-            {
-              case TInst(_.get() => { module: module, name: name }, _): getFullName(module, name);
-              case TAbstract(_.get() => { module: module, name: name }, _): getFullName(module, name);
-              case TEnum(_.get() => { module: module, name: name }, _): getFullName(module, name);
-              case _: continue;
-            }
-          var expr = resolvedDeserialize(TypeTools.toComplexType(dynamicType), macro valueStream);
-          dynamicCases.push(
-            {
-              values: [ macro $v{ fullName } ],
-              expr: macro ($expr:Dynamic),
-            });
-        case _:
-          continue;
+        var expr = macro $moduleExpr.$nameField.pluginDeserialize(new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream(valueStream));
+        var temporaryFunction = macro function (valueStream:com.qifun.jsonStream.JsonStream) return $expr;
+        var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
+        var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
+        var fullName = switch (Context.follow(typedTemporaryFunction.t))
+        {
+          case TFun(_, Context.follow(_) => TInst(_.get() => { module: module, name: name }, _)): getFullName(module, name);
+          case TFun(_, Context.follow(_) => TAbstract(_.get() => { module: module, name: name }, _)): getFullName(module, name);
+          case TFun(_, Context.follow(_) => TEnum(_.get() => { module: module, name: name }, _)): getFullName(module, name);
+          case t: continue;
+        }
+        dynamicCases.push(
+        {
+          values: [ macro $v{ fullName } ],
+          expr: macro ($resolvedTemporaryFunction(valueStream):Dynamic),
+        });
       }
     }
   
@@ -218,7 +173,7 @@ class JsonDeserializerBuilder
       dynamicCases.push(
         {
           values: [ macro $v{ fullName } ],
-          expr: macro (cast $i{methodName}(valueStream):Dynamic),
+          expr: macro ($i{methodName}(valueStream):Dynamic),
         });
     }
     
@@ -227,10 +182,12 @@ class JsonDeserializerBuilder
       pos: Context.currentPos(),
       expr: ESwitch(macro dynamicTypeName, dynamicCases, macro null),
     }
+    // trace(ExprTools.toString(switchExpr));
     buildingFields.push(
       {
         name: "dynamicDeserialize",
         pos: Context.currentPos(),
+        meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
         access: [ APublic, AStatic ],
         kind: FFun(extractFunction(macro function(dynamicTypeName:String, valueStream:com.qifun.jsonStream.JsonStream):Dynamic return $switchExpr)),
       });
@@ -404,7 +361,7 @@ class JsonDeserializerBuilder
                   }
                   else
                   {
-                    macro $i{unknownFieldMapName}.set(parameterPair.key, parameterPair.value);
+                    macro $i{unknownFieldMapName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(parameterPair.value));
                   }),
               };
               var newEnum =
@@ -423,7 +380,7 @@ class JsonDeserializerBuilder
               block.push(
                 macro
                 {
-                  var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.asGenerator(parameterPairs);
+                  var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.asGenerator(parameterPairs);
                   if (generator != null)
                   {
                     for (parameterPair in generator)
@@ -512,7 +469,7 @@ class JsonDeserializerBuilder
         $zeroParameterBranch;
       case OBJECT(pairs):
         function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.PairStream) return $processObjectBody;
-        com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.optimizedExtract1(
+        com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.optimizedExtract1(
           pairs,
           selectEnumValue);
       case NULL:
@@ -520,6 +477,14 @@ class JsonDeserializerBuilder
       case _:
         throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UnmatchedJsonType(stream, [ "STRING", "OBJECT", "NULL" ]);
     }
+    
+    var expectedTypePath =
+    {
+      pack: enumType.pack,
+      name: enumType.module.substring(enumType.module.lastIndexOf(".") + 1),
+      sub: enumType.name,
+      params: [ for (p in enumType.params) TPType(TPath({ pack: [], name: p.name})) ]
+    };
     {
       args:
       [
@@ -528,7 +493,7 @@ class JsonDeserializerBuilder
           type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
         },
       ],
-      ret: null,
+      ret: TPath(expectedTypePath),
       expr: macro return $methodBody,
       params: enumParams,
     }
@@ -548,7 +513,7 @@ class JsonDeserializerBuilder
     var expectedTypePath =
     {
       pack: abstractType.pack,
-      name: abstractModule.substring(abstractType.module.lastIndexOf(".") + 1),
+      name: abstractModule.substring(abstractModule.lastIndexOf(".") + 1),
       sub: abstractType.name,
       params: [ for (p in params) TPType(TPath({ pack: [], name: p.name})) ]
     };
@@ -577,6 +542,7 @@ class JsonDeserializerBuilder
       }
     ];
     var cases:Array<Case> = [];
+    var hasUnknownFieldMap = false;
     function addFieldCases(classType:Null<ClassType>, ?concreteTypes:Array<Type>):Void
     {
       function applyTypeParameters(t:Type) return
@@ -592,16 +558,26 @@ class JsonDeserializerBuilder
       }
       for (field in classType.fields.get())
       {
-        if (field.kind.match(FVar(AccNormal | AccNo, AccNormal | AccNo)))
+        switch (field)
         {
-          var fieldName = field.name;
-          var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
-          cases.push(
-            {
-              values: [ macro $v{fieldName} ],
-              guard: null,
-              expr: macro result.$fieldName = $d,
-            });
+          case
+          {
+            name: "unknownFieldMap",
+            kind: FVar(AccNormal | AccNo | AccCall, _),
+            type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknownValue.UnknownFieldMap", name: "UnknownFieldMap" }, []),
+          }:
+            hasUnknownFieldMap = true;
+          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
+            var fieldName = field.name;
+            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
+            cases.push(
+              {
+                values: [ macro $v{fieldName} ],
+                guard: null,
+                expr: macro result.$fieldName = $d,
+              });
+          case _:
+            continue;
         }
       }
       var superClass = classType.superClass;
@@ -619,6 +595,7 @@ class JsonDeserializerBuilder
       pack: classType.pack,
       name: classModule.substring(classModule.lastIndexOf(".")),
       sub: classType.name,
+      params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
     };
     var newInstance =
     {
@@ -628,14 +605,22 @@ class JsonDeserializerBuilder
     var switchKey =
     {
       pos: Context.currentPos(),
-      expr: ESwitch(macro pair.key, cases, macro result.get_unknownFieldMap().set(pair.key, pair.value)),
+      expr: ESwitch(macro pair.key, cases,
+        if (hasUnknownFieldMap)
+        {
+          macro result.unknownFieldMap.underlying.set(pair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value));
+        }
+        else
+        {
+          macro null;
+        }),
     }
     
     var switchStream = macro switch (stream)
     {
       case OBJECT(pairs):
         var result = $newInstance;
-        var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.asGenerator(pairs);
+        var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.asGenerator(pairs);
         if (generator != null)
         {
           for (pair in generator)
@@ -663,7 +648,7 @@ class JsonDeserializerBuilder
           type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
         },
       ],
-      ret: null,
+      ret: TPath(expectedTypePath),
       expr: macro return $switchStream,
       params: params,
     }
@@ -682,6 +667,7 @@ class JsonDeserializerBuilder
             {
               name: methodName,
               pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
               kind: FFun(newClassDeserializeFunction(classType)),
             });
@@ -695,6 +681,7 @@ class JsonDeserializerBuilder
             {
               name: methodName,
               pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
               kind: FFun(newEnumDeserializeFunction(enumType)),
             });
@@ -708,6 +695,7 @@ class JsonDeserializerBuilder
             {
               name: methodName,
               pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
               kind: FFun(newAbstractDeserializeFunction(abstractType)),
             });
@@ -781,7 +769,7 @@ class JsonDeserializerBuilder
       switch (stream)
       {
         case OBJECT(pairs):
-          com.qifun.jsonStream.JsonDeserializer.JsonDeserializerBuilder.optimizedExtract1(
+          com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.optimizedExtract1(
             pairs,
             function(dynamicPair) return $processDynamic);
         case NULL:
@@ -834,6 +822,7 @@ class JsonDeserializerBuilder
             {
               name: methodName,
               pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
               kind: FFun(contextBuilder.newClassDeserializeFunction(classType)),
             });
@@ -869,6 +858,7 @@ class JsonDeserializerBuilder
             {
               name: methodName,
               pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
               kind: FFun(contextBuilder.newEnumDeserializeFunction(enumType)),
             });
@@ -904,6 +894,7 @@ class JsonDeserializerBuilder
             {
               name: methodName,
               pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
               kind: FFun(contextBuilder.newAbstractDeserializeFunction(abstractType)),
             });
@@ -951,7 +942,7 @@ class JsonDeserializerBuilder
       $f;
       null;
     }
-    //trace(ExprTools.toString(Context.getTypedExpr(Context.typeExpr(placeholderExpr))));
+    // trace(ExprTools.toString(Context.getTypedExpr(Context.typeExpr(placeholderExpr))));
     switch (Context.getTypedExpr(Context.typeExpr(placeholderExpr)))
     {
       case { expr: EBlock([ { expr: EFunction(_, resolved) | EVars([ { expr: {expr: EFunction(null, resolved)}}])}, _ ]) } :
@@ -977,35 +968,15 @@ class JsonDeserializerBuilder
     };
   }
 
+}
+
 #end
-}
-
-
-@:final
-extern class FallbackGetPluginDynamicType0
-{
-  @:extern
-  public static function getPluginDynamicType(deserializer:Dynamic):NonDynamicDeserializer return
-  {
-    throw "Used at compile-time only!";
-  }
-}
-
-
-@:final
-extern class FallbackGetPluginDynamicType1
-{
-  @:extern
-  public static function getPluginDynamicType<Value>(deserializer:JsonDeserializerPlugin<Value>):Value return
-  {
-    throw "Used at compile-time only!";
-  }
-}
 
 /**
- * Internal type for deserializer plugins.
- * @author 杨博
- */
+  Internal type for deserializer plugins.
+  避免污染上下文代码提示列表
+  @author 杨博
+**/
 abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 {
 
@@ -1055,7 +1026,6 @@ extern class UnknownTypeSetterJsonDeserializer
     result;
   }
 
-  
 }
 
 @:final
@@ -1073,45 +1043,63 @@ extern class UnknownTypeFieldJsonDeserializer
 
 }
 
-abstract DynamicUnknownType(Dynamic) {}
+abstract LowPriorityDynamic(Dynamic) to Dynamic {}
 
 @:final
 extern class DynamicUnknownTypeJsonDeserializer
 {
   @:extern
-  public static inline function deserializeUnknown<T:DynamicUnknownType>(stream:JsonDeserializerPluginStream<T>, type:String):Dynamic return
+  public static inline function deserializeUnknown<T:LowPriorityDynamic>(stream:JsonDeserializerPluginStream<T>, type:String):Dynamic return
   {
     new com.qifun.jsonStream.unknownValue.UnknownType(type, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(stream.underlying));
   }
 }
 
 @:final
-extern class FallbackGetUnknownFieldMap
+class JsonDeserializerRuntime
 {
-
-  @:extern
-  public static inline function get_unknownFieldMap(d:Dynamic):FallbackGetUnknownFieldMap return null;
 
   @:extern
   @:noUsing
-  public inline function set(key:String, value:JsonStream):Void {}
+  private static inline function asGenerator<Element>(iterator:Iterator<Element>):Null<Generator<Element>> return
+  {
+    Std.instance(iterator, (Generator:Class<Generator<Element>>));
+  }
 
-}
-
-@:final
-extern class HasUnknownFieldMapField
-{
-  
   @:extern
-  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(default, null):UnknownFieldMap; } ):UnknownFieldMap return o.unknownFieldMap;
+  @:noUsing
+  private static inline function extract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    if (iterator.hasNext())
+    {
+      var element = iterator.next();
+      if (iterator.hasNext())
+      {
+        throw TooManyFields(iterator, 1);
+      }
+      else
+      {
+        handler(element);
+      }
+    }
+    else
+    {
+      throw NotEnoughFields(iterator, 1, 0);
+    }
+  }
 
-}
-
-@:final
-extern class HasUnknownFieldMapGetter
-{
-  
   @:extern
-  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(get, never):UnknownFieldMap; } ):UnknownFieldMap  return o.unknownFieldMap;
-
+  @:noUsing
+  private static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
+    if (generator == null)
+    {
+      extract1(iterator, handler);
+    }
+    else
+    {
+      extract1(generator, handler);
+    }
+  }
 }

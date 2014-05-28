@@ -1,5 +1,6 @@
 package  ;
 
+import com.qifun.jsonStream.JsonStream;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.ExprTools;
@@ -19,9 +20,9 @@ class InlineVar
   public static inline var Inline = "inline";
   public static inline function inlineFunction() return "inlineFunction";
 }
-
-@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref"]))
-class RefDeserializer { }
+//
+//@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref"]))
+//class RefDeserializer { }
 
 @:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref", "NewClass", "NewEnum"]))
 class AllDeserializer {}
@@ -32,23 +33,12 @@ typedef F<A> = Array<A>->A;
  */
 class Main 
 {
-  macro static function forceTyped(e:Expr):Expr return
-  {
-    //trace(TypeTools.toString(Context.typeof(macro function (x) return x.pluginDeserialize())));
-    
-    
-    //var r = Context.getTypedExpr(Context.typeExpr(e));
-    //trace(ExprTools.toString(r));
-    //r;
-    e;
-  }
 	#if !macro
   static function main()
   {
     var ref:Ref<Dynamic> = JsonDeserializer.deserialize(null);
-    //forceTyped(
-    //var f = function (x) return x.pluginDeserialize()
-    //);
+    var jsonStream:JsonStream = null;
+
 ////    $type(f);
 ////    StringDeserializer.pluginDeserialize.bind();
     //var n = switch ("")

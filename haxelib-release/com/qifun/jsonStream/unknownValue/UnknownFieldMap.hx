@@ -15,9 +15,4 @@ import haxe.ds.StringMap;
   @:extern
   inline function get_underlying():StringMap<RawJson> return this;
   
-  public function set(key:String, stream:JsonStream) return
-  {
-    this.set(key, JsonDeserializer.deserializeRaw(stream));
-  }
-
 }

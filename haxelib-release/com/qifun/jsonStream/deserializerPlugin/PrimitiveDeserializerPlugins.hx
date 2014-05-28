@@ -4,6 +4,8 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 import haxe.Int64;
+import haxe.macro.Context;
+import haxe.macro.TypeTools;
 
 @:final
 class Int64DeserializerPlugin
@@ -193,12 +195,6 @@ class StringDeserializerPlugin
 @:final
 class ArrayDeserializerPlugin
 {
-
-  @:extern
-  public static function getDynamicDeserializerPluginType():Null<Array<Dynamic>> return
-  {
-    throw "Used at compile-time only!";
-  }
 
   public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Array<Element> return
   {

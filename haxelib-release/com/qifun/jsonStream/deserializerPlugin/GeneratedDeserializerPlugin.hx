@@ -18,15 +18,10 @@ import haxe.macro.Context;
 class GeneratedDeserializerPlugin
 {
 
-  @:extern
-  public static function getPluginDynamicType():NonDynamicDeserializer return
-  {
-    throw "Used at compile-time only!";
-  }
-
   /**
    * The fallback deserializeFunction for classes and enums.
    */
+  @:noDynamicDeserialize
   macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Element>>):ExprOf<Element> return
   {
     switch (Context.follow(Context.typeof(stream)))
