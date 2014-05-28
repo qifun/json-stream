@@ -3,7 +3,6 @@ package com.qifun.jsonStream.deserializerPlugin;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
-import com.qifun.jsonStream.UnexpectedJsonType;
 import haxe.Int64;
 
 @:final
