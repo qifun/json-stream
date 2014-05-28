@@ -5,42 +5,45 @@ import com.dongxiguo.continuation.utils.Generator;
 /**
  * @author 杨博
  */
-@:build(com.dongxiguo.continuation.Continuation.cpsByMeta(":cps"))
 @:final
 class RawSerializer
 {
 
-  @:cps
-  private static function iterateJsonObject(instance:Dynamic, yield:YieldFunction<JsonStream.PairStream>):Void
+  private static function iterateJsonObject(instance:Dynamic) return
   {
-    for (field in Reflect.fields(instance))
+    com.dongxiguo.continuation.Continuation.cpsFunction(function(yield:YieldFunction<JsonStream.PairStream>):Void
     {
-      yield(new JsonStream.PairStream(field, serialize(Reflect.field(instance, field)))).async();
-    }
+      for (field in Reflect.fields(instance))
+      {
+        yield(new JsonStream.PairStream(field, serializeRaw(Reflect.field(instance, field)))).async();
+      }
+    });
   }
-
-  @:cps
-  private static function iterateJsonArray(instance:Array<RawJson>, yield:YieldFunction<JsonStream>):Void
+  
+  private static function iterateJsonArray(instance:Array<RawJson>) return
   {
-    for (element in instance)
+    com.dongxiguo.continuation.Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
     {
-      yield(serialize(element)).async();
-    }
+      for (element in instance)
+      {
+        yield(serializeRaw(element)).async();
+      }
+    });
   }
 
   /**
     Returns a stream that reads data from `instance`.
   **/
-  public static function serialize(instance:RawJson):JsonStream return
+  public static function serializeRaw(instance:RawJson):JsonStream return
   {
-    switch (Type.typeof(instance))
+    switch (Type.typeof(instance.underlying))
     {
       case TObject:
-        JsonStream.OBJECT(new Generator(iterateJsonObject.bind(instance.underlying, _)));
+        JsonStream.OBJECT(new Generator(iterateJsonObject(instance.underlying)));
       case TClass(String):
         JsonStream.STRING(instance.underlying);
       case TClass(Array):
-        JsonStream.ARRAY(new Generator(iterateJsonArray.bind(instance.underlying, _)));
+        JsonStream.ARRAY(new Generator(iterateJsonArray(instance.underlying)));
       case TInt:
         JsonStream.NUMBER((instance:Dynamic));
       case TFloat:
