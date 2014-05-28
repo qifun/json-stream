@@ -572,22 +572,45 @@ class JsonDeserializerBuilder
         // TODO: constraits
       }
     ];
-    var cases =
-    [
+    var cases:Array<Case> = [];
+    function addFieldCases(classType:Null<ClassType>, ?concreteTypes:Array<Type>):Void
+    {
+      function applyTypeParameters(t:Type) return
+      {
+        if (concreteTypes == null)
+        {
+          t;
+        }
+        else
+        {
+          TypeTools.applyTypeParameters(t, classType.params, concreteTypes);
+        }
+      }
       for (field in classType.fields.get())
       {
         if (field.kind.match(FVar(AccNormal | AccNo, AccNormal | AccNo)))
         {
           var fieldName = field.name;
-          var d = resolvedDeserialize(TypeTools.toComplexType(field.type), macro pair.value, params);
-          {
-            values: [ macro $v{fieldName} ],
-            guard: null,
-            expr: macro result.$fieldName = $d,
-          }
+          var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
+          cases.push(
+            {
+              values: [ macro $v{fieldName} ],
+              guard: null,
+              expr: macro result.$fieldName = $d,
+            });
         }
       }
-    ];
+      switch (classType.superClass)
+      {
+        case null: // Do nothing
+        case { t: t, params: params } :
+          addFieldCases(
+            t.get(),
+            [ for (p in params) applyTypeParameters(p) ]);
+      }
+      
+    }
+    addFieldCases(classType);
     var classModule = classType.module;
     var expectedTypePath =
     {
@@ -1002,9 +1025,8 @@ typedef JsonDeserializerPlugin<Value> =
 
 abstract NonDynamicDeserializer(Dynamic) {}
 
-
-// TODO: 支持继承
-class FallbackUnknownTypeJsonDeserializer
+@:final
+extern class FallbackUnknownTypeJsonDeserializer
 {
   @:extern
   public inline static function deserializeUnknown<Element>(stream:JsonDeserializerPluginStream<Element>, type:String):Dynamic return
@@ -1013,7 +1035,8 @@ class FallbackUnknownTypeJsonDeserializer
   }
 }
   
-class UnknownTypeSetterJsonDeserializer
+@:final
+extern class UnknownTypeSetterJsonDeserializer
 {
 
   @:generic
@@ -1028,7 +1051,8 @@ class UnknownTypeSetterJsonDeserializer
   
 }
 
-class UnknownTypeFieldJsonDeserializer
+@:final
+extern class UnknownTypeFieldJsonDeserializer
 {
 
   @:generic
@@ -1044,7 +1068,8 @@ class UnknownTypeFieldJsonDeserializer
 
 abstract DynamicUnknownType(Dynamic) {}
 
-class DynamicUnknownTypeJsonDeserializer
+@:final
+extern class DynamicUnknownTypeJsonDeserializer
 {
   @:extern
   public static inline function deserializeUnknown<T:DynamicUnknownType>(stream:JsonDeserializerPluginStream<T>, type:String):Dynamic return
@@ -1053,30 +1078,33 @@ class DynamicUnknownTypeJsonDeserializer
   }
 }
 
-class FallbackGetUnknownFieldMap
+@:final
+extern class FallbackGetUnknownFieldMap
 {
 
   @:extern
-  public static inline function get_unknownFieldMap(d:Dynamic) return FallbackGetUnknownFieldMap;
+  public static inline function get_unknownFieldMap(d:Dynamic):FallbackGetUnknownFieldMap return null;
 
   @:extern
   @:noUsing
-  public static inline function set(key:String, value:JsonStream):Void {}
+  public inline function set(key:String, value:JsonStream):Void {}
 
 }
 
-class HasUnknownFieldMapField
+@:final
+extern class HasUnknownFieldMapField
 {
   
   @:extern
-  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(default, null):UnknownFieldMap; } ) return o.unknownFieldMap;
+  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(default, null):UnknownFieldMap; } ):UnknownFieldMap return o.unknownFieldMap;
 
 }
 
-class HasUnknownFieldMapGetter
+@:final
+extern class HasUnknownFieldMapGetter
 {
   
   @:extern
-  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(get, never):UnknownFieldMap; } ) return o.unknownFieldMap;
+  public static inline function get_unknownFieldMap(o: { var unknownFieldMap(get, never):UnknownFieldMap; } ):UnknownFieldMap  return o.unknownFieldMap;
 
 }
