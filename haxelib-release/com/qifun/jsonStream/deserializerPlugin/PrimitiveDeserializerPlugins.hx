@@ -196,6 +196,7 @@ class StringDeserializerPlugin
 class ArrayDeserializerPlugin
 {
 
+  @:dox(hide)
   public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Array<Element> return
   {
     switch (stream.underlying)

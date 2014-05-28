@@ -83,7 +83,6 @@ class JsonDeserializer
   
 }
 
-
 enum JsonDeserializeErrorCode
 {
   TOO_MANY_FIELDS<Element>(iterator:Iterator<Element>, expected:Int);
@@ -468,7 +467,7 @@ class JsonDeserializerBuilder
       case STRING(constructorName):
         $zeroParameterBranch;
       case OBJECT(pairs):
-        function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.PairStream) return $processObjectBody;
+        function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.Pair) return $processObjectBody;
         com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.optimizedExtract1(
           pairs,
           selectEnumValue);
@@ -973,9 +972,9 @@ class JsonDeserializerBuilder
 #end
 
 /**
-  Internal type for deserializer plugins.
-  避免污染上下文代码提示列表
-  @author 杨博
+  实现`JsonDeserializerPlugin`时使用的内部类型，包装了一个`JsonStream`。
+
+  使用本类型而不直接使用`JsonStream`，可以避免污染IDE的代码提示。
 **/
 abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 {
@@ -996,13 +995,18 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
   
 }
 
+
+/**
+  供`JsonDeserializer`调用的插件，可以定制特定类型的序列化。
+  
+  请使用静态函数实现本插件，然后在`@:build(JsonDeserialier.buildDeserialier([...]))`以前`using`需要采用的插件。
+**/
 typedef JsonDeserializerPlugin<Value> =
 {
   function pluginDeserialize(stream:JsonDeserializerPluginStream<Value>):Value;
 }
 
-abstract NonDynamicDeserializer(Dynamic) {}
-
+@:dox(hide)
 @:final
 extern class FallbackUnknownTypeJsonDeserializer
 {
@@ -1012,7 +1016,8 @@ extern class FallbackUnknownTypeJsonDeserializer
     null;
   }
 }
-  
+
+@:dox(hide)
 @:final
 extern class UnknownTypeSetterJsonDeserializer
 {
@@ -1028,6 +1033,7 @@ extern class UnknownTypeSetterJsonDeserializer
 
 }
 
+@:dox(hide)
 @:final
 extern class UnknownTypeFieldJsonDeserializer
 {
@@ -1043,8 +1049,10 @@ extern class UnknownTypeFieldJsonDeserializer
 
 }
 
+@:dox(hide)
 abstract LowPriorityDynamic(Dynamic) to Dynamic {}
 
+@:dox(hide)
 @:final
 extern class DynamicUnknownTypeJsonDeserializer
 {
@@ -1055,6 +1063,7 @@ extern class DynamicUnknownTypeJsonDeserializer
   }
 }
 
+@:dox(hide)
 @:final
 class JsonDeserializerRuntime
 {

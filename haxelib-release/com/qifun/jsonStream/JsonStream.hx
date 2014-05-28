@@ -1,6 +1,6 @@
 package com.qifun.jsonStream;
 
-@:final class PairStream
+@:final class Pair
 {
   public var key(default, null):String;
   public var value(default, null):JsonStream;
@@ -18,6 +18,6 @@ enum JsonStream
   TRUE;
   FALSE;
   NULL;
-  OBJECT(pairs:Iterator<PairStream>);
+  OBJECT(pairs:Iterator<Pair>);
   ARRAY(elements:Iterator<JsonStream>);
 }
