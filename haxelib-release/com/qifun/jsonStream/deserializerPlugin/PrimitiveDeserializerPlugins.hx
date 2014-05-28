@@ -10,20 +10,78 @@ import haxe.Int64;
 class Int64DeserializerPlugin
 {
 
+  @:extern
+  @:noUsing
+  private static inline function extractInt64(iterator:Iterator<JsonStream>):Int64 return
+  {
+    if (iterator.hasNext())
+    {
+      var element0 = iterator.next();
+      switch (element0)
+      {
+        case NUMBER(high):
+          if (iterator.hasNext())
+          {
+            throw JsonDeserializeErrorCode.TooManyFields(iterator, 2);
+          }
+          else
+          {
+            if (iterator.hasNext())
+            {
+              var element1 = iterator.next();
+              
+              switch (element1)
+              {
+                case NUMBER(low):
+                  if (iterator.hasNext())
+                  {
+                    throw JsonDeserializeErrorCode.TooManyFields(iterator, 2);
+                  }
+                  else
+                  {
+                    Int64.make(cast high, cast low);
+                  }
+                case _:
+                  throw JsonDeserializeErrorCode.UnmatchedJsonType(element1, [ "NUMBER" ]);
+              }
+             
+            }
+            else
+            {
+              throw JsonDeserializeErrorCode.NotEnoughFields(iterator, 2, 1);
+            }
+          }
+        case _:
+          throw JsonDeserializeErrorCode.UnmatchedJsonType(element0, [ "NUMBER" ]);
+      }
+    }
+    else
+    {
+      throw JsonDeserializeErrorCode.NotEnoughFields(iterator, 2, 0);
+    }
+  }
+
+  @:extern
+  @:noUsing
+  private static inline function optimizedExtractInt64(iterator:Iterator<JsonStream>):Int64 return
+  {
+    var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
+    if (generator == null)
+    {
+      extractInt64(iterator);
+    }
+    else
+    {
+      extractInt64(generator);
+    }
+  }
+  
   public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int64>):Null<Int64> return
   {
     switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(elements):
-        com.qifun.jsonStream.IteratorExtractor.optimizedExtract2(
-          elements,
-          function(jsonStream:JsonStream):Float return switch (jsonStream)
-          {
-            case NUMBER(value): value;
-            case _: throw new UnexpectedJsonType.ExpectNumber(jsonStream);
-          },
-          function(value:Float) return JsonStream.NUMBER(value),
-          function(high, low) return Int64.make(cast high, cast low));
+        optimizedExtractInt64(elements);
       case NULL:
         null;
       case _:

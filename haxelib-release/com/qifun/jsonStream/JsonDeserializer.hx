@@ -127,10 +127,14 @@ class JsonDeserializerBuilder
   @:noUsing
   private static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
   {
-    switch (Std.instance(iterator, (Generator:Class<Generator<Element>>)))
+    var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
+    if (generator == null)
     {
-      case null: extract1(iterator, handler);
-      case generator: extract1(generator, handler);
+      extract1(iterator, handler);
+    }
+    else
+    {
+      extract1(generator, handler);
     }
   }
   
@@ -600,15 +604,13 @@ class JsonDeserializerBuilder
             });
         }
       }
-      switch (classType.superClass)
+      var superClass = classType.superClass;
+      if (superClass != null)
       {
-        case null: // Do nothing
-        case { t: t, params: params } :
-          addFieldCases(
-            t.get(),
-            [ for (p in params) applyTypeParameters(p) ]);
+        addFieldCases(
+          superClass.t.get(),
+          [ for (p in superClass.params) applyTypeParameters(p) ]);
       }
-      
     }
     addFieldCases(classType);
     var classModule = classType.module;
@@ -758,12 +760,17 @@ class JsonDeserializerBuilder
           var classType = getContextBuilder().buildingClass;
           var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
           var className = classType.name;
-          macro switch (untyped($modulePath.$className).dynamicDeserialize($key, $value))
+          macro 
           {
-            case null:
+            var knownValue = untyped($modulePath.$className).dynamicDeserialize($key, $value);
+            if (knownValue == null)
+            {
               new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).deserializeUnknown($key);
-            case knownValue:
+            }
+            else
+            {
               knownValue;
+            }
           }
         }
       }
