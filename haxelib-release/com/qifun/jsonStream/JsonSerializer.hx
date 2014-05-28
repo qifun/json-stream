@@ -16,11 +16,11 @@ class JsonSerializer
 
   private static function iterateJsonObject(instance:Dynamic) return
   {
-    Continuation.cpsFunction(function(yield:YieldFunction<PairStream>):Void
+    Continuation.cpsFunction(function(yield:YieldFunction<Pair>):Void
     {
       for (field in Reflect.fields(instance))
       {
-        yield(new JsonStream.PairStream(field, serializeRaw(Reflect.field(instance, field)))).async();
+        yield(new JsonStream.Pair(field, serializeRaw(Reflect.field(instance, field)))).async();
       }
     });
   }
@@ -66,10 +66,32 @@ class JsonSerializer
   
   macro public static function serialize(data:Expr):ExprOf<JsonStream>
   {
-    var serializerSetBuilder = new JsonSerializerSetBuilder();
-    var result = serializerSetBuilder.serializeForType(TypeTools.toComplexType(Context.getExpectedType()), data);
-    serializerSetBuilder.defineSerializerSet();
-    result;
+    macro $data.pluginSerialize();
+  }
+  
+}
+
+
+/**
+ * Internal type for deserializer plugins.
+ * 避免污染上下文代码提示列表
+ * @author 杨博
+ */
+abstract JsonSerializerPluginData<ResultType>(ResultType)
+{
+
+  @:extern
+  public inline function new(underlying:ResultType) 
+  {
+    this = underlying;
+  }
+  
+  public var underlying(get, never):ResultType;
+  
+  @:extern
+  inline function get_underlying():ResultType return
+  {
+    this;
   }
   
 }
