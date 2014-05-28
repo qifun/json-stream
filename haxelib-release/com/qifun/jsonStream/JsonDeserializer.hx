@@ -50,6 +50,15 @@ class JsonDeserializer
     });
   }
   
+  /**
+    创建反序列化函数集的宏。
+    
+    用法：
+    ```
+    @:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
+    class MyDeserializer {}
+    ```
+  **/
   @:noUsing
   macro public static function buildDeserializer(includeModules:Array<String>):Array<Field> return
   {
@@ -467,7 +476,7 @@ class JsonDeserializerBuilder
       case STRING(constructorName):
         $zeroParameterBranch;
       case OBJECT(pairs):
-        function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.Pair) return $processObjectBody;
+        function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.JsonStreamPair) return $processObjectBody;
         com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.optimizedExtract1(
           pairs,
           selectEnumValue);

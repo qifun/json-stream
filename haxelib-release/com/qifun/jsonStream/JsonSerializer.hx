@@ -16,11 +16,11 @@ class JsonSerializer
 
   private static function iterateJsonObject(instance:Dynamic) return
   {
-    Continuation.cpsFunction(function(yield:YieldFunction<Pair>):Void
+    Continuation.cpsFunction(function(yield:YieldFunction<JsonStreamPair>):Void
     {
       for (field in Reflect.fields(instance))
       {
-        yield(new JsonStream.Pair(field, serializeRaw(Reflect.field(instance, field)))).async();
+        yield(new JsonStream.JsonStreamPair(field, serializeRaw(Reflect.field(instance, field)))).async();
       }
     });
   }
