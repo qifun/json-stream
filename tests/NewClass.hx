@@ -64,8 +64,36 @@ enum Good
 class BaseClass<T>
 {
   public function new() {}
+  private var b:Array<Good>;
   private var a:Array<T>;
 }
 
+class BaseClass2<T> extends BaseClass<BaseClass<T>>
+{
+  private var c:Array<T>;
+}
+
+class BaseClass3<T> extends BaseClass<BaseClass3<T>>
+{
+  private var c:Array<T>;
+}
+
 @:final
-class FinalClass extends BaseClass<Good> {}
+class FinalClass2 extends BaseClass2<BaseClass2<Array<Good>>>
+{
+  private var d:Array<Good>;
+}
+
+@:final
+class FinalClass3 extends BaseClass3<BaseClass2<Array<Good>>>
+{
+  private var d:Array<Good>;
+}
+
+@:final
+class FinalClass extends BaseClass<Good>
+{
+
+  private var c:Array<Good>;
+  
+}
