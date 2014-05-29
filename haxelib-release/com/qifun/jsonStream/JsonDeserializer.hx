@@ -1014,8 +1014,6 @@ class JsonDeserializerBuilder
 
 /**
   实现`JsonDeserializerPlugin`时使用的内部类型，包装了一个`JsonStream`。
-
-  使用本类型而不直接使用`JsonStream`，可以避免污染IDE的代码提示。
 **/
 abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 {
@@ -1040,11 +1038,14 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 /**
   供`JsonDeserializer`调用的插件，可以定制特定类型的序列化。
   
-  请使用静态函数实现本插件，然后在`@:build(JsonDeserialier.buildDeserialier([...]))`以前`using`需要采用的插件。
+  请以静态函数实现`pluginDeserialize`，然后在`@:build(JsonDeserialier.buildDeserialier([...]))`以前`using`需要采用的插件。
 **/
 typedef JsonDeserializerPlugin<Value> =
 {
+    
+  // 用`JsonDeserializerPluginStream`而不直接使用`JsonStream`，是为了避免污染IDE的代码提示。
   function pluginDeserialize(stream:JsonDeserializerPluginStream<Value>):Value;
+
 }
 
 @:dox(hide)
