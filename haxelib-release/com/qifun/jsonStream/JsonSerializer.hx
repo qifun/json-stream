@@ -8,8 +8,8 @@ import com.qifun.jsonStream.JsonStream;
 #end
 
 /**
- * @author 杨博
- */
+  提供序列化相关的静态函数，把内存中的各类型数据结构序列化为`JsonStream`。
+**/
 @:final
 class JsonSerializer
 {
@@ -71,25 +71,20 @@ class JsonSerializer
   
 }
 
-
-/**
- * Internal type for deserializer plugins.
- * 避免污染上下文代码提示列表
- * @author 杨博
- */
-abstract JsonSerializerPluginData<ResultType>(ResultType)
+@:dox(hide)
+abstract JsonSerializerPluginData<Data>(Data)
 {
 
   @:extern
-  public inline function new(underlying:ResultType) 
+  public inline function new(underlying:Data) 
   {
     this = underlying;
   }
   
-  public var underlying(get, never):ResultType;
+  public var underlying(get, never):Data;
   
   @:extern
-  inline function get_underlying():ResultType return
+  inline function get_underlying():Data return
   {
     this;
   }

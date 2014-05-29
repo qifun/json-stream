@@ -12,9 +12,6 @@ import haxe.macro.Type;
 
 /**
   支持生成`Dynamic`类型的反序列化插件。
-  
-  由于Haxe对`Dynamic`特殊处理，如果直接匹配`Dynamic`，会匹配到其他所有类型。
-  使用`LowPriorityDynamic`就只能精确匹配`Dynamic`，所以不会匹配到其他类型。
 **/
 class LowPriorityDynamicDeserializerPlugin
 {

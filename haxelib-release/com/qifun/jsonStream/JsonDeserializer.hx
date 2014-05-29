@@ -25,7 +25,7 @@ using StringTools;
   <pre>`// MyDeserializer.hx
 using com.qifun.jsonStream.JsonDeserializer;
 using com.qifun.jsonStream.Plugins;
-@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
 class MyDeserializer {}`</pre>
   
   <pre>`// Sample.hx
@@ -77,10 +77,10 @@ class JsonDeserializer
   /**
     创建反序列化的实现类。必须用在`@:build`中。
     
-    @param includeModules 类型为`Array<String>`，每一项是一个模块名。在这些模块中应当定义被序列化的数据结构。
+    @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义被序列化的数据结构。
   **/
   @:noUsing
-  macro public static function buildDeserializer(includeModules:Array<String>):Array<Field> return
+  macro public static function generateDeserializer(includeModules:Array<String>):Array<Field> return
   {
     var deserializer = new JsonDeserializerBuilder(Context.getLocalClass().get(), Context.getBuildFields());
     for (moduleName in includeModules)
@@ -98,11 +98,11 @@ class JsonDeserializer
     
     注意：`deserialize`是宏。会根据`Result`的类型，把具体的序列化操作转发给当前模块中已经`using`的某个类执行。
     <ul>
-      <li>如果`Result`是基本类型，执行序列化的类可能是内置插件。</li>
-      <li>如果`Result`是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer([ ... ]))`创建。</li>
+      <li>如果`Result`是基本类型，执行序列化的类可能是`deserializerPlugin`包中的内置插件。</li>
+      <li>如果`Result`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ ... ]))`创建。</li>
     </ul>
   **/
-  macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Result> return
+  macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Null<Result>> return
   {
     var typedJsonStreamTypePath =
     {
@@ -1013,8 +1013,9 @@ class JsonDeserializerBuilder
 #end
 
 /**
-  实现`JsonDeserializerPlugin`时使用的内部类型，包装了一个`JsonStream`。
+  实现反序列化插件时使用的内部类型，包装了一个`JsonStream`。
 **/
+@:dox(hide)
 abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 {
 
@@ -1032,20 +1033,6 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
     this;
   }
   
-}
-
-
-/**
-  供`JsonDeserializer`调用的插件，可以定制特定类型的序列化。
-  
-  请以静态函数实现`pluginDeserialize`，然后在`@:build(JsonDeserialier.buildDeserialier([...]))`以前`using`需要采用的插件。
-**/
-typedef JsonDeserializerPlugin<Value> =
-{
-    
-  // 用`JsonDeserializerPluginStream`而不直接使用`JsonStream`，是为了避免污染IDE的代码提示。
-  function pluginDeserialize(stream:JsonDeserializerPluginStream<Value>):Value;
-
 }
 
 @:dox(hide)
@@ -1090,9 +1077,6 @@ extern class UnknownTypeFieldJsonDeserializer
   }
 
 }
-
-@:dox(hide)
-abstract LowPriorityDynamic(Dynamic) to Dynamic {}
 
 @:dox(hide)
 @:final

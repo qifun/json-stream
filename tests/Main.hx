@@ -21,10 +21,10 @@ class InlineVar
   public static inline function inlineFunction() return "inlineFunction";
 }
 //
-//@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref"]))
+//@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Ref"]))
 //class RefDeserializer { }
 
-@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer(["Ref", "NewClass", "NewEnum"]))
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Ref", "NewClass", "NewEnum"]))
 class AllDeserializer {}
 
 typedef F<A> = Array<A>->A;
