@@ -1,8 +1,8 @@
 package com.qifun.jsonStream;
 
 import com.dongxiguo.continuation.utils.Generator;
-import com.qifun.jsonStream.unknownValue.UnknownFieldMap;
-import com.qifun.jsonStream.unknownValue.UnknownType;
+import com.qifun.jsonStream.unknown.UnknownFieldMap;
+import com.qifun.jsonStream.unknown.UnknownType;
 
 #if macro
 import haxe.ds.StringMap;
@@ -19,12 +19,36 @@ using Lambda;
 using StringTools;
 
 /**
-  @author 杨博
+  提供反序列化相关的静态函数，把`JsonStream`反序列化为内存中的各类型数据结构。
+  
+  用法：
+  <pre>`// MyDeserializer.hx
+using com.qifun.jsonStream.JsonDeserializer;
+using com.qifun.jsonStream.Plugins;
+@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
+class MyDeserializer {}`</pre>
+  
+  <pre>`// Sample.hx
+using com.qifun.jsonStream.JsonDeserializer;
+using com.qifun.jsonStream.Plugins;
+using MyDeserializer;
+class Sample
+{
+  public static function testDeserialize(jsonStream:com.qifun.jsonStream.JsonStream)
+  {
+    var myClass:myPackage.Module1.MyClass = JsonDeserializer.deserialize(jsonStream);
+    // ...
+  }
+}`</pre>
+
 **/
 class JsonDeserializer
 {
 
-  public static function deserializeRaw(stream:JsonStream):RawJson return
+  /**
+    不使用插件，强制把`stream`反序列化为弱类型的JSON对象。
+  **/
+  public static function deserializeRaw(stream:JsonStream):Null<RawJson> return
   {
     new RawJson(switch (stream)
     {
@@ -51,13 +75,9 @@ class JsonDeserializer
   }
   
   /**
-    创建反序列化函数集的宏。
+    创建反序列化的实现类。必须用在`@:build`中。
     
-    用法：
-    ```
-    @:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
-    class MyDeserializer {}
-    ```
+    @param includeModules 类型为`Array<String>`，每一项是一个模块名。在这些模块中应当定义被序列化的数据结构。
   **/
   @:noUsing
   macro public static function buildDeserializer(includeModules:Array<String>):Array<Field> return
@@ -73,7 +93,16 @@ class JsonDeserializer
     deserializer.buildFields();
   }
   
-  macro public static function deserialize<Element>(stream:ExprOf<JsonStream>):ExprOf<Element> return
+  /**
+    把`stream`反序列化为`Result`类型。
+    
+    注意：`deserialize`是宏。会根据`Result`的类型，把具体的序列化操作转发给当前模块中已经`using`的某个类执行。
+    <ul>
+      <li>如果`Result`是基本类型，执行序列化的类可能是内置插件。</li>
+      <li>如果`Result`是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonDeserializer.buildDeserializer([ ... ]))`创建。</li>
+    </ul>
+  **/
+  macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Result> return
   {
     var typedJsonStreamTypePath =
     {
@@ -92,7 +121,10 @@ class JsonDeserializer
   
 }
 
-enum JsonDeserializeErrorCode
+/**
+  调用`JsonDeserializer.deserialize`时可能抛出的异常。
+**/ 
+enum JsonDeserializeError
 {
   TOO_MANY_FIELDS<Element>(iterator:Iterator<Element>, expected:Int);
   NOT_ENOUGH_FIELDS<Element>(iterator:Iterator<Element>, expected:Int, actual:Int);
@@ -284,7 +316,7 @@ class JsonDeserializerBuilder
     {
       switch (constructor)
       {
-        case { name: "UNKNOWN_ENUM_VALUE", type: TFun([ { t: TEnum(_.get() => { module: "com.qifun.jsonStream.unknownValue.UnknownEnumValue", name: "UnknownEnumValue" }, _) } ], _) }:
+        case { name: "UNKNOWN_ENUM_VALUE", type: TFun([ { t: TEnum(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownEnumValue", name: "UnknownEnumValue" }, _) } ], _) }:
         {
           // 支持UnknownEnumValue!
           unknownEnumValueConstructor = constructor.name;
@@ -317,12 +349,12 @@ class JsonDeserializerBuilder
               {
                 var parameterName = 'parameter$i';
                 var arg = args[i];
-                if (arg.name == "unknownFieldMap" && Context.follow(arg.t).match(TAbstract(_.get() => {module: "com.qifun.jsonStream.unknownValue.UnknownFieldMap", name: "UnknownFieldMap"}, [])))
+                if (arg.name == "unknownFieldMap" && Context.follow(arg.t).match(TAbstract(_.get() => {module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap"}, [])))
                 {
                   if (unknownFieldMapName == null)
                   {
                     unknownFieldMapName = parameterName;
-                    block.push(macro $i{parameterName} = new com.qifun.jsonStream.unknownValue.UnknownFieldMap(new haxe.ds.StringMap.StringMap()));
+                    block.push(macro $i{parameterName} = new com.qifun.jsonStream.unknown.UnknownFieldMap(new haxe.ds.StringMap.StringMap()));
                   }
                   else
                   {
@@ -419,7 +451,7 @@ class JsonDeserializerBuilder
                     case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
                       $blockExpr;
                     case _:
-                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(pair.value, [ "OBJECT" ]);
+                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(pair.value, [ "OBJECT" ]);
                   }
                 },
               }:Case);
@@ -439,7 +471,7 @@ class JsonDeserializerBuilder
         }
         else
         {
-          macro com.qifun.jsonStream.unknownValue.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
+          macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
             pair.key,
             com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value));
         }),
@@ -468,7 +500,7 @@ class JsonDeserializerBuilder
         }
         else
         {
-          macro com.qifun.jsonStream.unknownValue.UnknownEnumValue.UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName);
+          macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName);
         }),
     }
     var methodBody = macro switch (stream)
@@ -483,7 +515,7 @@ class JsonDeserializerBuilder
       case NULL:
         null;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
     }
     
     var expectedTypePath =
@@ -572,7 +604,7 @@ class JsonDeserializerBuilder
           {
             name: "unknownFieldMap",
             kind: FVar(AccNormal | AccNo | AccCall, _),
-            type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknownValue.UnknownFieldMap", name: "UnknownFieldMap" }, []),
+            type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
           }:
             hasUnknownFieldMap = true;
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
@@ -645,7 +677,7 @@ class JsonDeserializerBuilder
         }
         result;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
     }
     
     {
@@ -783,7 +815,7 @@ class JsonDeserializerBuilder
         case NULL:
           null;
         case _:
-          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
+          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
       }
     })($stream);
   }
@@ -1033,10 +1065,10 @@ extern class UnknownTypeSetterJsonDeserializer
 
   @:generic
   @:extern
-  public static inline function deserializeUnknown<Result:{ function new():Void; var unkownType(never, set):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
+  public static inline function deserializeUnknown<Result:{ function new():Void; var unknownType(never, set):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
   {
     var result = new Result();
-    result.unkownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
+    result.unknownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
     result;
   }
 
@@ -1049,10 +1081,10 @@ extern class UnknownTypeFieldJsonDeserializer
 
   @:generic
   @:extern
-  public static inline function deserializeUnknown<Result:{ function new():Void; var unkownType(null, default):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
+  public static inline function deserializeUnknown<Result:{ function new():Void; var unknownType(null, default):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
   {
     var result = new Result();
-    result.unkownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
+    result.unknownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
     result;
   }
 
@@ -1068,7 +1100,7 @@ extern class DynamicUnknownTypeJsonDeserializer
   @:extern
   public static inline function deserializeUnknown<T:LowPriorityDynamic>(stream:JsonDeserializerPluginStream<T>, type:String):Dynamic return
   {
-    new com.qifun.jsonStream.unknownValue.UnknownType(type, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(stream.underlying));
+    new com.qifun.jsonStream.unknown.UnknownType(type, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(stream.underlying));
   }
 }
 

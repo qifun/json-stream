@@ -2,22 +2,25 @@ package com.qifun.jsonStream.deserializerPlugin;
 
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonStream;
-import com.qifun.jsonStream.unknownValue.UnknownType;
+import com.qifun.jsonStream.unknown.UnknownType;
+import haxe.macro.Expr.ExprOf;
 #if macro
 import haxe.macro.TypeTools;
 import haxe.macro.Context;
 import haxe.macro.Type;
 #end
+
 /**
- * @author 杨博
- */
+  支持生成`Dynamic`类型的反序列化插件。
+  
+  由于Haxe对`Dynamic`特殊处理，如果直接匹配`Dynamic`，会匹配到其他所有类型。
+  使用`LowPriorityDynamic`就只能精确匹配`Dynamic`，所以不会匹配到其他类型。
+**/
 class LowPriorityDynamicDeserializerPlugin
 {
 
-  // 由于Haxe对Dynamic特殊处理，如果直接匹配Dynamic，会匹配到其他所有类型
-  // 使用LowPriorityDynamic就只能精确匹配Dynamic，所以优先级低于其他能够明确匹配的Deserializer
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize(stream:ExprOf<JsonDeserializerPluginStream<LowPriorityDynamic>>) return
+  macro public static function pluginDeserialize(stream:ExprOf<JsonDeserializerPluginStream<LowPriorityDynamic>>):ExprOf<Null<Dynamic>> return
   {
     switch (Context.follow(Context.typeof(stream)))
     {

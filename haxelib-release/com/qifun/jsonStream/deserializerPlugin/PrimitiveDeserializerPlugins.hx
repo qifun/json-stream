@@ -23,7 +23,7 @@ class Int64DeserializerPlugin
         case NUMBER(high):
           if (iterator.hasNext())
           {
-            throw JsonDeserializeErrorCode.TOO_MANY_FIELDS(iterator, 2);
+            throw JsonDeserializeError.TOO_MANY_FIELDS(iterator, 2);
           }
           else
           {
@@ -35,28 +35,28 @@ class Int64DeserializerPlugin
                 case NUMBER(low):
                   if (iterator.hasNext())
                   {
-                    throw JsonDeserializeErrorCode.TOO_MANY_FIELDS(iterator, 2);
+                    throw JsonDeserializeError.TOO_MANY_FIELDS(iterator, 2);
                   }
                   else
                   {
                     Int64.make(cast high, cast low);
                   }
                 case _:
-                  throw JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(element1, [ "NUMBER" ]);
+                  throw JsonDeserializeError.UNMATCHED_JSON_TYPE(element1, [ "NUMBER" ]);
               }
             }
             else
             {
-              throw JsonDeserializeErrorCode.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+              throw JsonDeserializeError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
             }
           }
         case _:
-          throw JsonDeserializeErrorCode.UNMATCHED_JSON_TYPE(element0, [ "NUMBER" ]);
+          throw JsonDeserializeError.UNMATCHED_JSON_TYPE(element0, [ "NUMBER" ]);
       }
     }
     else
     {
-      throw JsonDeserializeErrorCode.NOT_ENOUGH_FIELDS(iterator, 2, 0);
+      throw JsonDeserializeError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
     }
   }
 
@@ -197,7 +197,7 @@ class ArrayDeserializerPlugin
 {
 
   @:dox(hide)
-  public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Array<Element> return
+  public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Array<Element>> return
   {
     switch (stream.underlying)
     {
@@ -228,7 +228,7 @@ class ArrayDeserializerPlugin
     }
   }
   
-  macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Array<Element>> return
+  macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Null<Array<Element>>> return
   {
     macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($stream, function(substream) return substream.pluginDeserialize());
   }

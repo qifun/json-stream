@@ -1,8 +1,10 @@
 package com.qifun.jsonStream;
 
 /**
- * @author 杨博
- */
+  表示弱类型的JSON对象。
+  
+  RawJson实例可以是`null`、`Bool`、`String`、`Float`、`Array`或无类型的结构化对象。
+**/
 @:final
 abstract RawJson(Dynamic)
 {

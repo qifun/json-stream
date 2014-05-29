@@ -4,9 +4,12 @@ package com.qifun.jsonStream;
 
 #if doc_gen
 /**
-  Using this class to enable all built-in plugins.
+  定义了所有内置插件的模块。
+
+  `using com.qifun.jsonStream.Plugins;`将启用所有内置插件。
 **/
-extern class Plugins { }
+@:final
+extern class Plugins{}
 #end
 
 @:dox(hide)

@@ -11,6 +11,11 @@ package com.qifun.jsonStream;
   }
 }
 
+/**
+  结构化的JSON数据流。
+  
+  既可能用于序列化，也可能用于反序列化。
+**/
 enum JsonStream
 {
   NUMBER(value:Float);
