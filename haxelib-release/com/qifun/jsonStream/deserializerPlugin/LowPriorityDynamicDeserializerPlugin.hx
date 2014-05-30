@@ -22,7 +22,7 @@ class LowPriorityDynamicDeserializerPlugin
     switch (Context.follow(Context.typeof(stream)))
     {
       case TAbstract(_, [ expectedType ]):
-        JsonDeserializerBuilder.dynamicDeserialize(macro $stream.underlying, TypeTools.toComplexType(expectedType));
+        JsonDeserializerGenerator.dynamicDeserialize(macro $stream.underlying, TypeTools.toComplexType(expectedType));
       case _:
         throw "Expected JsonDeserializerPluginStream";
     }

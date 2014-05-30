@@ -82,15 +82,15 @@ class JsonDeserializer
   @:noUsing
   macro public static function generateDeserializer(includeModules:Array<String>):Array<Field> return
   {
-    var deserializer = new JsonDeserializerBuilder(Context.getLocalClass().get(), Context.getBuildFields());
+    var generator = new JsonDeserializerGenerator(Context.getLocalClass().get(), Context.getBuildFields());
     for (moduleName in includeModules)
     {
       for (rootType in Context.getModule(moduleName))
       {
-        deserializer.tryAddDeserializeMethod(rootType);
+        generator.tryAddDeserializeMethod(rootType);
       }
     }
-    deserializer.buildFields();
+    generator.buildFields();
   }
   
   /**
@@ -133,14 +133,14 @@ enum JsonDeserializeError
 
 #if macro
 @:final
-class JsonDeserializerBuilder
+class JsonDeserializerGenerator
 {
   
   private var buildingFields:Array<Field>;
 
   private var deserializingTypes(default, null) = new StringMap<BaseType>();
   
-  private static var allBuilders = new StringMap<JsonDeserializerBuilder>();
+  private static var allBuilders = new StringMap<JsonDeserializerGenerator>();
 
   private static function getFullName(module:String, name:String):String return
   {
@@ -252,7 +252,7 @@ class JsonDeserializerBuilder
     allBuilders.set(id, this);
   }
 
-  private static function getContextBuilder():JsonDeserializerBuilder return
+  private static function getContextBuilder():JsonDeserializerGenerator return
   {
     var localClass = Context.getLocalClass().get();
     allBuilders.get(localClass.module + "." + localClass.name);
