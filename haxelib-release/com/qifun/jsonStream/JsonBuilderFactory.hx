@@ -1,12 +1,52 @@
 package com.qifun.jsonStream;
 
-import com.qifun.jsonStream.IJsonBuilder;
+import com.qifun.jsonStream.JsonBuilder;
+import com.dongxiguo.continuation.Continuation;
 
 /**
  * @author 杨博
  */
-class JsonBuilder
+class JsonBuilderFactory
 {
+  
+  public static var ASYNCHRONOUS_DESERIALIZE_RAW(default, never):AsynchronousJsonStream->(RawJson->Void)->Void = Continuation.cpsFunction(function(stream:AsynchronousJsonStream):RawJson return
+  {
+    new RawJson(switch (stream)
+    {
+      case TRUE: true;
+      case FALSE: false;
+      case NULL: null;
+      case NUMBER(value): value;
+      case STRING(value): value;
+      case ARRAY(read):
+        var array = [];
+        var element = read().async();
+        while (element != null)
+        {
+          array.push(ASYNCHRONOUS_DESERIALIZE_RAW(element).async());
+          element = read().async();
+        }
+        array;
+      case OBJECT(read):
+        //var object = {}; // 如果这样会编译错误，因为{}被理解成了EBlock而不是EObjectDecl
+        var object = (function() return {})();
+        while (true)
+        {
+          var key, value = read().async();
+          if (key == null)
+          {
+            return new RawJson(object);
+          }
+          Reflect.setField(object, key, ASYNCHRONOUS_DESERIALIZE_RAW(value).async());
+        }
+        throw "unreachable code";
+    });
+  });
+
+  public static function newRawBuilder():JsonBuilder<RawJson> return
+  {
+    new JsonBuilder(ASYNCHRONOUS_DESERIALIZE_RAW);
+  }
 
   /**
     创建`IJsonBuilder`的工厂类。必须用在`@:build`中。
@@ -27,10 +67,10 @@ class JsonBuilder
     generator.buildFields();
   }
   
-  macro public static function newBuilder<Result>():IRootJsonBuilder<Result> return
-  {
-    
-  }
+  //macro public static function newBuilder<Result>():IRootJsonBuilder<Result> return
+  //{
+    //
+  //}
 }
 
 /*
@@ -72,11 +112,28 @@ function setBoolField_Xxx(xxx:Xxx, field:String, value:Bool):Void
 */
 typedef RequireRewrite = Bool;
 
-abstract JsonBuilderPluginTag<Result>(Dynamic) {}
-
 typedef Plugin =
 {
-  function pluginBeginObject<Result>(tag:JsonBuilderPluginTag<Result>, setter:Result->Void):Pair<IJsonObjectBuilder, RequireRewrite>
+  function pluginBeginObject<Result>(stream:JsonBuilderPluginStream<Result>, onComplete:Result->Void):Void;
+}
+
+abstract JsonBuilderPluginStream<Result>(AsynchronousJsonStream)
+{
+  
+  @:extern
+  public inline function new(underlying:AsynchronousJsonStream) 
+  {
+    this = underlying;
+  }
+  
+  public var underlying(get, never):AsynchronousJsonStream;
+  
+  @:extern
+  inline function get_underlying():AsynchronousJsonStream return
+  {
+    this;
+  }
+
 }
 
 
@@ -88,74 +145,3 @@ class JsonBuilderFactoryGenerator
 #end
 
 
-abstract JsonBuilderPluginTag(Dynamic) { }
-
-
-@:final
-private class ProxyJsonBuilder<Parent:LazyJsonObjectBuilder<Dynamic>> implements IJsonBuilder
-{
-  private var parent:Parent;
-
-  private var key:String;
-
-  public var numberValue(never, set):Float;
-
-  private inline function set_numberValue(value:Float):Float return
-  {
-    parent.setNumberField(parent, key, value);
-  }
- 
-  public var stringValue(never, set):String;
-
-  private inline function set_stringValue(value:String):String return
-  {
-    parent.setStringField(parent, key, value);
-  }
-
-  public inline function setTrue():Void
-  {
-    parent.setBoolField(parent, key, true);
-  }
-
-  public inline function setFalse():Void
-  {
-    parent.setBoolField(parent, key, false);
-  }
-
-  public inline function setNull():Void
-  {
-    parent.setNullField(parent, key);
-  }
-
-  public inline function beginObject() return
-  {
-    parent.addObjectPair(parent, key);
-  }
-  
-  public inline function beginArray() return
-  {
-    parent.addArrayPair(parent, key);
-  }
-
-  public function new(parent:Parent, key:String)
-  {
-    this.parent = parent;
-    this.key = key;
-  }
-}
-
-private class LazyJsonObjectBuilder<Self:LazyJsonObjectBuilder<Self>> implements IJsonObjectBuilder
-{
-  
-  public var setStringField:Self->String->String->String;
-  public var setNumberField:Self->String->Float->Float;
-  public var setNullField:Self->String->Void;
-  public var setBoolField:Self->String->Bool->Void;
-  public var addObjectPair:Self->String->IJsonObjectBuilder;
-  public var addArrayPair:Self->String->IJsonArrayBuilder;
-  public function addPair(key:String):ProxyJsonBuilder<LazyJsonObjectBuilder<Self>> return
-  {
-    new ProxyJsonBuilder(this, key);
-  }
-
-}

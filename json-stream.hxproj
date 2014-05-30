@@ -23,7 +23,7 @@
     <option directives="" />
     <option flashStrict="False" />
     <option noInlineOnDebug="False" />
-    <option mainClass="Main" />
+    <option mainClass="com.qifun.jsonStream.RawJsonBuilder" />
     <option enabledebug="True" />
     <option additional="" />
   </build>
@@ -38,7 +38,6 @@
     <compile path="tests\Main2.hx" />
     <compile path="tests\HaxeJavaCrash.hx" />
     <compile path="tests\Bug.hx" />
-    <compile path="tests\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
