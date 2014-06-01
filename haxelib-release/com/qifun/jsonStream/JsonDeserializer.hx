@@ -20,14 +20,14 @@ using StringTools;
 
 /**
   提供反序列化相关的静态函数，把`JsonStream`反序列化为内存中的各类型数据结构。
-  
+
   用法：
   <pre>`// MyDeserializer.hx
 using com.qifun.jsonStream.JsonDeserializer;
 using com.qifun.jsonStream.Plugins;
 @:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
 class MyDeserializer {}`</pre>
-  
+
   <pre>`// Sample.hx
 using com.qifun.jsonStream.JsonDeserializer;
 using com.qifun.jsonStream.Plugins;
@@ -73,10 +73,10 @@ class JsonDeserializer
         null;
     });
   }
-  
+
   /**
     创建反序列化的实现类。必须用在`@:build`中。
-    
+
     @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义被序列化的数据结构。
   **/
   @:noUsing
@@ -92,10 +92,10 @@ class JsonDeserializer
     }
     generator.buildFields();
   }
-  
+
   /**
     把`stream`反序列化为`Result`类型。
-    
+
     注意：`deserialize`是宏。会根据`Result`的类型，把具体的序列化操作转发给当前模块中已经`using`的某个类执行。
     <ul>
       <li>如果`Result`是基本类型，执行序列化的类可能是`deserializerPlugin`包中的内置插件。</li>
@@ -118,12 +118,12 @@ class JsonDeserializer
     };
     macro $typedJsonStream.pluginDeserialize();
   }
-  
+
 }
 
 /**
   调用`JsonDeserializer.deserialize`时可能抛出的异常。
-**/ 
+**/
 enum JsonDeserializeError
 {
   TOO_MANY_FIELDS<Element>(iterator:Iterator<Element>, expected:Int);
@@ -135,11 +135,11 @@ enum JsonDeserializeError
 @:final
 class JsonDeserializerGenerator
 {
-  
+
   private var buildingFields:Array<Field>;
 
   private var deserializingTypes(default, null) = new StringMap<BaseType>();
-  
+
   private static var allBuilders = new StringMap<JsonDeserializerGenerator>();
 
   private static function getFullName(module:String, name:String):String return
@@ -153,11 +153,11 @@ class JsonDeserializerGenerator
       module + "." + name;
     }
   }
-  
+
   public function buildFields():Array<Field> return
   {
     var meta = buildingClass.meta;
-  
+
     meta.add(
       ":access",
       [ macro com.qifun.jsonStream.JsonDeserializerRuntime ],
@@ -174,7 +174,7 @@ class JsonDeserializerGenerator
     }
 
     var dynamicCases:Array<Case> = [];
-  
+
     for (localUsing in Context.getLocalUsing())
     {
       var baseType:BaseType = switch (localUsing.get())
@@ -205,7 +205,7 @@ class JsonDeserializerGenerator
         });
       }
     }
-  
+
     for (methodName in deserializingTypes.keys())
     {
       var baseType = deserializingTypes.get(methodName);
@@ -216,7 +216,7 @@ class JsonDeserializerGenerator
           expr: macro ($i{methodName}(valueStream):Dynamic),
         });
     }
-    
+
     var switchExpr =
     {
       pos: Context.currentPos(),
@@ -234,9 +234,9 @@ class JsonDeserializerGenerator
     allBuilders.remove(id);
     buildingFields;
   }
-  
+
   private var buildingClass:ClassType;
-  
+
   // id的格式：packageNames.ModuleName.ClassName
   private var id(get, never):String;
 
@@ -290,7 +290,7 @@ class JsonDeserializerGenerator
     processName(sb, name);
     return sb.toString();
   }
-  
+
   private static function extractFunction(e:ExprOf<JsonStream->Dynamic>):Function return
   {
     switch (e)
@@ -299,8 +299,8 @@ class JsonDeserializerGenerator
       case _: throw "Expect Function";
     }
   }
-  
-  function newEnumDeserializeFunction(enumType:EnumType):Function return
+
+  private function newEnumDeserializeFunction(enumType:EnumType):Function return
   {
     var enumParams: Array<TypeParamDecl> =
     [
@@ -408,7 +408,7 @@ class JsonDeserializerGenerator
               {
                 pos: Context.currentPos(),
                 expr: ECall(
-                  MacroStringTools.toFieldExpr(enumPath), 
+                  MacroStringTools.toFieldExpr(enumPath),
                   [
                     for (i in 0...args.length)
                     {
@@ -517,7 +517,7 @@ class JsonDeserializerGenerator
       case _:
         throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
     }
-    
+
     var expectedTypePath =
     {
       pack: enumType.pack,
@@ -538,7 +538,8 @@ class JsonDeserializerGenerator
       params: enumParams,
     }
   }
-  function newAbstractDeserializeFunction(abstractType:AbstractType):Function return
+
+  private function newAbstractDeserializeFunction(abstractType:AbstractType):Function return
   {
     var params: Array<TypeParamDecl> =
     [
@@ -571,7 +572,7 @@ class JsonDeserializerGenerator
     }
   }
 
-  function newClassDeserializeFunction(classType:ClassType):Function return
+  private function newClassDeserializeFunction(classType:ClassType):Function return
   {
     var params: Array<TypeParamDecl> =
     [
@@ -655,7 +656,7 @@ class JsonDeserializerGenerator
           macro null;
         }),
     }
-    
+
     var switchStream = macro switch (stream)
     {
       case OBJECT(pairs):
@@ -679,7 +680,7 @@ class JsonDeserializerGenerator
       case _:
         throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
     }
-    
+
     {
       args:
       [
@@ -743,7 +744,7 @@ class JsonDeserializerGenerator
       case _:
     }
   }
-  
+
   public static function dynamicDeserialize(stream:ExprOf<JsonStream>, expectedComplexType:ComplexType):Expr return
   {
     var localUsings = Context.getLocalUsing();
@@ -788,7 +789,7 @@ class JsonDeserializerGenerator
           var classType = getContextBuilder().buildingClass;
           var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
           var className = classType.name;
-          macro 
+          macro
           {
             var knownValue = untyped($modulePath.$className).dynamicDeserialize($key, $value);
             if (knownValue == null)
@@ -819,16 +820,16 @@ class JsonDeserializerGenerator
       }
     })($stream);
   }
-  
+
   private var buildingClassExpr(get, never):Expr;
-  
+
   private function get_buildingClassExpr():Expr return
   {
     var modulePath = MacroStringTools.toFieldExpr(buildingClass.module.split("."));
     var className = buildingClass.name;
     macro $modulePath.$className;
   }
- 
+
   public static function generatedDeserialize(expectedType:Type, stream:ExprOf<JsonStream>):Expr return
   {
     switch (Context.follow(expectedType))
@@ -964,9 +965,9 @@ class JsonDeserializerGenerator
       params: [ TPType(expectedComplexType) ],
     };
     var typedJsonStreamType = TPath(typedJsonStreamTypePath);
-    var f = 
+    var f =
     {
-      expr: 
+      expr:
         EFunction("temporaryDeserialize",
         {
           args: [ { name: "typedJsonStream", type: typedJsonStreamType } ],
@@ -1020,19 +1021,19 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 {
 
   @:extern
-  public inline function new(underlying:JsonStream) 
+  public inline function new(underlying:JsonStream)
   {
     this = underlying;
   }
-  
+
   public var underlying(get, never):JsonStream;
-  
+
   @:extern
   inline function get_underlying():JsonStream return
   {
     this;
   }
-  
+
 }
 
 @:dox(hide)

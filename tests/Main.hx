@@ -1,5 +1,6 @@
 package  ;
 
+import com.qifun.jsonStream.JsonBuilderFactory;
 import com.qifun.jsonStream.JsonStream;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -24,6 +25,9 @@ class InlineVar
 //@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Ref"]))
 //class RefDeserializer { }
 
+@:build(com.qifun.jsonStream.JsonBuilderFactory.generateBuilderFactory(["Ref", "NewClass", "NewEnum"]))
+class AllBuilderFactory {}
+
 @:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Ref", "NewClass", "NewEnum"]))
 class AllDeserializer {}
 
@@ -31,7 +35,7 @@ typedef F<A> = Array<A>->A;
 /**
  * @author 杨博
  */
-class Main 
+class Main
 {
 	#if !macro
   static function main()
@@ -84,7 +88,7 @@ interface C<T>
 class A implements C<A>
 {
   var dd(get, set):Int;
-  
+
   public function set_dd(value:Int):Int
   {
     return value;
@@ -93,11 +97,11 @@ class A implements C<A>
   {
     return 1;
   }
-  
+
   public function get():A return this;
-  
+
   public function new()
   {
-    
+
   }
 }
