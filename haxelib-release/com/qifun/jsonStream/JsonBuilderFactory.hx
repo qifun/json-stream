@@ -791,15 +791,14 @@ class JsonBuilderFactoryGenerator
     }
   }
 
-  // TODO: 改为异步
   public function buildFields():Array<Field> return
   {
     var meta = buildingClass.meta;
 
-    meta.add(
-      ":access",
-      [ macro com.qifun.jsonStream.JsonDeserializerRuntime ],
-      Context.currentPos());
+    //meta.add(
+      //":access",
+      //[ macro com.qifun.jsonStream.JsonDeserializerRuntime ],
+      //Context.currentPos());
 
     for (deserializingType in deserializingTypes)
     {
@@ -822,11 +821,11 @@ class JsonBuilderFactoryGenerator
       }
       var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
       var nameField = baseType.name;
-      var pluginDeserializeField = TypeTools.findField(localUsing.get(), "pluginDeserialize", true);
-      if (pluginDeserializeField != null && !pluginDeserializeField.meta.has(":noDynamicDeserialize"))
+      var pluginDeserializeField = TypeTools.findField(localUsing.get(), "pluginAsynchronousDeserialize", true);
+      if (pluginDeserializeField != null && !pluginDeserializeField.meta.has(":noDynamicAsynchronousDeserialize"))
       {
-        var expr = macro $moduleExpr.$nameField.pluginDeserialize(new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream(valueStream));
-        var temporaryFunction = macro function (valueStream:com.qifun.jsonStream.JsonStream) return $expr;
+        var expr = macro $moduleExpr.$nameField.pluginDeserialize(new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderFactoryPluginStream(valueStream), macro onComplete);
+        var temporaryFunction = macro function (valueStream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream, onComplete:Dynamic->Void):Void $expr;
         var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
         var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
         var fullName = switch (Context.follow(typedTemporaryFunction.t))
@@ -838,8 +837,8 @@ class JsonBuilderFactoryGenerator
         }
         dynamicCases.push(
         {
-          values: [ macro $v{ fullName } ],
-          expr: macro ($resolvedTemporaryFunction(valueStream):Dynamic),
+          values: [ macro $v{fullName} ],
+          expr: macro $resolvedTemporaryFunction(valueStream, onComplete),
         });
       }
     }
@@ -851,7 +850,7 @@ class JsonBuilderFactoryGenerator
       dynamicCases.push(
         {
           values: [ macro $v{ fullName } ],
-          expr: macro ($i{methodName}(valueStream):Dynamic),
+          expr: macro ($i{methodName}(valueStream, onComplete)),
         });
     }
 
@@ -861,16 +860,37 @@ class JsonBuilderFactoryGenerator
       expr: ESwitch(macro dynamicTypeName, dynamicCases, macro null),
     }
     // trace(ExprTools.toString(switchExpr));
-    
-    // TODO: Dynamic Builder
-    //buildingFields.push(
-      //{
-        //name: "dynamicDeserialize",
-        //pos: Context.currentPos(),
-        //meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
-        //access: [ APublic, AStatic ],
-        //kind: FFun(extractFunction(macro function(dynamicTypeName:String, valueStream:com.qifun.jsonStream.JsonStream):Dynamic return $switchExpr)),
-      //});
+
+    buildingFields.push(
+      {
+        name: "dynamicAsynchronousDeserialize",
+        pos: Context.currentPos(),
+        meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
+        access: [ APublic, AStatic ],
+        kind: FFun(
+          {
+            args:
+            [
+              {
+                name: "dynamicTypeName",
+                type: TPath({ pack: [], name: "String",}),
+              },
+              {
+                name: "valueStream",
+                type: TPath({ pack: [ "com","qifun","jsonStream" ], sub: "AsynchronousJsonStream", name: "JsonBuilder",}),
+              },
+              {
+                name: "onComplete",
+                type: TFunction(
+                  [ TPath( { pack: [], name: "Dynamic", } ) ],
+                  TPath( { pack: [], name: "Void", } )
+                )
+              }
+            ],
+            ret: TPath( { pack: [], name: "Void", } ),
+            expr: macro $switchExpr,
+          }),
+      });
     allBuilders.remove(id);
     buildingFields;
   }
