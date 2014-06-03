@@ -74,7 +74,7 @@ class Int64DeserializerPlugin
       extractInt64(generator);
     }
   }
-  
+
   public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int64>):Null<Int64> return
   {
     switch (stream.underlying)
@@ -84,7 +84,7 @@ class Int64DeserializerPlugin
       case NULL:
         null;
       case _:
-        throw "Expect number";
+        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -101,7 +101,7 @@ class IntDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw "Expect number";
+        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -118,7 +118,7 @@ class UIntDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw "Expect number";
+        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -136,7 +136,7 @@ class UIntDeserializerPlugin
         case NULL:
           null;
         case _:
-          throw "Expect number";
+          throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
       }
     }
   }
@@ -154,7 +154,7 @@ class FloatDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw "Expect number";
+        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -168,9 +168,9 @@ class BoolDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.FALSE: false;
       case com.qifun.jsonStream.JsonStream.TRUE: true;
-      case NULL:
-        null;
-      case _: throw "Expect false | true";
+      case NULL: null;
+      case _:
+        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "FALSE", "TRUE", "NULL"]);
     }
   }
 }
@@ -187,7 +187,7 @@ class StringDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw "Expect string";
+        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "STRING", "NULL"]);
     }
   }
 }
@@ -227,7 +227,7 @@ class ArrayDeserializerPlugin
         throw "Expect array";
     }
   }
-  
+
   macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Null<Array<Element>>> return
   {
     macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($stream, function(substream) return substream.pluginDeserialize());

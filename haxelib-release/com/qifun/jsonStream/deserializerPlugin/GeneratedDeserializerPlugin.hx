@@ -28,7 +28,7 @@ class GeneratedDeserializerPlugin
     switch (Context.follow(Context.typeof(stream)))
     {
       case TAbstract(_, [ expectedType ]):
-        JsonDeserializerBuilder.generatedDeserialize(expectedType, macro $stream.underlying);
+        JsonDeserializerGenerator.generatedDeserialize(expectedType, macro $stream.underlying);
       case _:
         throw "Expected JsonDeserializerPluginStream";
     }
