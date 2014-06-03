@@ -50,37 +50,37 @@ typedef LowPriorityDynamicDeserializerPlugin = com.qifun.jsonStream.deserializer
 
 // TODO:
 //@:dox(hide)
-//typedef GeneratedBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.GeneratedBuilderFactoryPlugin;
+//typedef GeneratedBuilderPlugin = com.qifun.jsonStream.builderPlugin.GeneratedBuilderPlugin;
 //
 @:dox(hide)
-typedef RawBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.RawBuilderFactoryPlugin;
+typedef RawBuilderPlugin = com.qifun.jsonStream.builderPlugin.RawBuilderPlugin;
 
 @:dox(hide)
-typedef Int64BuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.Int64BuilderFactoryPlugin;
+typedef Int64BuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.Int64BuilderPlugin;
 
 @:dox(hide)
-typedef IntBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.IntBuilderFactoryPlugin;
+typedef IntBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.IntBuilderPlugin;
 
 @:dox(hide)
-typedef UIntBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.UIntBuilderFactoryPlugin;
+typedef UIntBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.UIntBuilderPlugin;
 #if (java || cs)
   @:dox(hide)
-  typedef SingleBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.SingleBuilderFactoryPlugin;
+  typedef SingleBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.SingleBuilderPlugin;
 #end
 
 @:dox(hide)
-typedef FloatBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.FloatBuilderFactoryPlugin;
+typedef FloatBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.FloatBuilderPlugin;
 
 @:dox(hide)
-typedef BoolBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.BoolBuilderFactoryPlugin;
+typedef BoolBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.BoolBuilderPlugin;
 
 @:dox(hide)
-typedef StringBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.StringBuilderFactoryPlugin;
+typedef StringBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.StringBuilderPlugin;
 
 @:dox(hide)
-typedef ArrayBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.ArrayBuilderFactoryPlugin;
+typedef ArrayBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin;
 
 // TODO:
 //@:dox(hide)
-//typedef LowPriorityDynamicBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.LowPriorityDynamicBuilderFactoryPlugin;
+//typedef LowPriorityDynamicBuilderPlugin = com.qifun.jsonStream.builderPlugin.LowPriorityDynamicBuilderPlugin;
 //

@@ -21,49 +21,10 @@ using StringTools;
 class JsonBuilderFactory
 {
 
-  public static function asynchronousDeserializeRaw(stream:AsynchronousJsonStream, onComplete:RawJson->Void):Void
-  {
-    Continuation.cpsFunction(function(stream:AsynchronousJsonStream):RawJson return
-    {
-      new RawJson(switch (stream)
-      {
-        case TRUE: true;
-        case FALSE: false;
-        case NULL: null;
-        case NUMBER(value): value;
-        case STRING(value): value;
-        case ARRAY(read):
-          var array = [];
-          var element = read().async();
-          while (element != null)
-          {
-            array.push(asynchronousDeserializeRaw(element).async());
-            element = read().async();
-          }
-          array;
-        case OBJECT(read):
-          //var object = {}; // 如果这样会编译错误，因为{}被理解成了EBlock而不是EObjectDecl
-          var object = (function() return {})();
-          while (true)
-          {
-            var key, value = read().async();
-            if (key == null)
-            {
-              return new RawJson(object);
-            }
-            Reflect.setField(object, key, asynchronousDeserializeRaw(value).async());
-          }
-          throw "unreachable code";
-      });
-    })(stream, onComplete);
-  }
-
-
-
   public static function newRawBuilder():JsonBuilder<RawJson> return
   {
     // .bind() 后缀能提高性能，见：https://github.com/HaxeFoundation/haxe/issues/3025
-    new JsonBuilder(asynchronousDeserializeRaw.bind());
+    new JsonBuilder(JsonBuilderRuntime.buildRaw.bind());
   }
 
   /**
@@ -148,10 +109,10 @@ typedef RequireRewrite = Bool;
 
 typedef JsonBuilderPlugin<Result> =
 {
-  function pluginAsynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<Result>, onComplete:Result->Void):Void;
+  function pluginAsynchronousDeserialize(stream:JsonBuilderPluginStream<Result>, onComplete:Result->Void):Void;
 }
 
-abstract JsonBuilderFactoryPluginStream<Result>(AsynchronousJsonStream)
+abstract JsonBuilderPluginStream<Result>(AsynchronousJsonStream)
 {
 
   @:extern
@@ -252,7 +213,7 @@ class JsonBuilderFactoryGenerator
     {
       pack: [ "com", "qifun", "jsonStream" ],
       name: "JsonBuilderFactory",
-      sub: "JsonBuilderFactoryPluginStream",
+      sub: "JsonBuilderPluginStream",
       params: [ TPType(expectedComplexType) ],
     };
     var typedJsonStreamType = TPath(typedJsonStreamTypePath);
@@ -267,7 +228,7 @@ class JsonBuilderFactoryGenerator
             { name: "onComplete", type: null }
           ],
           ret: VOID_COMPLEX_TYPE,
-          expr: macro return typedJsonStream.pluginAsynchronouseDeserialize(onComplete),
+          expr: macro return typedJsonStream.pluginBuild(onComplete),
           params: params,
         }),
       pos: Context.currentPos()
@@ -404,7 +365,7 @@ class JsonBuilderFactoryGenerator
                   }
                   else
                   {
-                    macro $i{unknownFieldMapName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonBuilderFactory.asynchronousDeserializeRaw(parameterValue));
+                    macro $i{unknownFieldMapName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(parameterValue));
                   }),
               };
               var newEnum =
@@ -473,7 +434,7 @@ class JsonBuilderFactoryGenerator
         {
           macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
             constructorKey,
-            com.qifun.jsonStream.JsonBuilderFactory.asynchronousDeserializeRaw(constructorValue).async());
+            com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(constructorValue).async());
         }),
     }
     var zeroParameterBranch =
@@ -686,7 +647,7 @@ class JsonBuilderFactoryGenerator
       expr: ESwitch(macro key, cases,
         if (hasUnknownFieldMap)
         {
-          macro result.unknownFieldMap.underlying.set(key, com.qifun.jsonStream.JsonBuilderFactory.asynchronousDeserializeRaw(value).async());
+          macro result.unknownFieldMap.underlying.set(key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(value).async());
         }
         else
         {
@@ -824,7 +785,7 @@ class JsonBuilderFactoryGenerator
       var pluginDeserializeField = TypeTools.findField(localUsing.get(), "pluginAsynchronousDeserialize", true);
       if (pluginDeserializeField != null && !pluginDeserializeField.meta.has(":noDynamicAsynchronousDeserialize"))
       {
-        var expr = macro $moduleExpr.$nameField.pluginDeserialize(new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderFactoryPluginStream(valueStream), macro onComplete);
+        var expr = macro $moduleExpr.$nameField.pluginDeserialize(new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream(valueStream), macro onComplete);
         var temporaryFunction = macro function (valueStream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream, onComplete:Dynamic->Void):Void $expr;
         var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
         var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
@@ -895,14 +856,6 @@ class JsonBuilderFactoryGenerator
     buildingFields;
   }
 
-  private static function extractFunction(e:ExprOf<JsonStream->Dynamic>):Function return
-  {
-    switch (e)
-    {
-      case { expr: EFunction(null, f) }: f;
-      case _: throw "Expect Function";
-    }
-  }
 }
 #end
 
@@ -913,3 +866,46 @@ enum JsonBuilderError
   UNMATCHED_JSON_TYPE(stream:AsynchronousJsonStream, expected: Array<String>);
 }
 
+
+@:dox(hide)
+@:final
+class JsonBuilderRuntime
+{
+  
+  public static function buildRaw(stream:AsynchronousJsonStream, onComplete:RawJson->Void):Void
+  {
+    Continuation.cpsFunction(function(stream:AsynchronousJsonStream):RawJson return
+    {
+      new RawJson(switch (stream)
+      {
+        case TRUE: true;
+        case FALSE: false;
+        case NULL: null;
+        case NUMBER(value): value;
+        case STRING(value): value;
+        case ARRAY(read):
+          var array = [];
+          var element = read().async();
+          while (element != null)
+          {
+            array.push(buildRaw(element).async());
+            element = read().async();
+          }
+          array;
+        case OBJECT(read):
+          //var object = {}; // 如果这样会编译错误，因为{}被理解成了EBlock而不是EObjectDecl
+          var object = (function() return {})();
+          while (true)
+          {
+            var key, value = read().async();
+            if (key == null)
+            {
+              return new RawJson(object);
+            }
+            Reflect.setField(object, key, buildRaw(value).async());
+          }
+          throw "unreachable code";
+      });
+    })(stream, onComplete);
+  }
+}
