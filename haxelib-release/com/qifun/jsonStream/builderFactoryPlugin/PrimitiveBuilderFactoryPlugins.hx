@@ -12,7 +12,7 @@ import haxe.macro.Expr;
 class Int64BuilderFactoryPlugin
 {
 
-  public static function asynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<Int64>, onComplete:Null<Int64>->Void):Void
+  public static function pluginAsynchronouseDeserialize(stream:JsonBuilderFactoryPluginStream<Int64>, onComplete:Null<Int64>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Int64> return
     {
@@ -56,7 +56,7 @@ class Int64BuilderFactoryPlugin
 @:final
 class IntBuilderFactoryPlugin
 {
-  public static function asynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<Int>, onComplete:Null<Int>->Void):Void
+  public static inline function pluginAsynchronouseDeserialize(stream:JsonBuilderFactoryPluginStream<Int>, onComplete:Null<Int>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Int> return
     {
@@ -76,7 +76,7 @@ class IntBuilderFactoryPlugin
 @:final
 class UIntBuilderFactoryPlugin
 {
-  public static function asynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<UInt>, onComplete:Null<UInt>->Void):Void
+  public static function pluginAsynchronouseDeserialize(stream:JsonBuilderFactoryPluginStream<UInt>, onComplete:Null<UInt>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<UInt> return
     {
@@ -99,7 +99,7 @@ class UIntBuilderFactoryPlugin
 @:final
 class SingleBuilderFactoryPlugin
 {
-  public static function asynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<Single>, onComplete:Null<Single>->Void):Void
+  public static function pluginAsynchronouseDeserialize(stream:JsonBuilderFactoryPluginStream<Single>, onComplete:Null<Single>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Single> return
     {
@@ -123,7 +123,7 @@ class SingleBuilderFactoryPlugin
 @:final
 class FloatBuilderFactoryPlugin
 {
-  public static function asynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<Float>, onComplete:Null<Float>->Void):Void
+  public static function pluginAsynchronouseDeserialize(stream:JsonBuilderFactoryPluginStream<Float>, onComplete:Null<Float>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Float> return
     {
@@ -144,7 +144,7 @@ class FloatBuilderFactoryPlugin
 @:final
 class BoolBuilderFactoryPlugin
 {
-  public static function asynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<Bool>, onComplete:Null<Bool>->Void):Void
+  public static function pluginAsynchronouseDeserialize(stream:JsonBuilderFactoryPluginStream<Bool>, onComplete:Null<Bool>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Bool> return
     {
@@ -164,7 +164,7 @@ class BoolBuilderFactoryPlugin
 @:final
 class StringBuilderFactoryPlugin
 {
-  public static function asynchronousDeserialize(stream:JsonBuilderFactoryPluginStream<String>, onComplete:Null<String>->Void):Void
+  public static function pluginAsynchronouseDeserialize(stream:JsonBuilderFactoryPluginStream<String>, onComplete:Null<String>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<String> return
     {
@@ -187,7 +187,7 @@ class ArrayBuilderFactoryPlugin
 {
 
   @:dox(hide)
-  public static function asynchronousDeserializeForElement<Element>(stream:JsonBuilderFactoryPluginStream<Array<Element>>, elementDeserializeFunction:JsonBuilderFactoryPluginStream<Element>->(Element->Void)->Void, onComplete:Null<Array<Element>>->Void):Void return
+  public static function asynchronousDeserializeForElement<Element>(stream:JsonBuilderFactoryPluginStream<Array<Element>>, elementDeserializeFunction:JsonBuilderFactoryPluginStream<Element>->(Element->Void)->Void, onComplete:Null<Array<Element>>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Array<Element> return
     {
@@ -195,11 +195,10 @@ class ArrayBuilderFactoryPlugin
       {
         case ARRAY(read):
           var result = [];
-          var element = read().async();
-          while (element != null)
+          var element = null;
+          while ((element = read().async()) != null)
           {
             result.push(elementDeserializeFunction(new JsonBuilderFactoryPluginStream(element)).async());
-            element = read().async();
           }
           result;
         case NULL:
@@ -210,8 +209,8 @@ class ArrayBuilderFactoryPlugin
     })(stream.underlying, onComplete);
   }
 
-  macro public static function asynchronousDeserialize<Element>(stream:haxe.macro.Expr.ExprOf<JsonBuilderFactoryPluginStream<Array<Element>>>, onComplete:haxe.macro.Expr.ExprOf<Null<Array<Element>>->Void>):haxe.macro.Expr.ExprOf<Void>
+  macro public static function pluginAsynchronouseDeserialize<Element>(stream:haxe.macro.Expr.ExprOf<JsonBuilderFactoryPluginStream<Array<Element>>>, onComplete:haxe.macro.Expr.ExprOf<Null<Array<Element>>->Void>):haxe.macro.Expr.ExprOf<Void> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.asynchronousDeserializeForElement($stream, function(substream, onElementComplete) { return substream.pluginDeserialize(onElementComplete); }, onComplete);
+    macro com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.ArrayBuilderFactoryPlugin.asynchronousDeserializeForElement($stream, function(substream, onElementComplete) { return substream.pluginAsynchronouseDeserialize(onElementComplete); }, onComplete);
   }
 }

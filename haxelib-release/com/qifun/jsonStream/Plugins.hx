@@ -45,3 +45,42 @@ typedef ArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Primit
 
 @:dox(hide)
 typedef LowPriorityDynamicDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.LowPriorityDynamicDeserializerPlugin;
+
+
+
+// TODO:
+//@:dox(hide)
+//typedef GeneratedBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.GeneratedBuilderFactoryPlugin;
+//
+@:dox(hide)
+typedef RawBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.RawBuilderFactoryPlugin;
+
+@:dox(hide)
+typedef Int64BuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.Int64BuilderFactoryPlugin;
+
+@:dox(hide)
+typedef IntBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.IntBuilderFactoryPlugin;
+
+@:dox(hide)
+typedef UIntBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.UIntBuilderFactoryPlugin;
+#if (java || cs)
+  @:dox(hide)
+  typedef SingleBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.SingleBuilderFactoryPlugin;
+#end
+
+@:dox(hide)
+typedef FloatBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.FloatBuilderFactoryPlugin;
+
+@:dox(hide)
+typedef BoolBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.BoolBuilderFactoryPlugin;
+
+@:dox(hide)
+typedef StringBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.StringBuilderFactoryPlugin;
+
+@:dox(hide)
+typedef ArrayBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.PrimitiveBuilderFactoryPlugins.ArrayBuilderFactoryPlugin;
+
+// TODO:
+//@:dox(hide)
+//typedef LowPriorityDynamicBuilderFactoryPlugin = com.qifun.jsonStream.builderFactoryPlugin.LowPriorityDynamicBuilderFactoryPlugin;
+//

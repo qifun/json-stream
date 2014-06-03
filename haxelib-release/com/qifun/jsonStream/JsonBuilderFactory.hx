@@ -295,7 +295,7 @@ class JsonBuilderFactoryGenerator
         macro
         {
           $f;
-          temporaryDeserialize.bind($typedJsonStream);
+          function(handler) temporaryDeserialize($typedJsonStream, handler);
         }
       case t:
         throw "Expect EBlock, actual " + ExprTools.toString(t);
@@ -449,12 +449,12 @@ class JsonBuilderFactoryGenerator
                 values: [ macro $v{constructorName} ],
                 expr: macro
                 {
-                  switch (pair.value)
+                  switch (value)
                   {
                     case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
                       $blockExpr;
                     case _:
-                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(pair.value, [ "OBJECT" ]);
+                      throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(value, [ "OBJECT" ]);
                   }
                 },
               }:Case);
@@ -466,7 +466,7 @@ class JsonBuilderFactoryGenerator
     {
       pos: Context.currentPos(),
       expr: ESwitch(
-        macro pair.key,
+        macro key,
         cases,
         if (unknownEnumValueConstructor == null)
         {
@@ -475,8 +475,8 @@ class JsonBuilderFactoryGenerator
         else
         {
           macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
-            pair.key,
-            com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value));
+            key,
+            com.qifun.jsonStream.JsonDeserializer.deserializeRaw(value));
         }),
     }
     var zeroParameterBranch =
@@ -518,7 +518,7 @@ class JsonBuilderFactoryGenerator
       case NULL:
         null;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
+        throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
     }
 
     var expectedTypePath =
@@ -615,7 +615,7 @@ class JsonBuilderFactoryGenerator
             hasUnknownFieldMap = true;
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
             var fieldName = field.name;
-            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
+            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro value, params);
             cases.push(
               {
                 values: [ macro $v{fieldName} ],
@@ -651,10 +651,10 @@ class JsonBuilderFactoryGenerator
     var switchKey =
     {
       pos: Context.currentPos(),
-      expr: ESwitch(macro pair.key, cases,
+      expr: ESwitch(macro key, cases,
         if (hasUnknownFieldMap)
         {
-          macro result.unknownFieldMap.underlying.set(pair.key, com.qifun.jsonStream.JsonBuilderFactory.asynchronousDeserializeRaw(pair.value).async());
+          macro result.unknownFieldMap.underlying.set(key, com.qifun.jsonStream.JsonBuilderFactory.asynchronousDeserializeRaw(value).async());
         }
         else
         {
@@ -664,26 +664,19 @@ class JsonBuilderFactoryGenerator
 
     var switchStream = macro switch (stream)
     {
-      case OBJECT(pairs):
+      case OBJECT(read):
         var result = $newInstance;
-        var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.asGenerator(pairs);
-        if (generator != null)
+        var key, value = read().async();
+        while (key != null)
         {
-          for (pair in generator)
-          {
-            $switchKey;
-          }
-        }
-        else
-        {
-          for (pair in pairs)
-          {
-            $switchKey;
-          }
+          $switchKey;
+          var k, v = read().async();
+          key = k;
+          value = v;
         }
         result;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
+        throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
     }
 
     var expectedComplexType = TPath(expectedTypePath);
@@ -836,14 +829,16 @@ class JsonBuilderFactoryGenerator
       expr: ESwitch(macro dynamicTypeName, dynamicCases, macro null),
     }
     // trace(ExprTools.toString(switchExpr));
-    buildingFields.push(
-      {
-        name: "dynamicDeserialize",
-        pos: Context.currentPos(),
-        meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
-        access: [ APublic, AStatic ],
-        kind: FFun(extractFunction(macro function(dynamicTypeName:String, valueStream:com.qifun.jsonStream.JsonStream):Dynamic return $switchExpr)),
-      });
+    
+    // TODO: Dynamic Builder
+    //buildingFields.push(
+      //{
+        //name: "dynamicDeserialize",
+        //pos: Context.currentPos(),
+        //meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
+        //access: [ APublic, AStatic ],
+        //kind: FFun(extractFunction(macro function(dynamicTypeName:String, valueStream:com.qifun.jsonStream.JsonStream):Dynamic return $switchExpr)),
+      //});
     allBuilders.remove(id);
     buildingFields;
   }
