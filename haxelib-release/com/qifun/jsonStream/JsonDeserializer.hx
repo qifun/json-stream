@@ -124,7 +124,7 @@ class JsonDeserializer
 /**
   调用`JsonDeserializer.deserialize`时可能抛出的异常。
 **/
-enum JsonDeserializeError
+enum JsonDeserializerError
 {
   TOO_MANY_FIELDS<Element>(iterator:Iterator<Element>, expected:Int);
   NOT_ENOUGH_FIELDS<Element>(iterator:Iterator<Element>, expected:Int, actual:Int);
@@ -451,7 +451,7 @@ class JsonDeserializerGenerator
                     case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
                       $blockExpr;
                     case _:
-                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(pair.value, [ "OBJECT" ]);
+                      throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(pair.value, [ "OBJECT" ]);
                   }
                 },
               }:Case);
@@ -515,7 +515,7 @@ class JsonDeserializerGenerator
       case NULL:
         null;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "OBJECT", "NULL" ]);
     }
 
     var expectedTypePath =
@@ -678,7 +678,7 @@ class JsonDeserializerGenerator
         }
         result;
       case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
+        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
     }
 
     {
@@ -816,7 +816,7 @@ class JsonDeserializerGenerator
         case NULL:
           null;
         case _:
-          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializeError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
+          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
       }
     })($stream);
   }

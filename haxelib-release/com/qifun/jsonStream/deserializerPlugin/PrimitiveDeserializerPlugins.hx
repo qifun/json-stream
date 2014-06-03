@@ -23,7 +23,7 @@ class Int64DeserializerPlugin
         case NUMBER(high):
           if (iterator.hasNext())
           {
-            throw JsonDeserializeError.TOO_MANY_FIELDS(iterator, 2);
+            throw JsonDeserializerError.TOO_MANY_FIELDS(iterator, 2);
           }
           else
           {
@@ -35,28 +35,28 @@ class Int64DeserializerPlugin
                 case NUMBER(low):
                   if (iterator.hasNext())
                   {
-                    throw JsonDeserializeError.TOO_MANY_FIELDS(iterator, 2);
+                    throw JsonDeserializerError.TOO_MANY_FIELDS(iterator, 2);
                   }
                   else
                   {
                     Int64.make(cast high, cast low);
                   }
                 case _:
-                  throw JsonDeserializeError.UNMATCHED_JSON_TYPE(element1, [ "NUMBER" ]);
+                  throw JsonDeserializerError.UNMATCHED_JSON_TYPE(element1, [ "NUMBER" ]);
               }
             }
             else
             {
-              throw JsonDeserializeError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+              throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
             }
           }
         case _:
-          throw JsonDeserializeError.UNMATCHED_JSON_TYPE(element0, [ "NUMBER" ]);
+          throw JsonDeserializerError.UNMATCHED_JSON_TYPE(element0, [ "NUMBER" ]);
       }
     }
     else
     {
-      throw JsonDeserializeError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
+      throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
     }
   }
 
@@ -84,7 +84,7 @@ class Int64DeserializerPlugin
       case NULL:
         null;
       case _:
-        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -101,7 +101,7 @@ class IntDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -118,7 +118,7 @@ class UIntDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -136,7 +136,7 @@ class UIntDeserializerPlugin
         case NULL:
           null;
         case _:
-          throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+          throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
       }
     }
   }
@@ -154,7 +154,7 @@ class FloatDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -170,7 +170,7 @@ class BoolDeserializerPlugin
       case com.qifun.jsonStream.JsonStream.TRUE: true;
       case NULL: null;
       case _:
-        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "FALSE", "TRUE", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "FALSE", "TRUE", "NULL"]);
     }
   }
 }
@@ -187,7 +187,7 @@ class StringDeserializerPlugin
       case NULL:
         null;
       case _:
-        throw JsonDeserializeError.UNMATCHED_JSON_TYPE(stream.underlying, [ "STRING", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "STRING", "NULL"]);
     }
   }
 }
