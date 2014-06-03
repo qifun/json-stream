@@ -11,6 +11,42 @@ package com.qifun.jsonStream;
 @:final
 extern class Plugins{}
 #end
+//
+//@:dox(hide)
+//typedef GeneratedSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.GeneratedSerializerPlugin;
+//
+//@:dox(hide)
+//typedef RawSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.RawSerializerPlugin;
+
+@:dox(hide)
+typedef Int64SerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.Int64SerializerPlugin;
+
+@:dox(hide)
+typedef IntSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.IntSerializerPlugin;
+
+@:dox(hide)
+typedef UIntSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.UIntSerializerPlugin;
+#if (java || cs)
+  @:dox(hide)
+  typedef SingleSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.SingleSerializerPlugin;
+#end
+
+@:dox(hide)
+typedef FloatSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.FloatSerializerPlugin;
+
+@:dox(hide)
+typedef BoolSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.BoolSerializerPlugin;
+
+@:dox(hide)
+typedef StringSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.StringSerializerPlugin;
+
+@:dox(hide)
+typedef ArraySerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin;
+
+//@:dox(hide)
+//typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.LowPriorityDynamicSerializerPlugin;
+//
+//
 
 @:dox(hide)
 typedef GeneratedDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.GeneratedDeserializerPlugin;
