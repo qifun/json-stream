@@ -20,6 +20,7 @@ using StringTools;
  */
 class JsonBuilderFactory
 {
+
   public static function asynchronousDeserializeRaw(stream:AsynchronousJsonStream, onComplete:RawJson->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):RawJson return
@@ -302,7 +303,6 @@ class JsonBuilderFactoryGenerator
     };
   }
 
-  // TODO: 改为异步
   private function newEnumDeserializeFunction(enumType:EnumType):Function return
   {
     var enumParams: Array<TypeParamDecl> =
@@ -366,7 +366,7 @@ class JsonBuilderFactoryGenerator
                 }
                 else
                 {
-                  var parameterValue = resolvedDeserialize(TypeTools.toComplexType(arg.t), macro parameterPair.value, enumAndValueParams);
+                  var parameterValue = resolvedDeserialize(TypeTools.toComplexType(arg.t), macro parameterValue, enumAndValueParams);
                   var f =
                   {
                     pos: Context.currentPos(),
@@ -375,8 +375,8 @@ class JsonBuilderFactoryGenerator
                       {
                         params: valueParams,
                         ret: null,
-                        args: [],
-                        expr: macro return $parameterValue,
+                        args: [ { name: "onComplete", type: null} ],
+                        expr: macro $parameterValue(onComplete),
                       })
                   };
                   parameterCases.push(
@@ -385,8 +385,8 @@ class JsonBuilderFactoryGenerator
                       expr: macro
                       {
                         $f;
-                        inline function nullize<T>(t:T):Null<T> return t;
-                        $i{parameterName} = nullize(temporaryEnumDeserialize());
+                        inline function nullize<T>(t:Null<T>):Null<T> return t;
+                        $i{parameterName} = nullize(temporaryEnumDeserialize().async());
                       }
                     });
                 }
@@ -395,7 +395,7 @@ class JsonBuilderFactoryGenerator
               {
                 pos: Context.currentPos(),
                 expr: ESwitch(
-                  macro parameterPair.key,
+                  macro parameterKey,
                   parameterCases,
                   if (unknownFieldMapName == null)
                   {
@@ -404,7 +404,7 @@ class JsonBuilderFactoryGenerator
                   }
                   else
                   {
-                    macro $i{unknownFieldMapName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(parameterPair.value));
+                    macro $i{unknownFieldMapName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonBuilderFactory.asynchronousDeserializeRaw(parameterValue));
                   }),
               };
               var newEnum =
@@ -416,27 +416,24 @@ class JsonBuilderFactoryGenerator
                     for (i in 0...args.length)
                     {
                       var parameterName = 'parameter$i';
-                      macro $i{parameterName};
+                      macro
+                      {
+                        inline function nullize<T>(t:Null<T>):Null<T> return t;
+                        nullize($i{parameterName});
+                      }
                     }
                   ]),
               };
               block.push(
                 macro
                 {
-                  var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.asGenerator(parameterPairs);
-                  if (generator != null)
+                  var parameterKey, parameterValue = readParameter().async();
+                  while (parameterKey != null)
                   {
-                    for (parameterPair in generator)
-                    {
-                      $switchKey;
-                    }
-                  }
-                  else
-                  {
-                    for (parameterPair in parameterPairs)
-                    {
-                      $switchKey;
-                    }
+                    $switchKey;
+                    var k, v = readParameter().async();
+                    parameterKey = k;
+                    parameterValue = v;
                   }
                   $newEnum;
                 });
@@ -449,12 +446,12 @@ class JsonBuilderFactoryGenerator
                 values: [ macro $v{constructorName} ],
                 expr: macro
                 {
-                  switch (value)
+                  switch (constructorValue)
                   {
-                    case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
+                    case com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream.OBJECT(readParameter):
                       $blockExpr;
                     case _:
-                      throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(value, [ "OBJECT" ]);
+                      throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(constructorValue, [ "OBJECT" ]);
                   }
                 },
               }:Case);
@@ -466,7 +463,7 @@ class JsonBuilderFactoryGenerator
     {
       pos: Context.currentPos(),
       expr: ESwitch(
-        macro key,
+        macro constructorKey,
         cases,
         if (unknownEnumValueConstructor == null)
         {
@@ -475,8 +472,8 @@ class JsonBuilderFactoryGenerator
         else
         {
           macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
-            key,
-            com.qifun.jsonStream.JsonDeserializer.deserializeRaw(value));
+            constructorKey,
+            com.qifun.jsonStream.JsonBuilderFactory.asynchronousDeserializeRaw(constructorValue).async());
         }),
     }
     var zeroParameterBranch =
@@ -510,11 +507,18 @@ class JsonBuilderFactoryGenerator
     {
       case STRING(constructorName):
         $zeroParameterBranch;
-      case OBJECT(pairs):
-        function selectEnumValue(pair:com.qifun.jsonStream.JsonStream.JsonStreamPair) return $processObjectBody;
-        com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.optimizedExtract1(
-          pairs,
-          selectEnumValue);
+      case OBJECT(readConstructor):
+        var constructorKey:Null<String>, constructorValue:Null<com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream> = readConstructor().async();
+        if (constructorKey == null)
+        {
+          throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.NOT_ENOUGH_FIELDS(readConstructor, 1, 0);
+        }
+        var nullKey:String, nullValue:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream = readConstructor().async();
+        if (nullKey != null)
+        {
+          throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.TOO_MANY_FIELDS(readConstructor, 1);
+        }
+        $processObjectBody;
       case NULL:
         null;
       case _:
@@ -528,21 +532,35 @@ class JsonBuilderFactoryGenerator
       sub: enumType.name,
       params: [ for (p in enumType.params) TPType(TPath({ pack: [], name: p.name})) ]
     };
+    var expectedComplexType = TPath(expectedTypePath);
     {
       args:
       [
         {
           name:"stream",
-          type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+          type: TPath(
+            {
+              pack: [ "com", "qifun", "jsonStream" ],
+              name: "JsonBuilder",
+              sub: "AsynchronousJsonStream",
+            }),
         },
+        {
+          name: "onComplete",
+          type: TFunction([expectedComplexType], TPath({ name: "Void", pack: []}))
+        }
       ],
-      ret: TPath(expectedTypePath),
-      expr: macro return $methodBody,
+      ret: TPath({ name: "Void", pack: []}),
+      expr: macro
+        com.dongxiguo.continuation.Continuation.cpsFunction(
+          function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):Null<$expectedComplexType>
+          {
+            return $methodBody;
+          })(stream, onComplete),
       params: enumParams,
     }
   }
 
-  // TODO: 改为异步
   private function newAbstractDeserializeFunction(abstractType:AbstractType):Function return
   {
     var params: Array<TypeParamDecl> =
@@ -562,21 +580,35 @@ class JsonBuilderFactoryGenerator
       sub: abstractType.name,
       params: [ for (p in params) TPType(TPath({ pack: [], name: p.name})) ]
     };
+    var expectedComplexType = TPath(expectedTypePath);
     {
       args:
       [
         {
           name:"stream",
-          type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+          type: TPath(
+            {
+              pack: [ "com", "qifun", "jsonStream" ],
+              name: "JsonBuilder",
+              sub: "AsynchronousJsonStream",
+            }),
         },
+        {
+          name: "onComplete",
+          type: TFunction([expectedComplexType], TPath({ name: "Void", pack: []}))
+        }
       ],
-      ret: TPath(expectedTypePath),
-      expr: macro return cast $implExpr,
+      ret: TPath({ name: "Void", pack: []}),
+      expr: macro
+        com.dongxiguo.continuation.Continuation.cpsFunction(
+          function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):$expectedComplexType
+          {
+            return cast $implExpr().async();
+          })(stream, onComplete),
       params: params,
     }
   }
 
-  // TODO: 改为异步
   private function newClassDeserializeFunction(classType:ClassType):Function return
   {
     var params: Array<TypeParamDecl> =
