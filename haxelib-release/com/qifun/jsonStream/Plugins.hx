@@ -48,10 +48,10 @@ typedef LowPriorityDynamicDeserializerPlugin = com.qifun.jsonStream.deserializer
 
 
 
-// TODO:
-//@:dox(hide)
-//typedef GeneratedBuilderPlugin = com.qifun.jsonStream.builderPlugin.GeneratedBuilderPlugin;
-//
+
+@:dox(hide)
+typedef GeneratedBuilderPlugin = com.qifun.jsonStream.builderPlugin.GeneratedBuilderPlugin;
+
 @:dox(hide)
 typedef RawBuilderPlugin = com.qifun.jsonStream.builderPlugin.RawBuilderPlugin;
 
@@ -80,7 +80,5 @@ typedef StringBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilde
 @:dox(hide)
 typedef ArrayBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin;
 
-// TODO:
-//@:dox(hide)
-//typedef LowPriorityDynamicBuilderPlugin = com.qifun.jsonStream.builderPlugin.LowPriorityDynamicBuilderPlugin;
-//
+@:dox(hide)
+typedef LowPriorityDynamicBuilderPlugin = com.qifun.jsonStream.builderPlugin.LowPriorityDynamicBuilderPlugin;

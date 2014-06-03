@@ -158,7 +158,7 @@ class JsonBuilder<Result>
     b;
   }
   
-  public  inline function setArray():JsonArrayBuilder return
+  public inline function setArray():JsonArrayBuilder return
   {
     var b:JsonArrayBuilder;
     asynchronousFunction(

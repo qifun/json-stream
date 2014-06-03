@@ -187,7 +187,7 @@ class ArrayBuilderPlugin
 {
 
   @:dox(hide)
-  public static function asynchronousDeserializeForElement<Element>(stream:JsonBuilderPluginStream<Array<Element>>, elementDeserializeFunction:JsonBuilderPluginStream<Element>->(Element->Void)->Void, onComplete:Null<Array<Element>>->Void):Void
+  public static function buildForElement<Element>(stream:JsonBuilderPluginStream<Array<Element>>, elementDeserializeFunction:JsonBuilderPluginStream<Element>->(Element->Void)->Void, onComplete:Null<Array<Element>>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Array<Element> return
     {
@@ -211,6 +211,6 @@ class ArrayBuilderPlugin
 
   macro public static function pluginBuild<Element>(stream:haxe.macro.Expr.ExprOf<JsonBuilderPluginStream<Array<Element>>>, onComplete:haxe.macro.Expr.ExprOf<Null<Array<Element>>->Void>):haxe.macro.Expr.ExprOf<Void> return
   {
-    macro com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin.asynchronousDeserializeForElement($stream, function(substream, onElementComplete) { return substream.pluginBuild(onElementComplete); }, onComplete);
+    macro com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin.buildForElement($stream, function(substream, onElementComplete) { return substream.pluginBuild(onElementComplete); }, $onComplete);
   }
 }

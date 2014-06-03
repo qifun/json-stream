@@ -1,6 +1,5 @@
 package  ;
 
-import com.qifun.jsonStream.JsonBuilderFactory;
 import com.qifun.jsonStream.JsonStream;
 import haxe.macro.Context;
 import haxe.macro.Expr;
@@ -10,6 +9,7 @@ import haxe.macro.TypeTools;
 import com.qifun.jsonStream.RawJson;
 using com.qifun.jsonStream.JsonSerializer;
 using com.qifun.jsonStream.JsonDeserializer;
+using com.qifun.jsonStream.JsonBuilderFactory;
 using com.qifun.jsonStream.Plugins;
 #end
 

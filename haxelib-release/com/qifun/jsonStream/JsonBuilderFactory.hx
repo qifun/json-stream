@@ -2,6 +2,7 @@ package com.qifun.jsonStream;
 
 import com.qifun.jsonStream.JsonBuilder;
 import com.dongxiguo.continuation.Continuation;
+import com.qifun.jsonStream.unknown.UnknownType;
 
 #if macro
 import haxe.ds.StringMap;
@@ -40,7 +41,7 @@ class JsonBuilderFactory
     {
       for (rootType in Context.getModule(moduleName))
       {
-        generator.tryAddDeserializeMethod(rootType);
+        generator.tryAddBuildMethod(rootType);
       }
     }
     generator.buildFields();
@@ -61,55 +62,16 @@ class JsonBuilderFactory
         });
         macro new JsonBuilder(function(stream:$pluginStreamComplexType, onComplete):Void
         {
-          stream.pluginAsynchronousDeserialize(onComplete);
+          stream.pluginBuild(onComplete);
         });
       case _: throw "Expect JsonBuilder!";
     }
   }
 }
 
-/*
-
-目标：
-1. 不要创建海量的闭包
-2. 最好不要两次反射
-
-对于非引用类型，需要回写
-对于引用类型，不需要回写
-
-有三种实现方法：
-1. 引用类型，不回写
-2. 非引用类型，使用accessor，不回写
-3. 非引用类型，使用accessor，回写
-
-引用类型无论是否回写，都需要accessor
-
-switch两次是难免的
-
-第一次switch创建Builder
-第二次switch回写值
-
-只有部分beginObject（dynamic）才需要rewrite
-
-accessor有两种，闭包和反射，如果用闭包，CPU性能高，但会生成很多类
-闭包在dynamic以外的场合，可以内联掉
-可以统一给予闭包accessor，但dynamic会分析闭包，转换成字符串供反射
-
-setter统一使用反射较好。盖Haxe反射性能原本就不错。
-
-不说插件，就说生成的类Builder函数签名是什么
-
-function asBuilder_Xxx(xxx:Xxx):IJsonBuilder
-function setBoolField_Xxx(xxx:Xxx, field:String, value:Bool):Void
-反正创建类是免不了的，那么自己创建总比被迫创建要好
-
-不管了，就用海量闭包实现，反正这东西只是为了接口完备，性能差也不管了
-*/
-typedef RequireRewrite = Bool;
-
 typedef JsonBuilderPlugin<Result> =
 {
-  function pluginAsynchronousDeserialize(stream:JsonBuilderPluginStream<Result>, onComplete:Result->Void):Void;
+  function pluginBuild(stream:JsonBuilderPluginStream<Result>, onComplete:Result->Void):Void;
 }
 
 abstract JsonBuilderPluginStream<Result>(AsynchronousJsonStream)
@@ -135,6 +97,238 @@ abstract JsonBuilderPluginStream<Result>(AsynchronousJsonStream)
 #if macro
 class JsonBuilderFactoryGenerator
 {
+  
+  private var buildingClassExpr(get, never):Expr;
+
+  private function get_buildingClassExpr():Expr return
+  {
+    var modulePath = MacroStringTools.toFieldExpr(buildingClass.module.split("."));
+    var className = buildingClass.name;
+    macro $modulePath.$className;
+  }
+  
+  public static function generatedBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:Expr, expectedType:Type):Expr return
+  {
+    switch (Context.follow(expectedType))
+    {
+      case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
+        var methodName = buildMethodName(classType.pack, classType.name);
+        for (usingClassRef in Context.getLocalUsing())
+        {
+          var usingClass = usingClassRef.get();
+          var field = TypeTools.findField(usingClass, methodName, true);
+          if (field != null)
+          {
+            if (classType.meta.has(":final"))
+            {
+              var path = usingClass.module.split(".");
+              path.push(usingClass.name);
+              var pathExpr = MacroStringTools.toFieldExpr(path);
+              return macro $pathExpr.$methodName($stream);
+            }
+            else
+            {
+              return dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+            }
+          }
+        }
+        var contextBuilder = getContextBuilder();
+        if (contextBuilder.deserializingTypes.get(methodName) == null)
+        {
+          contextBuilder.deserializingTypes.set(methodName, classType);
+          contextBuilder.buildingFields.push(
+            {
+              name: methodName,
+              pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
+              access: [ APublic, AStatic ],
+              kind: FFun(contextBuilder.newClassBuildFunction(classType)),
+            });
+        }
+        if (classType.meta.has(":final"))
+        {
+          var buildingClassExpr = contextBuilder.buildingClassExpr;
+          macro untyped($buildingClassExpr).$methodName($stream, $onComplete);
+        }
+        else
+        {
+          dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+        }
+      case TEnum(_.get() => enumType, _):
+        var methodName = buildMethodName(enumType.pack, enumType.name);
+        for (usingClassRef in Context.getLocalUsing())
+        {
+          var usingClass = usingClassRef.get();
+          var field = TypeTools.findField(usingClass, methodName, true);
+          if (field != null)
+          {
+            var path = usingClass.module.split(".");
+            path.push(usingClass.name);
+            var pathExpr = MacroStringTools.toFieldExpr(path);
+            return macro $pathExpr.$methodName($stream, $onComplete);
+          }
+        }
+        var contextBuilder = getContextBuilder();
+        if (contextBuilder.deserializingTypes.get(methodName) == null)
+        {
+          contextBuilder.deserializingTypes.set(methodName, enumType);
+          contextBuilder.buildingFields.push(
+            {
+              name: methodName,
+              pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
+              access: [ APublic, AStatic ],
+              kind: FFun(contextBuilder.newEnumBuildFunction(enumType)),
+            });
+        }
+        var buildingClassExpr = contextBuilder.buildingClassExpr;
+        macro untyped($buildingClassExpr).$methodName($stream, $onComplete);
+      case TAbstract(_.get() => abstractType, _):
+        var methodName = buildMethodName(abstractType.pack, abstractType.name);
+        for (usingClassRef in Context.getLocalUsing())
+        {
+          var usingClass = usingClassRef.get();
+          var field = TypeTools.findField(usingClass, methodName, true);
+          if (field != null)
+          {
+            if (abstractType.impl.get().meta.has(":final"))
+            {
+              var path = usingClass.module.split(".");
+              path.push(usingClass.name);
+              var pathExpr = MacroStringTools.toFieldExpr(path);
+              return macro $pathExpr.$methodName($stream, $onComplete);
+            }
+            else
+            {
+              return dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+            }
+          }
+        }
+        var contextBuilder = getContextBuilder();
+        if (contextBuilder.deserializingTypes.get(methodName) == null)
+        {
+          contextBuilder.deserializingTypes.set(methodName, abstractType);
+          contextBuilder.buildingFields.push(
+            {
+              name: methodName,
+              pos: Context.currentPos(),
+              meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
+              access: [ APublic, AStatic ],
+              kind: FFun(contextBuilder.newAbstractBuildFunction(abstractType)),
+            });
+        }
+        if (abstractType.impl.get().meta.has(":final"))
+        {
+          var buildingClassExpr = contextBuilder.buildingClassExpr;
+          macro untyped($buildingClassExpr).$methodName($stream, $onComplete);
+        }
+        else
+        {
+          dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+        }
+      case t:
+        dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+    }
+  }
+
+  private static function getContextBuilder():JsonBuilderFactoryGenerator return
+  {
+    var localClass = Context.getLocalClass().get();
+    allBuilders.get(localClass.module + "." + localClass.name);
+  }
+
+  public static function dynamicBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:ExprOf<Dynamic->Void>, expectedComplexType:Null<ComplexType>):Expr return
+  {
+    if (expectedComplexType == null)
+    {
+      expectedComplexType = TPath( { pack:[], name:"Dynamic", } );
+    }
+    var localUsings = Context.getLocalUsing();
+    function createFunction(i:Int, key:ExprOf<String>, value:ExprOf<JsonStream>):Expr return
+    {
+      if (i < localUsings.length)
+      {
+        var classType = localUsings[i].get();
+        var field = TypeTools.findField(classType, "dynamicBuild", true);
+        if (field == null)
+        {
+          createFunction(i + 1, key, value);
+        }
+        else
+        {
+          var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
+          var className = classType.name;
+          var next = createFunction(i + 1, key, value);
+          macro
+          {
+            var result = $modulePath.$className.dynamicBuild($key, $value).async();
+            if (result != null)
+            {
+              result;
+            }
+            else
+            {
+              $next;
+            }
+          }
+        }
+      }
+      else
+      {
+        var contextBuilder = getContextBuilder();
+        if (contextBuilder == null)
+        {
+          macro new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream<$expectedComplexType>($value).buildUnknown($key).async();
+        }
+        else
+        {
+          var classType = getContextBuilder().buildingClass;
+          var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
+          var className = classType.name;
+          macro
+          {
+            inline function untypedBuild(onComplete):Void
+            {
+              untyped($modulePath.$className).dynamicBuild($key, $value, onComplete);
+            }
+            var knownValue = untypedBuild().async();
+            if (knownValue == null)
+            {
+              new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream<$expectedComplexType>($value).buildUnknown($key).async();
+            }
+            else
+            {
+              knownValue;
+            }
+          }
+        }
+      }
+    }
+    var processDynamic = createFunction(0, macro dynamicKey, macro dynamicValue);
+    macro com.dongxiguo.continuation.Continuation.cpsFunction(function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):Dynamic return
+    {
+      switch (stream)
+      {
+        case OBJECT(readPair):
+          var dynamicKey, dynamicValue = readPair().async();
+          if (dynamicKey == null)
+          {
+            throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.NOT_ENOUGH_FIELDS(readPair, 1, 0);
+          }
+          var nullKey, nullValue = readPair().async();
+          if (nullKey != null)
+          {
+            throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.TOO_MANY_FIELDS(readPair, 1);
+          }
+          $processDynamic;
+        case NULL:
+          null;
+        case _:
+          throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
+      }
+    })($stream, $onComplete);
+  }
+  
   private static var VOID_COMPLEX_TYPE(default, never) =
     TPath({ name: "Void", pack: []});
 
@@ -193,7 +387,7 @@ class JsonBuilderFactoryGenerator
     }
   }
 
-  private static function deserializeMethodName(pack:Array<String>, name:String):String
+  private static function buildMethodName(pack:Array<String>, name:String):String
   {
     var sb = new StringBuf();
     sb.add("asynchronousDeserialize_");
@@ -207,7 +401,7 @@ class JsonBuilderFactoryGenerator
   }
 
   // 类似deserialize，但是能递归解决类型，以便能够在@:build宏返回以前就立即执行
-  private static function resolvedDeserialize(expectedComplexType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
+  private static function resolvedBuild(expectedComplexType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedJsonStreamTypePath =
     {
@@ -264,7 +458,7 @@ class JsonBuilderFactoryGenerator
     };
   }
 
-  private function newEnumDeserializeFunction(enumType:EnumType):Function return
+  private function newEnumBuildFunction(enumType:EnumType):Function return
   {
     var enumParams: Array<TypeParamDecl> =
     [
@@ -327,7 +521,7 @@ class JsonBuilderFactoryGenerator
                 }
                 else
                 {
-                  var parameterValue = resolvedDeserialize(TypeTools.toComplexType(arg.t), macro parameterValue, enumAndValueParams);
+                  var parameterValue = resolvedBuild(TypeTools.toComplexType(arg.t), macro parameterValue, enumAndValueParams);
                   var f =
                   {
                     pos: Context.currentPos(),
@@ -365,7 +559,7 @@ class JsonBuilderFactoryGenerator
                   }
                   else
                   {
-                    macro $i{unknownFieldMapName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(parameterValue));
+                    macro $i{unknownFieldMapName}.underlying.set(parameterKey, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(parameterValue).async());
                   }),
               };
               var newEnum =
@@ -508,10 +702,10 @@ class JsonBuilderFactoryGenerator
         },
         {
           name: "onComplete",
-          type: TFunction([expectedComplexType], TPath({ name: "Void", pack: []}))
+          type: TFunction([expectedComplexType], VOID_COMPLEX_TYPE)
         }
       ],
-      ret: TPath({ name: "Void", pack: []}),
+      ret: VOID_COMPLEX_TYPE,
       expr: macro
         com.dongxiguo.continuation.Continuation.cpsFunction(
           function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):Null<$expectedComplexType>
@@ -522,7 +716,7 @@ class JsonBuilderFactoryGenerator
     }
   }
 
-  private function newAbstractDeserializeFunction(abstractType:AbstractType):Function return
+  private function newAbstractBuildFunction(abstractType:AbstractType):Function return
   {
     var params: Array<TypeParamDecl> =
     [
@@ -532,7 +726,7 @@ class JsonBuilderFactoryGenerator
         // TODO: constraits
       }
     ];
-    var implExpr = resolvedDeserialize(TypeTools.toComplexType(abstractType.type), macro stream, params);
+    var implExpr = resolvedBuild(TypeTools.toComplexType(abstractType.type), macro stream, params);
     var abstractModule = abstractType.module;
     var expectedTypePath =
     {
@@ -556,10 +750,10 @@ class JsonBuilderFactoryGenerator
         },
         {
           name: "onComplete",
-          type: TFunction([expectedComplexType], TPath({ name: "Void", pack: []}))
+          type: TFunction([expectedComplexType], VOID_COMPLEX_TYPE)
         }
       ],
-      ret: TPath({ name: "Void", pack: []}),
+      ret: VOID_COMPLEX_TYPE,
       expr: macro
         com.dongxiguo.continuation.Continuation.cpsFunction(
           function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):$expectedComplexType
@@ -570,7 +764,7 @@ class JsonBuilderFactoryGenerator
     }
   }
 
-  private function newClassDeserializeFunction(classType:ClassType):Function return
+  private function newClassBuildFunction(classType:ClassType):Function return
   {
     var params: Array<TypeParamDecl> =
     [
@@ -608,7 +802,7 @@ class JsonBuilderFactoryGenerator
             hasUnknownFieldMap = true;
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
             var fieldName = field.name;
-            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro value, params);
+            var d = resolvedBuild(TypeTools.toComplexType(applyTypeParameters(field.type)), macro value, params);
             cases.push(
               {
                 values: [ macro $v{fieldName} ],
@@ -687,10 +881,10 @@ class JsonBuilderFactoryGenerator
         },
         {
           name: "onComplete",
-          type: TFunction([expectedComplexType], TPath({ name: "Void", pack: []}))
+          type: TFunction([expectedComplexType], VOID_COMPLEX_TYPE)
         }
       ],
-      ret: TPath({ name: "Void", pack: []}),
+      ret: VOID_COMPLEX_TYPE,
       expr: macro
         com.dongxiguo.continuation.Continuation.cpsFunction(
           function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):$expectedComplexType
@@ -702,12 +896,12 @@ class JsonBuilderFactoryGenerator
   }
 
 
-  public function tryAddDeserializeMethod(type:Type):Void
+  public function tryAddBuildMethod(type:Type):Void
   {
     switch (Context.follow(type))
     {
       case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
-        var methodName = deserializeMethodName(classType.pack, classType.name);
+        var methodName = buildMethodName(classType.pack, classType.name);
         if (deserializingTypes.get(methodName) == null)
         {
           deserializingTypes.set(methodName, classType);
@@ -717,11 +911,11 @@ class JsonBuilderFactoryGenerator
               pos: Context.currentPos(),
               meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
-              kind: FFun(newClassDeserializeFunction(classType)),
+              kind: FFun(newClassBuildFunction(classType)),
             });
         }
       case TEnum(_.get() => enumType, _):
-        var methodName = deserializeMethodName(enumType.pack, enumType.name);
+        var methodName = buildMethodName(enumType.pack, enumType.name);
         if (deserializingTypes.get(methodName) == null)
         {
           deserializingTypes.set(methodName, enumType);
@@ -731,11 +925,11 @@ class JsonBuilderFactoryGenerator
               pos: Context.currentPos(),
               meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
-              kind: FFun(newEnumDeserializeFunction(enumType)),
+              kind: FFun(newEnumBuildFunction(enumType)),
             });
         }
       case TAbstract(_.get() => abstractType, _):
-        var methodName = deserializeMethodName(abstractType.pack, abstractType.name);
+        var methodName = buildMethodName(abstractType.pack, abstractType.name);
         if (deserializingTypes.get(methodName) == null)
         {
           deserializingTypes.set(methodName, abstractType);
@@ -745,7 +939,7 @@ class JsonBuilderFactoryGenerator
               pos: Context.currentPos(),
               meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
-              kind: FFun(newAbstractDeserializeFunction(abstractType)),
+              kind: FFun(newAbstractBuildFunction(abstractType)),
             });
         }
       case _:
@@ -782,18 +976,20 @@ class JsonBuilderFactoryGenerator
       }
       var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
       var nameField = baseType.name;
-      var pluginDeserializeField = TypeTools.findField(localUsing.get(), "pluginAsynchronousDeserialize", true);
+      var pluginDeserializeField = TypeTools.findField(localUsing.get(), "pluginBuild", true);
       if (pluginDeserializeField != null && !pluginDeserializeField.meta.has(":noDynamicAsynchronousDeserialize"))
       {
-        var expr = macro $moduleExpr.$nameField.pluginDeserialize(new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream(valueStream), macro onComplete);
-        var temporaryFunction = macro function (valueStream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream, onComplete:Dynamic->Void):Void $expr;
+        var temporaryFunction = macro function (valueStream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream, onComplete):Void
+        {
+          $moduleExpr.$nameField.pluginBuild(new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream(valueStream), onComplete);
+        };
         var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
         var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
-        var fullName = switch (Context.follow(typedTemporaryFunction.t))
+        var fullName:String = switch (Context.follow(typedTemporaryFunction.t))
         {
-          case TFun(_, Context.follow(_) => TInst(_.get() => { module: module, name: name }, _)): getFullName(module, name);
-          case TFun(_, Context.follow(_) => TAbstract(_.get() => { module: module, name: name }, _)): getFullName(module, name);
-          case TFun(_, Context.follow(_) => TEnum(_.get() => { module: module, name: name }, _)): getFullName(module, name);
+          case TFun([ _, Context.follow(_.t) => TFun([ Context.follow(_.t) => TAbstract(_.get() => { module: module, name: name }, _) ], _) ], _): getFullName(module, name);
+          case TFun([ _, Context.follow(_.t) => TFun([ Context.follow(_.t) => TEnum(_.get() => { module: module, name: name }, _) ], _) ], _): getFullName(module, name);
+          case TFun([ _, Context.follow(_.t) => TFun([ Context.follow(_.t) => TInst(_.get() => { module: module, name: name }, _) ], _) ], _): getFullName(module, name);
           case t: continue;
         }
         dynamicCases.push(
@@ -814,17 +1010,14 @@ class JsonBuilderFactoryGenerator
           expr: macro ($i{methodName}(valueStream, onComplete)),
         });
     }
-
     var switchExpr =
     {
       pos: Context.currentPos(),
       expr: ESwitch(macro dynamicTypeName, dynamicCases, macro null),
     }
-    // trace(ExprTools.toString(switchExpr));
-
     buildingFields.push(
       {
-        name: "dynamicAsynchronousDeserialize",
+        name: "dynamicBuild",
         pos: Context.currentPos(),
         meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
         access: [ APublic, AStatic ],
@@ -844,11 +1037,11 @@ class JsonBuilderFactoryGenerator
                 name: "onComplete",
                 type: TFunction(
                   [ TPath( { pack: [], name: "Dynamic", } ) ],
-                  TPath( { pack: [], name: "Void", } )
+                  VOID_COMPLEX_TYPE
                 )
               }
             ],
-            ret: TPath( { pack: [], name: "Void", } ),
+            ret: VOID_COMPLEX_TYPE,
             expr: macro $switchExpr,
           }),
       });
@@ -907,5 +1100,70 @@ class JsonBuilderRuntime
           throw "unreachable code";
       });
     })(stream, onComplete);
+  }
+}
+
+
+@:dox(hide)
+@:final
+extern class FallbackUnknownTypeJsonBuilder
+{
+  @:extern
+  public inline static function buildUnknown<Element>(stream:JsonBuilderPluginStream<Element>, type:String, onComplete:Dynamic->Void):Void
+  {
+    onComplete(null);
+  }
+}
+
+
+@:dox(hide)
+@:final
+extern class UnknownTypeSetterJsonBuilder
+{
+
+  @:generic
+  @:extern
+  public static inline function buildUnknown<Result:{ function new():Void; var unknownType(never, set):UnknownType; }>(stream:JsonBuilderPluginStream<Result>, type:String, onComplete:Result->Void):Void
+  {
+    JsonBuilderRuntime.buildRaw(stream.underlying, function(rawJson):Void
+    {
+      var result = new Result();
+      result.unknownType = new UnknownType(type, rawJson);
+      onComplete(result);
+    });
+  }
+
+}
+
+@:dox(hide)
+@:final
+extern class UnknownTypeFieldJsonBuilder
+{
+
+  @:generic
+  @:extern
+  public static inline function buildUnknown<Result:{ function new():Void; var unknownType(null, default):UnknownType; }>(stream:JsonBuilderPluginStream<Result>, type:String, onComplete:Result->Void):Void
+  {
+    JsonBuilderRuntime.buildRaw(stream.underlying, function(rawJson):Void
+    {
+      var result = new Result();
+      result.unknownType = new UnknownType(type, rawJson);
+      onComplete(result);
+    });
+  }
+
+}
+
+@:dox(hide)
+@:final
+extern class DynamicUnknownTypeJsonBuilder
+{
+  @:extern
+  public static inline function buildUnknown<T:LowPriorityDynamic>(stream:JsonBuilderPluginStream<T>, type:String, onComplete:Dynamic->Void):Void
+  {
+    JsonBuilderRuntime.buildRaw(stream.underlying, function(rawJson):Void
+    {
+      onComplete(new UnknownType(type, rawJson));
+    });
   }
 }

@@ -1,10 +1,8 @@
-package com.qifun.jsonStream.deserializerPlugin;
+package com.qifun.jsonStream.builderPlugin;
 
-import com.qifun.jsonStream.JsonDeserializer;
+import com.qifun.jsonStream.JsonBuilderFactory;
 import haxe.macro.ExprTools;
-import haxe.macro.MacroStringTools;
 #if macro
-using Lambda;
 import haxe.macro.TypeTools;
 import haxe.macro.Expr;
 import haxe.macro.ComplexTypeTools;
@@ -19,18 +17,18 @@ import haxe.macro.Context;
   由于本插件匹配一切类型，所以比本插件先`using`的插件都会失效。通常应当在`using`其他插件以前`using`本插件。
 **/
 @:final
-class GeneratedDeserializerPlugin
+class GeneratedBuilderPlugin
 {
 
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize<T>(stream:ExprOf<JsonDeserializerPluginStream<T>>):ExprOf<T> return
+  macro public static function pluginBuild<T>(stream:ExprOf<JsonBuilderPluginStream<T>>, onComplete:ExprOf<T->Void>):ExprOf<Void> return
   {
     switch (Context.follow(Context.typeof(stream)))
     {
       case TAbstract(_, [ expectedType ]):
-        JsonDeserializerGenerator.generatedDeserialize(expectedType, macro $stream.underlying);
+        JsonBuilderFactoryGenerator.generatedBuild(macro $stream.underlying, onComplete, expectedType);
       case _:
-        throw "Expected JsonDeserializerPluginStream";
+        throw "Expected JsonBuilderPluginStream";
     }
   }
 
