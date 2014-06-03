@@ -58,7 +58,9 @@ enum E3<T>
 enum Good
 {
   MORNING;
-  EVENING(message:String, nc:NewClass, self:Good, i:Int, u:UInt, f:Float, i64:Int64, b:Bool, d:Dynamic);
+  
+  // EVENING(message:String, nc:NewClass, self:Good, i:Int, u:UInt, f:Float, i64:Int64, b:Bool, d:Dynamic); // UInt will fail due to https://github.com/HaxeFoundation/haxe/issues/3052
+  EVENING(message:String, nc:NewClass, self:Good, i:Int, f:Float, i64:Int64, b:Bool, d:Dynamic);
   AFTER_NOON(unknownFieldMap:com.qifun.jsonStream.unknown.UnknownFieldMap, xxx:String);
 }
 

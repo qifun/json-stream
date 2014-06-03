@@ -56,7 +56,9 @@ class Int64BuilderPlugin
 @:final
 class IntBuilderPlugin
 {
-  public static inline function pluginBuild(stream:JsonBuilderPluginStream<Int>, onComplete:Null<Int>->Void):Void
+  public static
+  #if !cs inline #end // Workaround
+  function pluginBuild(stream:JsonBuilderPluginStream<Int>, onComplete:Null<Int>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Int> return
     {
@@ -76,7 +78,9 @@ class IntBuilderPlugin
 @:final
 class UIntBuilderPlugin
 {
-  public static function pluginBuild(stream:JsonBuilderPluginStream<UInt>, onComplete:Null<UInt>->Void):Void
+  public static
+  #if !cs inline #end // Workaround
+  function pluginBuild(stream:JsonBuilderPluginStream<UInt>, onComplete:Null<UInt>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<UInt> return
     {

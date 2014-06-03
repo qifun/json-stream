@@ -390,7 +390,7 @@ class JsonBuilderFactoryGenerator
   private static function buildMethodName(pack:Array<String>, name:String):String
   {
     var sb = new StringBuf();
-    sb.add("asynchronousDeserialize_");
+    sb.add("build_");
     for (p in pack)
     {
       processName(sb, p);
@@ -540,8 +540,7 @@ class JsonBuilderFactoryGenerator
                       expr: macro
                       {
                         $f;
-                        inline function nullize<T>(t:Null<T>):Null<T> return t;
-                        $i{parameterName} = nullize(temporaryEnumDeserialize().async());
+                        $i{parameterName} = com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.nullize(temporaryEnumDeserialize().async());
                       }
                     });
                 }
@@ -571,11 +570,7 @@ class JsonBuilderFactoryGenerator
                     for (i in 0...args.length)
                     {
                       var parameterName = 'parameter$i';
-                      macro
-                      {
-                        inline function nullize<T>(t:Null<T>):Null<T> return t;
-                        nullize($i{parameterName});
-                      }
+                      macro com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.nullize($i{parameterName});
                     }
                   ]),
               };
@@ -1064,6 +1059,9 @@ enum JsonBuilderError
 @:final
 class JsonBuilderRuntime
 {
+
+  @:extern
+  public static inline function nullize<T>(t:Null<T>):Null<T> return t;
   
   public static function buildRaw(stream:AsynchronousJsonStream, onComplete:RawJson->Void):Void
   {
