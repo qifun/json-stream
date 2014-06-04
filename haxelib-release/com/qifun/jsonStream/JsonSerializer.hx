@@ -598,7 +598,11 @@ class JsonSerializerGenerator
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
             var fieldName = field.name;
             var s = resolvedSerialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro data.$fieldName, params);
-            blockExprs.push(macro yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v { fieldName }, $s)).async());
+            blockExprs.push(
+              macro if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull(data.$fieldName))
+              {
+                yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fieldName}, $s)).async();
+              });
           case _:
             continue;
         }
@@ -968,6 +972,10 @@ class JsonSerializerGenerator
 class JsonSerializerRuntime
 {
 
+  public static
+  #if (!java) inline #end // Don't inline for Java targets, because of https://github.com/HaxeFoundation/haxe/issues/3094
+  function isNotNull<T>(maybeNull:Null<T>):Bool return maybeNull == null;
+  
   public static function yieldUnknownFieldMap(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>, onComplete:Void->Void):Void
   {
     Continuation.cpsFunction(function(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>):Void

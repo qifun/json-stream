@@ -12,7 +12,8 @@ import haxe.Int64;
 @:final
 class Int64SerializerPlugin
 {
-  public static inline function pluginSerialize(data:JsonSerializerPluginData<Int64>):JsonStream return
+  /* inline */ // 如果加入inline，会导致Java平台编译错误
+  public static function pluginSerialize(data:JsonSerializerPluginData<Int64>):JsonStream return
   {
     if (data == null)
     {
