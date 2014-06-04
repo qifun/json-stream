@@ -31,21 +31,21 @@ class Int64SerializerPlugin
 }
 
 @:final
+class UIntSerializerPlugin
+{
+  /* inline */ // 如果加入inline，会导致Java平台编译错误
+  public static function pluginSerialize(data:JsonSerializerPluginData<UInt>):JsonStream return
+  {
+    data == null ? NULL : NUMBER(data.underlying);
+  }
+}
+
+@:final
 class IntSerializerPlugin
 {
   public static inline function pluginSerialize(data:JsonSerializerPluginData<Int>):JsonStream return
   {
     data.underlying == null ? NULL : NUMBER(data.underlying);
-  }
-}
-
-@:final
-class UIntSerializerPlugin
-{
-  public static inline function pluginSerialize(data:JsonSerializerPluginData<UInt>):JsonStream return
-  {
-    var underlying:Null<UInt> = data.underlying;
-    underlying == null ? NULL : NUMBER(underlying);
   }
 }
 
@@ -106,13 +106,13 @@ class ArraySerializerPlugin
     }
     else
     {
-      ARRAY(new Generator(function(yield:YieldFunction<JsonStream>):Void
+      ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
         for (element in data.underlying)
         {
-          yield(elementSerializeFunction(element)).async();
+          yield(elementSerializeFunction(new JsonSerializerPluginData(element))).async();
         }
-      }));
+      })));
     }
   }
   

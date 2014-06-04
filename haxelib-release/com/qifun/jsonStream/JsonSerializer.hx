@@ -931,7 +931,8 @@ class JsonSerializerGenerator
       $f;
       null;
     }
-    // trace(ExprTools.toString(Context.getTypedExpr(Context.typeExpr(placeholderExpr))));
+    //trace(ExprTools.toString(placeholderExpr));
+    //trace(ExprTools.toString(Context.getTypedExpr(Context.typeExpr(placeholderExpr))));
     switch (Context.getTypedExpr(Context.typeExpr(placeholderExpr)))
     {
       case { expr: EBlock([ { expr: EFunction(_, resolved) | EVars([ { expr: {expr: EFunction(null, resolved)}}])}, _ ]) } :

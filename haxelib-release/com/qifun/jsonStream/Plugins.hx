@@ -19,32 +19,33 @@ extern class Plugins{}
 //typedef RawSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.RawSerializerPlugin;
 
 @:dox(hide)
-typedef Int64SerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.Int64SerializerPlugin;
+typedef Int64SerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.Int64SerializerPlugin;
+
+@:dox(hide)
+typedef UIntSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.UIntSerializerPlugin;
 
 @:dox(hide)
 typedef IntSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.IntSerializerPlugin;
 
-@:dox(hide)
-typedef UIntSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.UIntSerializerPlugin;
 #if (java || cs)
   @:dox(hide)
-  typedef SingleSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.SingleSerializerPlugin;
+  typedef SingleSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.SingleSerializerPlugin;
 #end
 
 @:dox(hide)
-typedef FloatSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.FloatSerializerPlugin;
+typedef FloatSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.FloatSerializerPlugin;
 
 @:dox(hide)
-typedef BoolSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.BoolSerializerPlugin;
+typedef BoolSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.BoolSerializerPlugin;
 
 @:dox(hide)
-typedef StringSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.StringSerializerPlugin;
+typedef StringSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.StringSerializerPlugin;
 
 @:dox(hide)
-typedef ArraySerializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin;
+typedef ArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin;
 
 //@:dox(hide)
-//typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.LowPriorityDynamicSerializerPlugin;
+//typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.serializerPlugin.LowPriorityDynamicSerializerPlugin;
 //
 //
 
@@ -58,10 +59,11 @@ typedef RawDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.RawDeser
 typedef Int64DeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.Int64DeserializerPlugin;
 
 @:dox(hide)
-typedef IntDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.IntDeserializerPlugin;
+typedef UIntDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.UIntDeserializerPlugin;
 
 @:dox(hide)
-typedef UIntDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.UIntDeserializerPlugin;
+typedef IntDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.IntDeserializerPlugin;
+
 #if (java || cs)
   @:dox(hide)
   typedef SingleDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.SingleDeserializerPlugin;
@@ -95,10 +97,11 @@ typedef RawBuilderPlugin = com.qifun.jsonStream.builderPlugin.RawBuilderPlugin;
 typedef Int64BuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.Int64BuilderPlugin;
 
 @:dox(hide)
-typedef IntBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.IntBuilderPlugin;
+typedef UIntBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.UIntBuilderPlugin;
 
 @:dox(hide)
-typedef UIntBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.UIntBuilderPlugin;
+typedef IntBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.IntBuilderPlugin;
+
 #if (java || cs)
   @:dox(hide)
   typedef SingleBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.SingleBuilderPlugin;

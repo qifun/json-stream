@@ -90,9 +90,9 @@ class Int64DeserializerPlugin
 }
 
 @:final
-class IntDeserializerPlugin
+class UIntDeserializerPlugin
 {
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int>):Null<Int> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<UInt>):Null<UInt> return
   {
     switch (stream.underlying)
     {
@@ -107,9 +107,9 @@ class IntDeserializerPlugin
 }
 
 @:final
-class UIntDeserializerPlugin
+class IntDeserializerPlugin
 {
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<UInt>):Null<UInt> return
+  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int>):Null<Int> return
   {
     switch (stream.underlying)
     {
