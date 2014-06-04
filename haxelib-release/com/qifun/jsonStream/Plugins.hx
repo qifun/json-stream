@@ -15,8 +15,8 @@ extern class Plugins{}
 //@:dox(hide)
 //typedef GeneratedSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.GeneratedSerializerPlugin;
 //
-//@:dox(hide)
-//typedef RawSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.RawSerializerPlugin;
+@:dox(hide)
+typedef RawSerializerPlugin = com.qifun.jsonStream.serializerPlugin.RawSerializerPlugin;
 
 @:dox(hide)
 typedef Int64SerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.Int64SerializerPlugin;
