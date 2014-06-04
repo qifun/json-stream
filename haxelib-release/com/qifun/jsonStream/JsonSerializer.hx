@@ -428,7 +428,7 @@ class JsonSerializerGenerator
         // TODO: constraits
       }
     ];
-    var implExpr = resolvedSerialize(TypeTools.toComplexType(abstractType.type), macro stream, params);
+    var implExpr = resolvedSerialize(TypeTools.toComplexType(abstractType.type), macro cast data, params);
     var abstractModule = abstractType.module;
     var expectedTypePath =
     {
@@ -441,12 +441,12 @@ class JsonSerializerGenerator
       args:
       [
         {
-          name:"stream",
-          type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+          name:"data",
+          type: TPath(expectedTypePath),
         },
       ],
-      ret: TPath(expectedTypePath),
-      expr: macro return cast $implExpr,
+      ret: null,
+      expr: macro return $implExpr,
       params: params,
     }
   }
