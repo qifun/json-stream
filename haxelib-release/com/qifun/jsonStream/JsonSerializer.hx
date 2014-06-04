@@ -3,6 +3,7 @@ package com.qifun.jsonStream;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
+import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import Type in StdType;
 #if macro
   import haxe.ds.StringMap;
@@ -26,24 +27,24 @@ class JsonSerializer
 
   private static function iterateJsonObject(instance:Dynamic) return
   {
-    Continuation.cpsFunction(function(yield:YieldFunction<JsonStreamPair>):Void
+    new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStreamPair>):Void
     {
       for (field in Reflect.fields(instance))
       {
         yield(new JsonStream.JsonStreamPair(field, serializeRaw(Reflect.field(instance, field)))).async();
       }
-    });
+    }));
   }
   
   private static function iterateJsonArray(instance:Array<RawJson>) return
   {
-    Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+    new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
     {
       for (element in instance)
       {
         yield(serializeRaw(element)).async();
       }
-    });
+    }));
   }
 
   /**
@@ -55,18 +56,18 @@ class JsonSerializer
     switch (StdType.typeof(instance.underlying))
     {
       case TObject:
-        JsonStream.OBJECT(new Generator(iterateJsonObject(instance.underlying)));
+        JsonStream.OBJECT(iterateJsonObject(instance.underlying));
       case TClass(String):
         JsonStream.STRING(instance.underlying);
       case TClass(Array):
-        JsonStream.ARRAY(new Generator(iterateJsonArray(instance.underlying)));
+        JsonStream.ARRAY(iterateJsonArray(instance.underlying));
       case TInt:
-        JsonStream.NUMBER((instance:Dynamic));
+        JsonStream.NUMBER(instance.underlying);
       case TFloat:
-        JsonStream.NUMBER((instance:Dynamic));
-      case TBool if ((instance:Dynamic)):
+        JsonStream.NUMBER(instance.underlying);
+      case TBool if (instance.underlying):
         JsonStream.TRUE;
-      case TBool if (!(instance:Dynamic)):
+      case TBool if (!instance.underlying):
         JsonStream.FALSE;
       case TNull:
         JsonStream.NULL;
@@ -611,6 +612,10 @@ class JsonSerializerGenerator
       }
     }
     addBlockExprs(classType);
+    if (hasUnknownFieldMap)
+    {
+      blockExprs.push(macro com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap(data.unknownFieldMap, yield).async());
+    }
     var block =
     {
       expr: EBlock(blockExprs),
@@ -958,3 +963,21 @@ class JsonSerializerGenerator
 
 }
 #end
+
+@:dox(hide)
+class JsonSerializerRuntime
+{
+
+  public static function yieldUnknownFieldMap(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>, onComplete:Void->Void):Void
+  {
+    Continuation.cpsFunction(function(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>):Void
+    {
+      // TODO: 解决可能的栈溢出
+      for (key in unknownFieldMap.underlying.keys())
+      {
+        yield(new JsonStreamPair(key, JsonSerializer.serializeRaw(unknownFieldMap.underlying.get(key)))).async();
+      }
+    })(unknownFieldMap, yield, onComplete);
+  }
+
+}
