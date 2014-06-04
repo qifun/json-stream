@@ -34,6 +34,8 @@ class Int64SerializerPlugin
 @:final
 class UIntSerializerPlugin
 {
+
+  @:noDynamicSerialize
   /* inline */ // 如果加入inline，会导致Java平台编译错误
   public static function pluginSerialize(data:JsonSerializerPluginData<UInt>):JsonStream return
   {
@@ -54,6 +56,7 @@ class IntSerializerPlugin
   @:final
   class SingleSerializerPlugin
   {
+    @:noDynamicSerialize
     public static inline function pluginSerialize(data:JsonSerializerPluginData<Single>):JsonStream return
     {
       data.underlying == null ? NULL : NUMBER(data.underlying);

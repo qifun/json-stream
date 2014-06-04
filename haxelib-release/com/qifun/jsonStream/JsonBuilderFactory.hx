@@ -1,6 +1,7 @@
 package com.qifun.jsonStream;
 
 import com.qifun.jsonStream.JsonBuilder;
+import com.qifun.jsonStream.GeneratorUtilities.*;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.unknown.UnknownType;
 
@@ -241,7 +242,7 @@ class JsonBuilderFactoryGenerator
   {
     if (expectedComplexType == null)
     {
-      expectedComplexType = TPath( { pack:[], name:"Dynamic", } );
+      expectedComplexType = DYNAMIC_COMPLEX_TYPE;
     }
     var localUsings = Context.getLocalUsing();
     function createFunction(i:Int, key:ExprOf<String>, value:ExprOf<JsonStream>):Expr return
@@ -327,21 +328,6 @@ class JsonBuilderFactoryGenerator
           throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
       }
     })($stream, $onComplete);
-  }
-  
-  private static var VOID_COMPLEX_TYPE(default, never) =
-    TPath({ name: "Void", pack: []});
-
-  private static function getFullName(module:String, name:String):String return
-  {
-    if (module == name || module.endsWith(name) && module.charCodeAt(module.length - name.length - 1) == ".".code)
-    {
-      module;
-    }
-    else
-    {
-      module + "." + name;
-    }
   }
 
   private var buildingFields:Array<Field>;
@@ -1031,7 +1017,7 @@ class JsonBuilderFactoryGenerator
               {
                 name: "onComplete",
                 type: TFunction(
-                  [ TPath( { pack: [], name: "Dynamic", } ) ],
+                  [ DYNAMIC_COMPLEX_TYPE ],
                   VOID_COMPLEX_TYPE
                 )
               }

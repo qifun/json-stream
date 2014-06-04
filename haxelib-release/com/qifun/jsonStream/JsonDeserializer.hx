@@ -1,6 +1,7 @@
 package com.qifun.jsonStream;
 
 import com.dongxiguo.continuation.utils.Generator;
+import com.qifun.jsonStream.GeneratorUtilities.*;
 import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import com.qifun.jsonStream.unknown.UnknownType;
 
@@ -142,18 +143,6 @@ class JsonDeserializerGenerator
 
   private static var allBuilders = new StringMap<JsonDeserializerGenerator>();
 
-  private static function getFullName(module:String, name:String):String return
-  {
-    if (module == name || module.endsWith(name) && module.charCodeAt(module.length - name.length - 1) == ".".code)
-    {
-      module;
-    }
-    else
-    {
-      module + "." + name;
-    }
-  }
-
   public function buildFields():Array<Field> return
   {
     var meta = buildingClass.meta;
@@ -200,7 +189,7 @@ class JsonDeserializerGenerator
         }
         dynamicCases.push(
         {
-          values: [ macro $v{ fullName } ],
+          values: [ macro $v{fullName} ],
           expr: macro ($resolvedTemporaryFunction(valueStream):Dynamic),
         });
       }
@@ -856,6 +845,10 @@ class JsonDeserializerGenerator
           }
         }
         var contextBuilder = getContextBuilder();
+        if (contextBuilder == null)
+        {
+          Context.error('No plugin or deserializer for $expectedType.', Context.currentPos());
+        }
         if (contextBuilder.deserializingTypes.get(methodName) == null)
         {
           contextBuilder.deserializingTypes.set(methodName, classType);

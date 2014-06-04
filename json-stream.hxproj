@@ -22,8 +22,8 @@
   <!-- Build options -->
   <build>
     <option directives="" />
-    <option flashStrict="False" />
-    <option noInlineOnDebug="False" />
+    <option flashStrict="True" />
+    <option noInlineOnDebug="True" />
     <option mainClass="Main" />
     <option enabledebug="True" />
     <option additional="" />
@@ -39,6 +39,8 @@
     <compile path="tests\Main2.hx" />
     <compile path="tests\HaxeJavaCrash.hx" />
     <compile path="tests\Bug.hx" />
+    <compile path="tests\Int64ValueType.hx" />
+    <compile path="tests\Int64Enum.hx" />
     <compile path="tests\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->

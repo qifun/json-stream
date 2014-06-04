@@ -10,6 +10,7 @@ class RawSerializerPlugin
   /**
     
   **/
+  @:noDynamicSerialize
   public static function pluginSerialize(data:JsonSerializerPluginData<RawJson>):JsonStream return
   {
     JsonSerializer.serializeRaw(data.underlying);

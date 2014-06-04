@@ -15,34 +15,31 @@ using com.qifun.jsonStream.Plugins;
 
 using Main;
 
-class InlineVar
-{
-  public static var NotInline = "not" + "inline";
-  public static inline var Inline = "inline";
-  public static inline function inlineFunction() return "inlineFunction";
-}
 //
-//@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Ref"]))
+//@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Reference"]))
 //class RefDeserializer { }
 
-@:build(com.qifun.jsonStream.JsonBuilderFactory.generateBuilderFactory(["Ref", "NewClass", "NewEnum"]))
-class AllBuilderFactory {}
+//@:build(com.qifun.jsonStream.JsonBuilderFactory.generateBuilderFactory(["Reference", "NewClass", "NewEnum"]))
+//class AllBuilderFactory {}
+//
+//@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Reference", "NewClass", "NewEnum"]))
+//class AllDeserializer { }
 
-@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Ref", "NewClass", "NewEnum"]))
-class AllDeserializer {}
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["Reference", "NewClass", "NewEnum"]))
+class AllSerializer {}
 
 typedef F<A> = Array<A>->A;
-/**
- * @author 杨博
- */
+ 
 class Main
 {
 	#if !macro
   static function main()
   {
-    var ref:Ref<Dynamic> = JsonDeserializer.deserialize(null);
+    //var ref:Reference<Dynamic> = JsonDeserializer.deserialize(null);
     var jsonStream:JsonStream = null;
 
+    
+    
 ////    $type(f);
 ////    StringDeserializer.pluginDeserialize.bind();
     //var n = switch ("")

@@ -16,9 +16,9 @@ class NewClass
     
   }
   
-  private var r1:Ref<Int>;
-  private var r2:Ref<Dynamic>;
-  private var r3:Ref<NewClass>;
+  private var r1:Reference<Int>;
+  private var r2:Reference<Dynamic>;
+  private var r3:Reference<NewClass>;
   
   private var yyy:Array<NewClass>;
   
@@ -52,7 +52,7 @@ abstract Abs(String) {}
 enum E3<T>
 {
   A;
-  B<C>(c:C);
+  B<T9>(c:T9);
 }
 
 enum Good

@@ -1,5 +1,6 @@
 package com.qifun.jsonStream;
 
+import com.qifun.jsonStream.GeneratorUtilities.*;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
@@ -123,21 +124,20 @@ class JsonSerializerGenerator
 
   private var buildingFields:Array<Field>;
 
-  private var serializingTypes(default, null) = new StringMap<BaseType>();
-
-  private static var allBuilders = new StringMap<JsonSerializerGenerator>();
-
-  private static function getFullName(module:String, name:String):String return
+  private var serializingTypes(default, null) = new StringMap<Type>();
+  
+  private static function toBaseType(type:Type):BaseType return
   {
-    if (module == name || module.endsWith(name) && module.charCodeAt(module.length - name.length - 1) == ".".code)
+    switch (type)
     {
-      module;
-    }
-    else
-    {
-      module + "." + name;
+      case TEnum(t, _): t.get();
+      case TInst(t, _): t.get();
+      case TAbstract(t, _): t.get();
+      case t: throw 'Unsupported type $t';
     }
   }
+
+  private static var allBuilders = new StringMap<JsonSerializerGenerator>();
 
   public function buildFields():Array<Field> return
   {
@@ -150,74 +150,118 @@ class JsonSerializerGenerator
 
     for (serializingType in serializingTypes)
     {
-      var accessPack = MacroStringTools.toFieldExpr(serializingType.pack);
-      var accessName = serializingType.name;
+      var baseType = toBaseType(serializingType);
+      var accessPack = MacroStringTools.toFieldExpr(baseType.pack);
+      var accessName = baseType.name;
       meta.add(
         ":access",
         [ accessPack == null ? macro $i{accessName} : macro $accessPack.$accessName ],
         Context.currentPos());
     }
 
+    var dynamicCases:Array<Case> = [];
+
     // TODO: Dynamic
-    //var dynamicCases:Array<Case> = [];
-//
-    //for (localUsing in Context.getLocalUsing())
-    //{
-      //var baseType:BaseType = switch (localUsing.get())
-      //{
-        //case { kind: KAbstractImpl(a) } : a.get();
-        //case classType: classType;
-      //}
-      //var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
-      //var nameField = baseType.name;
-      //var pluginSerializeField = TypeTools.findField(localUsing.get(), "pluginSerialize", true);
-      //if (pluginSerializeField != null && !pluginSerializeField.meta.has(":noDynamicSerialize"))
-      //{
-        //var expr = macro $moduleExpr.$nameField.pluginSerialize(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData(valueStream));
-        //var temporaryFunction = macro function (valueStream:com.qifun.jsonStream.JsonStream) return $expr;
-        //var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
-        //var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
-        //var fullName = switch (Context.follow(typedTemporaryFunction.t))
-        //{
-          //case TFun(_, Context.follow(_) => TInst(_.get() => { module: module, name: name }, _)): getFullName(module, name);
-          //case TFun(_, Context.follow(_) => TAbstract(_.get() => { module: module, name: name }, _)): getFullName(module, name);
-          //case TFun(_, Context.follow(_) => TEnum(_.get() => { module: module, name: name }, _)): getFullName(module, name);
-          //case t: continue;
-        //}
-        //dynamicCases.push(
-        //{
-          //values: [ macro $v{ fullName } ],
-          //expr: macro ($resolvedTemporaryFunction(valueStream):Dynamic),
-        //});
-      //}
-    //}
-//
-    //for (methodName in serializingTypes.keys())
-    //{
-      //var baseType = serializingTypes.get(methodName);
-      //var fullName = getFullName(baseType.module, baseType.name);
-      //dynamicCases.push(
-        //{
-          //values: [ macro $v{ fullName } ],
-          //expr: macro ($i{methodName}(valueStream):Dynamic),
-        //});
-    //}
-//
-    //var switchExpr =
-    //{
-      //pos: Context.currentPos(),
-      //expr: ESwitch(macro dynamicTypeName, dynamicCases, macro null),
-    //}
+    function newCase(dataType:Type, valueExpr:Expr):Null<Case> return
+    {
+      switch (dataType)
+      {
+        case TInst(_.get() => { module: "haxe.Int64", name: "Int64" }, _):
+          var pattern = macro _;
+          var guard = macro Std.is(data, haxe.Int64);
+          var fullName = "haxe.Int64";
+          { values: [ pattern ], guard: guard, expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TInst(_.get() => { module: module, name: name }, _):
+          var moduleExpr = MacroStringTools.toFieldExpr(module.split("."));
+          var pattern = macro Type.ValueType.TClass($moduleExpr.$name);
+          var fullName = getFullName(module, name);
+          { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TEnum(_.get() => { module: module, name: name }, _):
+          var moduleExpr = MacroStringTools.toFieldExpr(module.split("."));
+          var pattern = macro Type.ValueType.TEnum($moduleExpr.$name);
+          var fullName = getFullName(module, name);
+          { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TAbstract(_.get() => { module: "StdTypes", name: "Float" }, _):
+          var pattern = macro Type.ValueType.TFloat;
+          var fullName = "Float";
+          { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TAbstract(_.get() => { module: "StdTypes", name: "Single" }, _):
+          var pattern = macro Type.ValueType.TFloat;
+          var fullName = "Single";
+          { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TAbstract(_.get() => { module: "StdTypes", name: "Bool" }, _):
+          var pattern = macro Type.ValueType.TBool;
+          var fullName = "Bool";
+          { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TAbstract(_.get() => { module: "StdTypes", name: "Int" }, _):
+          var pattern = macro Type.ValueType.TInt;
+          var fullName = "Int";
+          { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TAbstract(_.get() => { module: "UInt", name: "UInt" }, _):
+          var pattern = macro Type.ValueType.TInt;
+          var fullName = "UInt";
+          { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
+        case TAbstract(_.get() => { type: impType }, _):
+          null;
+        case t:
+          null;
+      }
+    }
+    for (localUsing in Context.getLocalUsing())
+    {
+      var baseType:BaseType = switch (localUsing.get())
+      {
+        case { kind: KAbstractImpl(a) } : a.get();
+        case classType: classType;
+      }
+      var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
+      var nameField = baseType.name;
+      var pluginSerializeField = TypeTools.findField(localUsing.get(), "pluginSerialize", true);
+      if (pluginSerializeField != null && !pluginSerializeField.meta.has(":noDynamicSerialize"))
+      {
+        var expr = macro $moduleExpr.$nameField.pluginSerialize(data);
+        var temporaryFunction = macro function (data) return $expr;
+        var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
+        var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
+        switch (Context.follow(typedTemporaryFunction.t))
+        {
+          case TFun([ { t: TAbstract(_, [dataType]) } ], _):
+            var c = newCase(
+              dataType,
+              macro $resolvedTemporaryFunction(data));
+            if (c != null)
+            {
+              dynamicCases.push(c);
+            }
+          default: continue;
+        }
+      }
+    }
+
+    for (methodName in serializingTypes.keys())
+    {
+      var c = newCase(serializingTypes.get(methodName), macro $i{methodName}(data));
+      if (c != null)
+      {
+        dynamicCases.push(c);
+      }
+    }
+
+    var switchExpr =
+    {
+      pos: Context.currentPos(),
+      expr: ESwitch(macro valueType, dynamicCases, macro null),
+    }
     // trace(ExprTools.toString(switchExpr));
     
-    //buildingFields.push(
-      //{
-        //name: "dynamicSerialize",
-        //pos: Context.currentPos(),
-        //meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
-        //access: [ APublic, AStatic ],
-        //kind: FFun(extractFunction(macro function(dynamicTypeName:String, valueStream:com.qifun.jsonStream.JsonStream):Dynamic return $switchExpr)),
-      //});
+    buildingFields.push(
+      {
+        name: "dynamicSerialize",
+        pos: Context.currentPos(),
+        meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
+        access: [ APublic, AStatic ],
+        kind: FFun(extractFunction(macro function(valueType:Type.ValueType, data:Dynamic):Null<com.qifun.jsonStream.JsonStream.JsonStreamPair> return $switchExpr)),
+      });
     allBuilders.remove(id);
     buildingFields;
   }
@@ -342,16 +386,21 @@ class JsonSerializerGenerator
               }:
                 blockExprs.push(macro com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap($parameterExpr, yield).async());
               case { name: parameterKey, t: parameterType, }:
-                var s = resolvedSerialize(TypeTools.toComplexType(parameterType), macro $parameterExpr, enumAndValueParams);
+                var s = resolvedSerialize(TypeTools.toComplexType(parameterType), macro parameterData, enumAndValueParams);
+                // trace(ExprTools.toString(s));
                 var f =
                   {
                     pos: Context.currentPos(),
                     expr: EFunction(
-                      "inline_temporaryEnumSerialize",
+                      #if no_inline
+                        "temporaryEnumValueSerialize"
+                      #else
+                        "inline_temporaryEnumValueSerialize"
+                      #end,
                       {
                         params: enumAndValueParams,
                         ret: null,
-                        args: [],
+                        args: [ { name: "parameterData", type: null, } ],
                         expr: macro return $s,
                       })
                   };
@@ -359,7 +408,7 @@ class JsonSerializerGenerator
                   macro if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull($parameterExpr))
                   {
                     $f;
-                    yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{parameterKey}, temporaryEnumSerialize())).async();
+                    yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{parameterKey}, temporaryEnumValueSerialize(com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.nullize($parameterExpr)))).async();
                   });
             }
           }
@@ -536,18 +585,16 @@ class JsonSerializerGenerator
     }
   }
 
-  private static var VOID_COMPLEX_TYPE(default, never) =
-    TPath({ name: "Void", pack: []});
-
   public function tryAddSerializeMethod(type:Type):Void
   {
-    switch (Context.follow(type))
+    var followedType = Context.follow(type);
+    switch (followedType)
     {
       case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
         var methodName = serializeMethodName(classType.pack, classType.name);
         if (serializingTypes.get(methodName) == null)
         {
-          serializingTypes.set(methodName, classType);
+          serializingTypes.set(methodName, followedType);
           buildingFields.push(
             {
               name: methodName,
@@ -561,7 +608,7 @@ class JsonSerializerGenerator
         var methodName = serializeMethodName(enumType.pack, enumType.name);
         if (serializingTypes.get(methodName) == null)
         {
-          serializingTypes.set(methodName, enumType);
+          serializingTypes.set(methodName, followedType);
           buildingFields.push(
             {
               name: methodName,
@@ -575,7 +622,7 @@ class JsonSerializerGenerator
         var methodName = serializeMethodName(abstractType.pack, abstractType.name);
         if (serializingTypes.get(methodName) == null)
         {
-          serializingTypes.set(methodName, abstractType);
+          serializingTypes.set(methodName, followedType);
           buildingFields.push(
             {
               name: methodName,
@@ -676,7 +723,8 @@ class JsonSerializerGenerator
 
   public static function generatedSerialize(expectedType:Type, stream:ExprOf<JsonStream>):Expr return
   {
-    switch (Context.follow(expectedType))
+    var followedType = Context.follow(expectedType);
+    switch (followedType)
     {
       case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
         var methodName = serializeMethodName(classType.pack, classType.name);
@@ -702,7 +750,7 @@ class JsonSerializerGenerator
         var contextBuilder = getContextBuilder();
         if (contextBuilder.serializingTypes.get(methodName) == null)
         {
-          contextBuilder.serializingTypes.set(methodName, classType);
+          contextBuilder.serializingTypes.set(methodName, followedType);
           contextBuilder.buildingFields.push(
             {
               name: methodName,
@@ -738,7 +786,7 @@ class JsonSerializerGenerator
         var contextBuilder = getContextBuilder();
         if (contextBuilder.serializingTypes.get(methodName) == null)
         {
-          contextBuilder.serializingTypes.set(methodName, enumType);
+          contextBuilder.serializingTypes.set(methodName, followedType);
           contextBuilder.buildingFields.push(
             {
               name: methodName,
@@ -774,7 +822,7 @@ class JsonSerializerGenerator
         var contextBuilder = getContextBuilder();
         if (contextBuilder.serializingTypes.get(methodName) == null)
         {
-          contextBuilder.serializingTypes.set(methodName, abstractType);
+          contextBuilder.serializingTypes.set(methodName, followedType);
           contextBuilder.buildingFields.push(
             {
               name: methodName,
@@ -859,6 +907,8 @@ class JsonSerializerGenerator
 class JsonSerializerRuntime
 {
 
+  public static inline function nullize<T>(t:T):Null<T> return t;
+
   public static
   #if (!java) inline #end // Don't inline for Java targets, because of https://github.com/HaxeFoundation/haxe/issues/3094
   function isNotNull<T>(maybeNull:Null<T>):Bool return maybeNull != null;
@@ -867,7 +917,6 @@ class JsonSerializerRuntime
   {
     Continuation.cpsFunction(function(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>):Void
     {
-      // TODO: 解决可能的栈溢出
       for (key in unknownFieldMap.underlying.keys())
       {
         yield(new JsonStreamPair(key, JsonSerializer.serializeRaw(unknownFieldMap.underlying.get(key)))).async();

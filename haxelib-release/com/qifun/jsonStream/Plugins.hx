@@ -11,10 +11,10 @@ package com.qifun.jsonStream;
 @:final
 extern class Plugins{}
 #end
-//
-//@:dox(hide)
-//typedef GeneratedSerializerPlugin = com.qifun.jsonStream.deserializerPlugin.GeneratedSerializerPlugin;
-//
+
+@:dox(hide)
+typedef GeneratedSerializerPlugin = com.qifun.jsonStream.serializerPlugin.GeneratedSerializerPlugin;
+
 @:dox(hide)
 typedef RawSerializerPlugin = com.qifun.jsonStream.serializerPlugin.RawSerializerPlugin;
 
@@ -44,10 +44,10 @@ typedef StringSerializerPlugin = com.qifun.jsonStream.serializerPlugin.Primitive
 @:dox(hide)
 typedef ArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin;
 
-//@:dox(hide)
-//typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.serializerPlugin.LowPriorityDynamicSerializerPlugin;
-//
-//
+@:dox(hide)
+typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.serializerPlugin.LowPriorityDynamicSerializerPlugin;
+
+
 
 @:dox(hide)
 typedef GeneratedDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.GeneratedDeserializerPlugin;
