@@ -299,6 +299,9 @@ class JsonDeserializerGenerator
         // TODO: constraits
       }
     ];
+    var enumPath = enumType.module.split(".");
+    enumPath.push(enumType.name);
+    var enumFieldExpr = MacroStringTools.toFieldExpr(enumPath);
     var cases = [];
     var unknownEnumValueConstructor = null;
     for (constructor in enumType.constructs)
@@ -321,9 +324,6 @@ class JsonDeserializerGenerator
           ];
           var enumAndValueParams = enumParams.concat(valueParams);
           var constructorName = constructor.name;
-          var enumPath = enumType.module.split(".");
-          enumPath.push(enumType.name);
-          enumPath.push(constructorName);
           cases.push(
             {
               var block = [];
@@ -397,7 +397,7 @@ class JsonDeserializerGenerator
               {
                 pos: Context.currentPos(),
                 expr: ECall(
-                  MacroStringTools.toFieldExpr(enumPath),
+                  macro $enumFieldExpr.$constructorName,
                   [
                     for (i in 0...args.length)
                     {
@@ -460,9 +460,9 @@ class JsonDeserializerGenerator
         }
         else
         {
-          macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
+          macro $enumFieldExpr.UNKNOWN_ENUM_VALUE(com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
             pair.key,
-            com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value));
+            com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value)));
         }),
     }
     var zeroParameterBranch =
@@ -474,12 +474,9 @@ class JsonDeserializerGenerator
           for (constructor in enumType.constructs) if (constructor.type.match(TEnum(_, _)))
           {
             var constructorName = constructor.name;
-            var enumPath = enumType.module.split(".");
-            enumPath.push(enumType.name);
-            enumPath.push(constructorName);
             {
               values: [ macro $v{constructorName} ],
-              expr: MacroStringTools.toFieldExpr(enumPath),
+              expr: macro $enumFieldExpr.$constructorName,
             }
           }
         ],
@@ -489,7 +486,7 @@ class JsonDeserializerGenerator
         }
         else
         {
-          macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName);
+          macro $enumFieldExpr.UNKNOWN_ENUM_VALUE(com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName));
         }),
     }
     var methodBody = macro switch (stream)

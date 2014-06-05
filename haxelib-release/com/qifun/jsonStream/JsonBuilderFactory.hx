@@ -98,7 +98,7 @@ abstract JsonBuilderPluginStream<Result>(AsynchronousJsonStream)
 #if macro
 class JsonBuilderFactoryGenerator
 {
-  
+
   private var buildingClassExpr(get, never):Expr;
 
   private function get_buildingClassExpr():Expr return
@@ -107,7 +107,7 @@ class JsonBuilderFactoryGenerator
     var className = buildingClass.name;
     macro $modulePath.$className;
   }
-  
+
   public static function generatedBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:Expr, expectedType:Type):Expr return
   {
     switch (Context.follow(expectedType))
@@ -454,6 +454,9 @@ class JsonBuilderFactoryGenerator
         // TODO: constraits
       }
     ];
+    var enumPath = enumType.module.split(".");
+    enumPath.push(enumType.name);
+    var enumFieldExpr = MacroStringTools.toFieldExpr(enumPath);
     var cases = [];
     var unknownEnumValueConstructor = null;
     for (constructor in enumType.constructs)
@@ -476,9 +479,6 @@ class JsonBuilderFactoryGenerator
           ];
           var enumAndValueParams = enumParams.concat(valueParams);
           var constructorName = constructor.name;
-          var enumPath = enumType.module.split(".");
-          enumPath.push(enumType.name);
-          enumPath.push(constructorName);
           cases.push(
             {
               var block = [];
@@ -551,7 +551,7 @@ class JsonBuilderFactoryGenerator
               {
                 pos: Context.currentPos(),
                 expr: ECall(
-                  MacroStringTools.toFieldExpr(enumPath),
+                  macro $enumFieldExpr.$constructorName,
                   [
                     for (i in 0...args.length)
                     {
@@ -607,9 +607,10 @@ class JsonBuilderFactoryGenerator
         }
         else
         {
-          macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
-            constructorKey,
-            com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(constructorValue).async());
+          macro $enumFieldExpr.UNKNOWN_ENUM_VALUE(
+            com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
+              constructorKey,
+              com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(constructorValue).async()));
         }),
     }
     var zeroParameterBranch =
@@ -621,12 +622,9 @@ class JsonBuilderFactoryGenerator
           for (constructor in enumType.constructs) if (constructor.type.match(TEnum(_, _)))
           {
             var constructorName = constructor.name;
-            var enumPath = enumType.module.split(".");
-            enumPath.push(enumType.name);
-            enumPath.push(constructorName);
             {
               values: [ macro $v{constructorName} ],
-              expr: MacroStringTools.toFieldExpr(enumPath),
+              expr: macro $enumFieldExpr.$constructorName,
             }
           }
         ],
@@ -636,7 +634,8 @@ class JsonBuilderFactoryGenerator
         }
         else
         {
-          macro com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName);
+          macro $enumFieldExpr.UNKNOWN_ENUM_VALUE(
+            com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName));
         }),
     }
     var methodBody = macro switch (stream)
@@ -1048,7 +1047,7 @@ class JsonBuilderRuntime
 
   @:extern
   public static inline function nullize<T>(t:Null<T>):Null<T> return t;
-  
+
   public static function buildRaw(stream:AsynchronousJsonStream, onComplete:RawJson->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):RawJson return

@@ -4,6 +4,7 @@ import com.qifun.jsonStream.GeneratorUtilities.*;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
+import com.qifun.jsonStream.unknown.UnknownEnumValue;
 import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import com.qifun.jsonStream.unknown.UnknownType;
 import Type in StdType;
@@ -927,6 +928,24 @@ class JsonSerializerRuntime
           yield(new JsonStreamPair(key, valueStream)).async();
         }
       })(unknownFieldMap, yield, onComplete);
+  }
+
+  public static function serializeUnknwonEnumValue(unknownEnumValue:UnknownEnumValue):JsonStream return
+  {
+    switch (unknownEnumValue)
+    {
+      case UNKNOWN_CONSTANT_CONSTRUCTOR(constructorName):
+        JsonStream.STRING(constructorName);
+      case UNKNOWN_PARAMETERIZED_CONSTRUCTOR(constructorName, parameters):
+        JsonStream.OBJECT(
+          new Generator(
+            Continuation.cpsFunction(
+              function(yield:YieldFunction<JsonStreamPair>):Void
+                yield(
+                  new JsonStreamPair(
+                    constructorName,
+                    JsonSerializer.serializeRaw(parameters))).async())));
+    }
   }
 
   public static function serializeUnknown(unknown:Dynamic):JsonStreamPair return
