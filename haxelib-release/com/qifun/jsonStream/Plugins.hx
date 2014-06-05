@@ -6,7 +6,7 @@ package com.qifun.jsonStream;
 /**
   定义了所有内置插件的模块。
 
-  `using com.qifun.jsonStream.Plugins;`将启用`deserializerPlugin`包和`serializerPlugin`包中的所有插件。
+  `using com.qifun.jsonStream.Plugins;`将启用`builderPlugin`包、`deserializerPlugin`包和`serializerPlugin`包中的所有插件。
 **/
 @:final
 extern class Plugins{}

@@ -23,6 +23,24 @@ using StringTools;
 
 /**
   提供序列化相关的静态函数，把内存中的各类型数据结构序列化为`JsonStream`。
+
+  用法：
+  <pre>`// MySerializer.hx
+using com.qifun.jsonStream.Plugins;
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
+class MySerializer {}`</pre>
+
+  <pre>`// Sample.hx
+using com.qifun.jsonStream.Plugins;
+using MySerializer;
+class Sample
+{
+  public static function testSerialize(data:myPackage.Module1.MyClass)
+  {
+    var jsonStream:JsonStream = JsonDeserializer.serialize(data);
+    // ...
+  }
+}`</pre>
 **/
 @:final
 class JsonSerializer
@@ -51,34 +69,40 @@ class JsonSerializer
   }
 
   /**
-    Returns a stream that reads data from `instance`.
+    Returns a stream that reads data from `rawJson`.
   **/
   @:noUsing
-  public static function serializeRaw(instance:RawJson):JsonStream return
+  public static function serializeRaw(rawJson:RawJson):JsonStream return
   {
-    switch (StdType.typeof(instance.underlying))
+    switch (StdType.typeof(rawJson.underlying))
     {
       case TObject:
-        JsonStream.OBJECT(iterateJsonObject(instance.underlying));
+        JsonStream.OBJECT(iterateJsonObject(rawJson.underlying));
       case TClass(String):
-        JsonStream.STRING(instance.underlying);
+        JsonStream.STRING(rawJson.underlying);
       case TClass(Array):
-        JsonStream.ARRAY(iterateJsonArray(instance.underlying));
+        JsonStream.ARRAY(iterateJsonArray(rawJson.underlying));
       case TInt:
-        JsonStream.NUMBER(instance.underlying);
+        JsonStream.NUMBER(rawJson.underlying);
       case TFloat:
-        JsonStream.NUMBER(instance.underlying);
-      case TBool if (instance.underlying):
+        JsonStream.NUMBER(rawJson.underlying);
+      case TBool if (rawJson.underlying):
         JsonStream.TRUE;
-      case TBool if (!instance.underlying):
+      case TBool if (!rawJson.underlying):
         JsonStream.FALSE;
       case TNull:
         JsonStream.NULL;
       case t:
-        throw 'Unsupported instance data: $t';
+        throw 'Unsupported rawJson data: $t';
     }
   }
 
+
+  /**
+    创建序列化的实现类。必须用在`@:build`中。
+
+    @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义要序列化的数据结构。
+  **/
   @:noUsing
   macro public static function generateSerializer(includeModules:Array<String>):Array<Field> return
   {
@@ -93,6 +117,15 @@ class JsonSerializer
     generator.buildFields();
   }
 
+  /**
+    把`data`序列化为`JsonStream`.
+
+    注意：`serialize`是宏。会根据`data`的类型，把具体的序列化操作转发给当前模块中已经`using`的某个类执行。
+    <ul>
+      <li>如果`data`是基本类型，执行序列化的类可能是`serializerPlugin`包中的内置插件。</li>
+      <li>如果`data`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([ ... ]))`创建。</li>
+    </ul>
+  **/
   macro public static function serialize(data:Expr):ExprOf<JsonStream> return
   {
     macro $data.pluginSerialize();
@@ -976,6 +1009,9 @@ class JsonSerializerRuntime
 
 }
 
+/**
+  调用`JsonSerializer.serialize`时可能抛出的异常。
+**/
 enum JsonSerializerError
 {
   NO_SERIALIZER_FOR_DATA(data:Dynamic);

@@ -9,7 +9,7 @@ import haxe.macro.Type;
 #end
 
 /**
-  支持生成`Dynamic`类型的反序列化插件。
+  支持生成`Dynamic`类型的异步反序列化插件。
 **/
 class LowPriorityDynamicBuilderPlugin
 {
@@ -25,7 +25,7 @@ class LowPriorityDynamicBuilderPlugin
         JsonBuilderFactoryGenerator.dynamicBuild(
           macro $stream.underlying,
           onComplete,
-          TypeTools.toComplexType(expectedType));
+          expectedType);
       case _:
         throw "Expected JsonBuilderPluginStream";
     }

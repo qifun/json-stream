@@ -10,8 +10,8 @@ import haxe.macro.Context;
 #end
 
 /**
-  支持静态类型的反序列化插件。
-  
+  支持静态类型的异步反序列化插件。
+
   本插件会把所有反序列化操作转发到通过`JsonDeserializer.generateDeserializer`创建的类上。
 
   由于本插件匹配一切类型，所以比本插件先`using`的插件都会失效。通常应当在`using`其他插件以前`using`本插件。

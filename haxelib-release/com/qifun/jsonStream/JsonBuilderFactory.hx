@@ -18,8 +18,35 @@ using StringTools;
 #end
 
 /**
- * @author 杨博
- */
+  提供创建`JsonBuilder`的静态函数。
+
+  用法：
+  <pre>`// MyBuilderFactory.hx
+using com.qifun.jsonStream.Plugins;
+@:build(com.qifun.jsonStream.JsonBuilderFactory.generateBuilderFactory([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
+class MyBuilderFactory {}`</pre>
+
+  <pre>`// Sample.hx
+import com.qifun.jsonStream.JsonBuilder;
+using com.qifun.jsonStream.Plugins;
+using MyBuilderFactory;
+class Sample
+{
+  public static function testBuild():myPackage.Module1.MyClass
+  {
+    var builder:JsonBuilder<myPackage.Module1.MyClass> = JsonBuilderFactory.newBuilder()
+    {
+      var arrayBuilder = builder.setObject();
+      arrayBuilder.addNumber("field1", 123);
+      arrayBuilder.addString("field2", "foo");
+      // ...
+      arrayBuilder.end();
+    }
+    return builder.result;
+  }
+}`</pre>
+
+**/
 class JsonBuilderFactory
 {
 
@@ -70,11 +97,7 @@ class JsonBuilderFactory
   }
 }
 
-typedef JsonBuilderPlugin<Result> =
-{
-  function pluginBuild(stream:JsonBuilderPluginStream<Result>, onComplete:Result->Void):Void;
-}
-
+@:dox(hide)
 abstract JsonBuilderPluginStream<Result>(AsynchronousJsonStream)
 {
 
@@ -129,7 +152,7 @@ class JsonBuilderFactoryGenerator
             }
             else
             {
-              return dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+              return dynamicBuild(stream, onComplete, expectedType);
             }
           }
         }
@@ -153,7 +176,7 @@ class JsonBuilderFactoryGenerator
         }
         else
         {
-          dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+          dynamicBuild(stream, onComplete, expectedType);
         }
       case TEnum(_.get() => enumType, _):
         var methodName = buildMethodName(enumType.pack, enumType.name);
@@ -201,7 +224,7 @@ class JsonBuilderFactoryGenerator
             }
             else
             {
-              return dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+              return dynamicBuild(stream, onComplete, expectedType);
             }
           }
         }
@@ -225,12 +248,24 @@ class JsonBuilderFactoryGenerator
         }
         else
         {
-          dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+          dynamicBuild(stream, onComplete, expectedType);
         }
       case t:
-        dynamicBuild(stream, onComplete, TypeTools.toComplexType(expectedType));
+        dynamicBuild(stream, onComplete, expectedType);
     }
   }
+
+  private var lowPriorityDynamicType =
+    Context.getType(
+      "com.qifun.jsonStream.LowPriorityDynamic");
+
+  private var hasUnknownTypeFieldType =
+    Context.getType(
+      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeField");
+
+  private var hasUnknownTypeSetterType =
+    Context.getType(
+      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeSetter");
 
   private static function getContextBuilder():JsonBuilderFactoryGenerator return
   {
@@ -238,8 +273,9 @@ class JsonBuilderFactoryGenerator
     allBuilders.get(localClass.module + "." + localClass.name);
   }
 
-  public static function dynamicBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:ExprOf<Dynamic->Void>, expectedComplexType:Null<ComplexType>):Expr return
+  public static function dynamicBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:ExprOf<Dynamic->Void>, expectedType:Type):Expr return
   {
+    var expectedComplexType = TypeTools.toComplexType(Context.follow(expectedType));
     if (expectedComplexType == null)
     {
       expectedComplexType = DYNAMIC_COMPLEX_TYPE;
@@ -277,9 +313,34 @@ class JsonBuilderFactoryGenerator
       else
       {
         var contextBuilder = getContextBuilder();
+        var typePath = switch (expectedComplexType)
+        {
+          case TPath( { pack: pack, name: name, sub: sub } ): { pack: pack, name: name, sub: sub }
+          case _ : null;
+        }
+        var fallbackExpr =
+          if (Context.unify(expectedType, contextBuilder.lowPriorityDynamicType))
+          {
+            macro new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw($value).async());
+          }
+          else if (
+            Context.unify(expectedType, contextBuilder.hasUnknownTypeFieldType) ||
+            Context.unify(expectedType, contextBuilder.hasUnknownTypeSetterType))
+          {
+            macro
+            {
+              var result = new $typePath();
+              result.unknownType = new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw($value).async());
+              result;
+            }
+          }
+          else
+          {
+            macro null;
+          }
         if (contextBuilder == null)
         {
-          macro new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream<$expectedComplexType>($value).buildUnknown($key).async();
+          fallbackExpr;
         }
         else
         {
@@ -295,7 +356,7 @@ class JsonBuilderFactoryGenerator
             var knownValue = untypedBuild().async();
             if (knownValue == null)
             {
-              new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream<$expectedComplexType>($value).buildUnknown($key).async();
+              $fallbackExpr;
             }
             else
             {
@@ -1032,6 +1093,9 @@ class JsonBuilderFactoryGenerator
 }
 #end
 
+/**
+  使用`JsonBuilder`时可能抛出的异常。
+**/
 enum JsonBuilderError
 {
   TOO_MANY_FIELDS<Handler>(read:Handler->Void, expected:Int);
@@ -1083,70 +1147,5 @@ class JsonBuilderRuntime
           throw "unreachable code";
       });
     })(stream, onComplete);
-  }
-}
-
-
-@:dox(hide)
-@:final
-extern class FallbackUnknownTypeJsonBuilder
-{
-  @:extern
-  public inline static function buildUnknown<Element>(stream:JsonBuilderPluginStream<Element>, type:String, onComplete:Dynamic->Void):Void
-  {
-    onComplete(null);
-  }
-}
-
-
-@:dox(hide)
-@:final
-extern class UnknownTypeSetterJsonBuilder
-{
-
-  @:generic
-  @:extern
-  public static inline function buildUnknown<Result:{ function new():Void; var unknownType(never, set):UnknownType; }>(stream:JsonBuilderPluginStream<Result>, type:String, onComplete:Result->Void):Void
-  {
-    JsonBuilderRuntime.buildRaw(stream.underlying, function(rawJson):Void
-    {
-      var result = new Result();
-      result.unknownType = new UnknownType(type, rawJson);
-      onComplete(result);
-    });
-  }
-
-}
-
-@:dox(hide)
-@:final
-extern class UnknownTypeFieldJsonBuilder
-{
-
-  @:generic
-  @:extern
-  public static inline function buildUnknown<Result:{ function new():Void; var unknownType(null, default):UnknownType; }>(stream:JsonBuilderPluginStream<Result>, type:String, onComplete:Result->Void):Void
-  {
-    JsonBuilderRuntime.buildRaw(stream.underlying, function(rawJson):Void
-    {
-      var result = new Result();
-      result.unknownType = new UnknownType(type, rawJson);
-      onComplete(result);
-    });
-  }
-
-}
-
-@:dox(hide)
-@:final
-extern class DynamicUnknownTypeJsonBuilder
-{
-  @:extern
-  public static inline function buildUnknown<T:LowPriorityDynamic>(stream:JsonBuilderPluginStream<T>, type:String, onComplete:Dynamic->Void):Void
-  {
-    JsonBuilderRuntime.buildRaw(stream.underlying, function(rawJson):Void
-    {
-      onComplete(new UnknownType(type, rawJson));
-    });
   }
 }

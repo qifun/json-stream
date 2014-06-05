@@ -24,13 +24,11 @@ using StringTools;
 
   用法：
   <pre>`// MyDeserializer.hx
-using com.qifun.jsonStream.JsonDeserializer;
 using com.qifun.jsonStream.Plugins;
 @:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ "myPackage.Module1", "myPackage.Module2", "myPackage.Module3" ]))
 class MyDeserializer {}`</pre>
 
   <pre>`// Sample.hx
-using com.qifun.jsonStream.JsonDeserializer;
 using com.qifun.jsonStream.Plugins;
 using MyDeserializer;
 class Sample
@@ -41,7 +39,6 @@ class Sample
     // ...
   }
 }`</pre>
-
 **/
 class JsonDeserializer
 {
@@ -78,7 +75,7 @@ class JsonDeserializer
   /**
     创建反序列化的实现类。必须用在`@:build`中。
 
-    @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义被序列化的数据结构。
+    @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义要序列化的数据结构。
   **/
   @:noUsing
   macro public static function generateDeserializer(includeModules:Array<String>):Array<Field> return
@@ -97,7 +94,7 @@ class JsonDeserializer
   /**
     把`stream`反序列化为`Result`类型。
 
-    注意：`deserialize`是宏。会根据`Result`的类型，把具体的序列化操作转发给当前模块中已经`using`的某个类执行。
+    注意：`deserialize`是宏。会根据`Result`的类型，把具体的反序列化操作转发给当前模块中已经`using`的某个类执行。
     <ul>
       <li>如果`Result`是基本类型，执行序列化的类可能是`deserializerPlugin`包中的内置插件。</li>
       <li>如果`Result`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ ... ]))`创建。</li>
@@ -731,8 +728,9 @@ class JsonDeserializerGenerator
     }
   }
 
-  public static function dynamicDeserialize(stream:ExprOf<JsonStream>, expectedComplexType:ComplexType):Expr return
+  public static function dynamicDeserialize(stream:ExprOf<JsonStream>, expectedType:Type):Expr return
   {
+    var expectedComplexType = TypeTools.toComplexType(Context.follow(expectedType));
     var localUsings = Context.getLocalUsing();
     function createFunction(i:Int, key:ExprOf<String>, value:ExprOf<JsonStream>):Expr return
     {
@@ -766,9 +764,34 @@ class JsonDeserializerGenerator
       else
       {
         var contextBuilder = getContextBuilder();
+        var typePath = switch (expectedComplexType)
+        {
+          case TPath( { pack: pack, name: name, sub: sub } ): { pack: pack, name: name, sub: sub }
+          case _ : null;
+        }
+        var fallbackExpr =
+          if (Context.unify(expectedType, contextBuilder.lowPriorityDynamicType))
+          {
+            macro new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw($value));
+          }
+          else if (
+            Context.unify(expectedType, contextBuilder.hasUnknownTypeFieldType) ||
+            Context.unify(expectedType, contextBuilder.hasUnknownTypeSetterType))
+          {
+            macro
+            {
+              var result = new $typePath();
+              result.unknownType = new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw($value));
+              result;
+            }
+          }
+          else
+          {
+            macro null;
+          }
         if (contextBuilder == null)
         {
-          macro new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).deserializeUnknown($key);
+          fallbackExpr;
         }
         else
         {
@@ -780,7 +803,7 @@ class JsonDeserializerGenerator
             var knownValue = untyped($modulePath.$className).dynamicDeserialize($key, $value);
             if (knownValue == null)
             {
-              new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$expectedComplexType>($value).deserializeUnknown($key);
+              $fallbackExpr;
             }
             else
             {
@@ -837,7 +860,7 @@ class JsonDeserializerGenerator
             }
             else
             {
-              return dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
+              return dynamicDeserialize(stream, expectedType);
             }
           }
         }
@@ -865,7 +888,7 @@ class JsonDeserializerGenerator
         }
         else
         {
-          dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
+          dynamicDeserialize(stream, expectedType);
         }
       case TEnum(_.get() => enumType, _):
         var methodName = deserializeMethodName(enumType.pack, enumType.name);
@@ -913,7 +936,7 @@ class JsonDeserializerGenerator
             }
             else
             {
-              return dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
+              return dynamicDeserialize(stream, expectedType);
             }
           }
         }
@@ -937,10 +960,10 @@ class JsonDeserializerGenerator
         }
         else
         {
-          dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
+          dynamicDeserialize(stream, expectedType);
         }
       case t:
-        dynamicDeserialize(stream, TypeTools.toComplexType(expectedType));
+        dynamicDeserialize(stream, expectedType);
     }
   }
 
@@ -998,6 +1021,18 @@ class JsonDeserializerGenerator
         throw "Expect EBlock, actual " + ExprTools.toString(t);
     };
   }
+
+  private var lowPriorityDynamicType =
+    Context.getType(
+      "com.qifun.jsonStream.LowPriorityDynamic");
+
+  private var hasUnknownTypeFieldType =
+    Context.getType(
+      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeField");
+
+  private var hasUnknownTypeSetterType =
+    Context.getType(
+      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeSetter");
 
 }
 
@@ -1084,6 +1119,14 @@ extern class DynamicUnknownTypeJsonDeserializer
 @:final
 class JsonDeserializerRuntime
 {
+
+  @:generic
+  //@:extern
+  @:noUsing
+  private static inline function newInstanceForStream<T:{ function new():Void; }>(stream:JsonDeserializerPluginStream<T>):T return
+  {
+    new T();
+  }
 
   @:extern
   @:noUsing

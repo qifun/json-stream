@@ -26,7 +26,7 @@ class LowPriorityDynamicDeserializerPlugin
       case TAbstract(_, [ expectedType ]):
         JsonDeserializerGenerator.dynamicDeserialize(
           macro $stream.underlying,
-          TypeTools.toComplexType(expectedType));
+          expectedType);
       case _:
         throw "Expected JsonDeserializerPluginStream";
     }

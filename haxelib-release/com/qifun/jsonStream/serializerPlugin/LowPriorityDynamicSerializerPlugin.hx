@@ -11,7 +11,7 @@ import haxe.macro.Type;
 #end
 
 /**
-  支持生成`Dynamic`类型的序列化插件。
+  支持序列化`Dynamic`类型的插件。
 **/
 class LowPriorityDynamicSerializerPlugin
 {

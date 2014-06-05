@@ -1,14 +1,13 @@
 package com.qifun.jsonStream;
 
 import haxe.macro.Expr;
-
-using StringTools;
+import haxe.macro.Context;
 
 @:dox(hide)
 @:allow(com.qifun.jsonStream)
 class GeneratorUtilities
 {
-  
+
   private static var VOID_COMPLEX_TYPE(default, never) =
     TPath({ name: "Void", pack: []});
 
@@ -27,5 +26,5 @@ class GeneratorUtilities
       '${module.substring(0, lastDot)}.$name';
     }
   }
-  
+
 }
