@@ -5,6 +5,7 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.unknown.UnknownFieldMap;
+import com.qifun.jsonStream.unknown.UnknownType;
 import Type in StdType;
 #if macro
   import haxe.ds.StringMap;
@@ -672,7 +673,7 @@ class JsonSerializerGenerator
         var contextBuilder = getContextBuilder();
         if (contextBuilder == null)
         {
-          macro throw com.qifun.jsonStream.JsonSerializer.JsonSerializerError.NO_SERIALIZER_FOR_DATA($value);
+          macro com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.serializeUnknown($value);
         }
         else
         {
@@ -684,7 +685,7 @@ class JsonSerializerGenerator
             var knownValue = untyped($modulePath.$className).dynamicSerialize($valueType, $value);
             if (knownValue == null)
             {
-              throw com.qifun.jsonStream.JsonSerializer.JsonSerializerError.NO_SERIALIZER_FOR_DATA($value);
+              com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.serializeUnknown($value);
             }
             else
             {
@@ -910,15 +911,48 @@ class JsonSerializerRuntime
   #if (!java) inline #end // Don't inline for Java targets, because of https://github.com/HaxeFoundation/haxe/issues/3094
   function isNotNull<T>(maybeNull:Null<T>):Bool return maybeNull != null;
 
-  public static function yieldUnknownFieldMap(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>, onComplete:Void->Void):Void
+  public static function yieldUnknownFieldMap(
+    unknownFieldMap:UnknownFieldMap,
+    yield:YieldFunction<JsonStreamPair>, onComplete:Void->Void):Void
   {
-    Continuation.cpsFunction(function(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>):Void
-    {
-      for (key in unknownFieldMap.underlying.keys())
+    Continuation.cpsFunction(
+      function(
+        unknownFieldMap:UnknownFieldMap,
+        yield:YieldFunction<JsonStreamPair>):Void
       {
-        yield(new JsonStreamPair(key, JsonSerializer.serializeRaw(unknownFieldMap.underlying.get(key)))).async();
+        for (key in unknownFieldMap.underlying.keys())
+        {
+          var value = unknownFieldMap.underlying.get(key);
+          var valueStream = JsonSerializer.serializeRaw(value);
+          yield(new JsonStreamPair(key, valueStream)).async();
+        }
+      })(unknownFieldMap, yield, onComplete);
+  }
+
+  public static function serializeUnknown(unknown:Dynamic):JsonStreamPair return
+  {
+    var unknownType = Std.instance(unknown, UnknownType);
+    if (unknownType != null)
+    {
+      new JsonStreamPair(
+        unknownType.type,
+        JsonSerializer.serializeRaw(unknownType.data));
+    }
+    else
+    {
+      var property = Reflect.getProperty(unknown, "unknownType");
+      var unknownType = Std.instance(property, UnknownType);
+      if (unknownType != null)
+      {
+        new JsonStreamPair(
+          unknownType.type,
+          JsonSerializer.serializeRaw(unknownType.data));
       }
-    })(unknownFieldMap, yield, onComplete);
+      else
+      {
+        throw NO_SERIALIZER_FOR_DATA(unknown);
+      }
+    }
   }
 
 }
