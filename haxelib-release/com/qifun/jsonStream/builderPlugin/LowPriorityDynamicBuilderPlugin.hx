@@ -15,12 +15,17 @@ class LowPriorityDynamicBuilderPlugin
 {
 
   @:noAsynchronousDynamicDeserialize
-  macro public static function pluginBuild(stream:haxe.macro.Expr.ExprOf<JsonBuilderPluginStream<LowPriorityDynamic>>, onComplete:haxe.macro.Expr.ExprOf<Dynamic->Void>):haxe.macro.Expr.ExprOf<Void> return
+  macro public static function pluginBuild(
+    stream:ExprOf<JsonBuilderPluginStream<LowPriorityDynamic>>,
+    onComplete:ExprOf<Dynamic->Void>):ExprOf<Void> return
   {
     switch (Context.follow(Context.typeof(stream)))
     {
       case TAbstract(_, [ expectedType ]):
-        JsonBuilderFactoryGenerator.dynamicBuild(macro $stream.underlying, onComplete, TypeTools.toComplexType(expectedType));
+        JsonBuilderFactoryGenerator.dynamicBuild(
+          macro $stream.underlying,
+          onComplete,
+          TypeTools.toComplexType(expectedType));
       case _:
         throw "Expected JsonBuilderPluginStream";
     }

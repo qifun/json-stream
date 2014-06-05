@@ -11,15 +11,24 @@ import haxe.macro.Type;
 #end
 
 /**
-  
+
 **/
 class GeneratedSerializerPlugin
 {
 
   @:noDynamicSerialize
-  macro public static function pluginSerialize<T>(stream:ExprOf<JsonSerializerPluginData<T>>):ExprOf<JsonStream> return
+  macro public static function pluginSerialize<T>(
+    data:ExprOf<JsonSerializerPluginData<T>>):ExprOf<JsonStream> return
   {
-    macro throw "TODO";
+    switch (Context.follow(Context.typeof(data)))
+    {
+      case TAbstract(_, [ expectedType ]):
+        JsonSerializerGenerator.generatedSerialize(
+          macro $data.underlying,
+          expectedType);
+      case _:
+        throw "Expected JsonSerializerPluginData";
+    }
   }
 
 }

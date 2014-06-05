@@ -36,7 +36,7 @@ class JsonSerializer
       }
     }));
   }
-  
+
   private static function iterateJsonArray(instance:Array<RawJson>) return
   {
     new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
@@ -76,7 +76,7 @@ class JsonSerializer
         throw 'Unsupported instance data: $t';
     }
   }
-  
+
   @:noUsing
   macro public static function generateSerializer(includeModules:Array<String>):Array<Field> return
   {
@@ -95,7 +95,7 @@ class JsonSerializer
   {
     macro $data.pluginSerialize();
   }
-  
+
 }
 
 @:dox(hide)
@@ -107,15 +107,15 @@ abstract JsonSerializerPluginData<Data>(Null<Data>)
   {
     this = underlying;
   }
-  
+
   public var underlying(get, never):Null<Data>;
-  
+
   @:extern
   inline function get_underlying():Null<Data> return
   {
     this;
   }
-  
+
 }
 
 #if macro
@@ -125,7 +125,7 @@ class JsonSerializerGenerator
   private var buildingFields:Array<Field>;
 
   private var serializingTypes(default, null) = new StringMap<Type>();
-  
+
   private static function toBaseType(type:Type):BaseType return
   {
     switch (type)
@@ -161,7 +161,6 @@ class JsonSerializerGenerator
 
     var dynamicCases:Array<Case> = [];
 
-    // TODO: Dynamic
     function newCase(dataType:Type, valueExpr:Expr):Null<Case> return
     {
       switch (dataType)
@@ -253,7 +252,7 @@ class JsonSerializerGenerator
       expr: ESwitch(macro valueType, dynamicCases, macro null),
     }
     // trace(ExprTools.toString(switchExpr));
-    
+
     buildingFields.push(
       {
         name: "dynamicSerialize",
@@ -577,7 +576,7 @@ class JsonSerializerGenerator
         },
       ],
       ret: null,
-      expr: macro return 
+      expr: macro return
         com.qifun.jsonStream.JsonStream.OBJECT(
           new com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream.JsonStreamPair>(com.dongxiguo.continuation.Continuation.cpsFunction(
             function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void $block))),
@@ -636,10 +635,10 @@ class JsonSerializerGenerator
     }
   }
 
-  public static function dynamicSerialize(stream:ExprOf<JsonStream>, expectedComplexType:ComplexType):Expr return
+  public static function dynamicSerialize(data:Expr, expectedComplexType:ComplexType):ExprOf<JsonStream> return
   {
     var localUsings = Context.getLocalUsing();
-    function createFunction(i:Int, key:ExprOf<String>, value:ExprOf<JsonStream>):Expr return
+    function createFunction(i:Int, valueType:ExprOf<Type.ValueType>, value:Expr):ExprOf<JsonStreamPair> return
     {
       if (i < localUsings.length)
       {
@@ -647,16 +646,16 @@ class JsonSerializerGenerator
         var field = TypeTools.findField(classType, "dynamicSerialize", true);
         if (field == null)
         {
-          createFunction(i + 1, key, value);
+          createFunction(i + 1, valueType, value);
         }
         else
         {
           var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
           var className = classType.name;
-          var next = createFunction(i + 1, key, value);
+          var next = createFunction(i + 1, valueType, value);
           macro
           {
-            var result = $modulePath.$className.dynamicSerialize($key, $value);
+            var result = $modulePath.$className.dynamicSerialize($valueType, $value);
             if (result != null)
             {
               result;
@@ -673,7 +672,7 @@ class JsonSerializerGenerator
         var contextBuilder = getContextBuilder();
         if (contextBuilder == null)
         {
-          macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginStream<$expectedComplexType>($value).serializeUnknown($key);
+          macro throw com.qifun.jsonStream.JsonSerializer.JsonSerializerError.NO_SERIALIZER_FOR_DATA($value);
         }
         else
         {
@@ -682,10 +681,10 @@ class JsonSerializerGenerator
           var className = classType.name;
           macro
           {
-            var knownValue = untyped($modulePath.$className).dynamicSerialize($key, $value);
+            var knownValue = untyped($modulePath.$className).dynamicSerialize($valueType, $value);
             if (knownValue == null)
             {
-              new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginStream<$expectedComplexType>($value).serializeUnknown($key);
+              throw com.qifun.jsonStream.JsonSerializer.JsonSerializerError.NO_SERIALIZER_FOR_DATA($value);
             }
             else
             {
@@ -695,21 +694,19 @@ class JsonSerializerGenerator
         }
       }
     }
-    var processDynamic = createFunction(0, macro dynamicPair.key, macro dynamicPair.value);
-    macro (function(stream:com.qifun.jsonStream.JsonStream):Dynamic return
-    {
-      switch (stream)
-      {
-        case OBJECT(pairs):
-          com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.optimizedExtract1(
-            pairs,
-            function(dynamicPair) return $processDynamic);
-        case NULL:
-          null;
-        case _:
-          throw com.qifun.jsonStream.JsonSerializer.JsonSerializeError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
-      }
-    })($stream);
+    var processDynamic =
+      createFunction(0, macro dynamicValueType, macro dynamicData);
+    macro (function(dynamicData:Dynamic):com.qifun.jsonStream.JsonStream
+      return com.qifun.jsonStream.JsonStream.OBJECT(
+        new com.dongxiguo.continuation.utils.Generator(
+          com.dongxiguo.continuation.Continuation.cpsFunction(
+            function(
+              yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<
+                com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void
+            {
+              var dynamicValueType = Type.Type.typeof(dynamicData);
+              yield($processDynamic).async();
+            }))))($data);
   }
 
   private var buildingClassExpr(get, never):Expr;
@@ -721,7 +718,7 @@ class JsonSerializerGenerator
     macro $modulePath.$className;
   }
 
-  public static function generatedSerialize(expectedType:Type, stream:ExprOf<JsonStream>):Expr return
+  public static function generatedSerialize(data:Expr, expectedType:Type):Expr return
   {
     var followedType = Context.follow(expectedType);
     switch (followedType)
@@ -739,11 +736,11 @@ class JsonSerializerGenerator
               var path = usingClass.module.split(".");
               path.push(usingClass.name);
               var pathExpr = MacroStringTools.toFieldExpr(path);
-              return macro $pathExpr.$methodName($stream);
+              return macro $pathExpr.$methodName($data);
             }
             else
             {
-              return dynamicSerialize(stream, TypeTools.toComplexType(expectedType));
+              return dynamicSerialize(data, TypeTools.toComplexType(expectedType));
             }
           }
         }
@@ -763,11 +760,11 @@ class JsonSerializerGenerator
         if (classType.meta.has(":final"))
         {
           var buildingClassExpr = contextBuilder.buildingClassExpr;
-          macro untyped($buildingClassExpr).$methodName($stream);
+          macro untyped($buildingClassExpr).$methodName($data);
         }
         else
         {
-          dynamicSerialize(stream, TypeTools.toComplexType(expectedType));
+          dynamicSerialize(data, TypeTools.toComplexType(expectedType));
         }
       case TEnum(_.get() => enumType, _):
         var methodName = serializeMethodName(enumType.pack, enumType.name);
@@ -780,7 +777,7 @@ class JsonSerializerGenerator
             var path = usingClass.module.split(".");
             path.push(usingClass.name);
             var pathExpr = MacroStringTools.toFieldExpr(path);
-            return macro $pathExpr.$methodName($stream);
+            return macro $pathExpr.$methodName($data);
           }
         }
         var contextBuilder = getContextBuilder();
@@ -797,7 +794,7 @@ class JsonSerializerGenerator
             });
         }
         var buildingClassExpr = contextBuilder.buildingClassExpr;
-        macro untyped($buildingClassExpr).$methodName($stream);
+        macro untyped($buildingClassExpr).$methodName($data);
       case TAbstract(_.get() => abstractType, _):
         var methodName = serializeMethodName(abstractType.pack, abstractType.name);
         for (usingClassRef in Context.getLocalUsing())
@@ -811,11 +808,11 @@ class JsonSerializerGenerator
               var path = usingClass.module.split(".");
               path.push(usingClass.name);
               var pathExpr = MacroStringTools.toFieldExpr(path);
-              return macro $pathExpr.$methodName($stream);
+              return macro $pathExpr.$methodName($data);
             }
             else
             {
-              return dynamicSerialize(stream, TypeTools.toComplexType(expectedType));
+              return dynamicSerialize(data, TypeTools.toComplexType(expectedType));
             }
           }
         }
@@ -835,14 +832,14 @@ class JsonSerializerGenerator
         if (abstractType.impl.get().meta.has(":final"))
         {
           var buildingClassExpr = contextBuilder.buildingClassExpr;
-          macro untyped($buildingClassExpr).$methodName($stream);
+          macro untyped($buildingClassExpr).$methodName($data);
         }
         else
         {
-          dynamicSerialize(stream, TypeTools.toComplexType(expectedType));
+          dynamicSerialize(data, TypeTools.toComplexType(expectedType));
         }
       case t:
-        dynamicSerialize(stream, TypeTools.toComplexType(expectedType));
+        dynamicSerialize(data, TypeTools.toComplexType(expectedType));
     }
   }
 
@@ -912,7 +909,7 @@ class JsonSerializerRuntime
   public static
   #if (!java) inline #end // Don't inline for Java targets, because of https://github.com/HaxeFoundation/haxe/issues/3094
   function isNotNull<T>(maybeNull:Null<T>):Bool return maybeNull != null;
-  
+
   public static function yieldUnknownFieldMap(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>, onComplete:Void->Void):Void
   {
     Continuation.cpsFunction(function(unknownFieldMap:UnknownFieldMap, yield:YieldFunction<JsonStreamPair>):Void
@@ -924,4 +921,9 @@ class JsonSerializerRuntime
     })(unknownFieldMap, yield, onComplete);
   }
 
+}
+
+enum JsonSerializerError
+{
+  NO_SERIALIZER_FOR_DATA(data:Dynamic);
 }

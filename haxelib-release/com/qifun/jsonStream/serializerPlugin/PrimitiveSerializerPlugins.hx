@@ -119,11 +119,11 @@ class ArraySerializerPlugin
       })));
     }
   }
-  
+
   macro public static function pluginSerialize<Element>(data:ExprOf<JsonSerializerPluginData<Array<Element>>>):ExprOf<JsonStream> return
   {
     macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin.serializeForElement($data, function(subdata) return subdata.pluginSerialize());
   }
 }
 
-////TODO : StringMap and IntMap
+//TODO : StringMap and IntMap
