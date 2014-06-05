@@ -19,11 +19,11 @@ using Main;
 //@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Reference"]))
 //class RefDeserializer { }
 
-//@:build(com.qifun.jsonStream.JsonBuilderFactory.generateBuilderFactory(["Reference", "NewClass", "NewEnum"]))
-//class AllBuilderFactory {}
-//
-//@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Reference", "NewClass", "NewEnum"]))
-//class AllDeserializer { }
+@:build(com.qifun.jsonStream.JsonBuilderFactory.generateBuilderFactory(["Reference", "NewClass", "NewEnum"]))
+class AllBuilderFactory {}
+
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["Reference", "NewClass", "NewEnum"]))
+class AllDeserializer { }
 
 @:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["Reference", "NewClass", "NewEnum"]))
 class AllSerializer {}
