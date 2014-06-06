@@ -43,22 +43,31 @@ class JsonTestCase extends TestCase
               ret: null,
               expr: macro
               {
-                haxe.Timer.delay(
-                  function()
-                  {
-                    var runner = new haxe.unit.TestRunner();
-                    runner.add(new $localTypaPath());
-                    var isSuccess = runner.run();
-                    if (!isSuccess)
-                    {
-                      throw runner.result;
-                    }
-                  }, 0);
+                new $localTypaPath().delayedRun();
               }
             })
         });
     }
     return fields;
+  }
+
+  function delayedRun()
+  {
+    function run()
+    {
+      var runner = new haxe.unit.TestRunner();
+      runner.add(this);
+      var isSuccess = runner.run();
+      if (!isSuccess)
+      {
+        throw runner.result;
+      }
+    }
+    #if flash
+      haxe.Timer.delay(run, 0);
+    #else
+      run();
+    #end
   }
 
   macro static function testData<T>(data:ExprOf<T>):ExprOf<Void> return

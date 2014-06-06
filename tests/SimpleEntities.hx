@@ -14,6 +14,11 @@ enum SimpleEnum
   ENUM_VALUE_2(parameter:Int);
 }
 
-abstract SimpleAbstract(Int) from Int to Int
+//abstract SimpleAbstract(Int) // Error due to https://github.com/HaxeFoundation/haxe/issues/3110
+abstract SimpleAbstract(String)
 {
+  public function new(underlying:String)
+  {
+    this = underlying;
+  }
 }

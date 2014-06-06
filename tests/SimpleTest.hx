@@ -64,6 +64,10 @@ class SimpleTest extends JsonTestCase
 
   function testSimple()
   {
+    JsonTestCase.testData(new SimpleAbstract("baz"));
+    JsonTestCase.testData([1]);
+    JsonTestCase.testData([SimpleEnum.ENUM_VALUE_1]);
+    JsonTestCase.testData(1);
     JsonTestCase.testData(SimpleEnum.ENUM_VALUE_1);
   }
 

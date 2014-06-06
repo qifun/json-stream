@@ -1,4 +1,3 @@
-import haxe.Timer;
 import haxe.unit.TestRunner;
 class Main
 {
@@ -8,6 +7,7 @@ class Main
     var runner = new TestRunner();
     runner.add(new RawTest());
     runner.add(new SimpleTest());
+    runner.add(new SimpleAbstractTest());
     runner.add(new EnumWithParameterTest());
     var isSuccess = runner.run();
     if (!isSuccess)
@@ -19,7 +19,11 @@ class Main
   public static function main()
   {
     // 使用Timer以绕开在main中遇到异常时FlashDevelop调试器无法退出的Bug
-    Timer.delay(testAll, 0);
+    #if flash9
+      haxe.Timer.delay(testAll, 0);
+    #else
+      testAll();
+    #end
   }
 
 }
