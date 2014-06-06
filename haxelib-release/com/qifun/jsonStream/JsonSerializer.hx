@@ -631,7 +631,7 @@ class JsonSerializerGenerator
     var followedType = Context.follow(type);
     switch (followedType)
     {
-      case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
+      case TInst(_.get() => classType, _) if (!isAbstract(classType)):
         var methodName = serializeMethodName(classType.pack, classType.name);
         if (serializingTypes.get(methodName) == null)
         {
@@ -765,7 +765,7 @@ class JsonSerializerGenerator
     var followedType = Context.follow(expectedType);
     switch (followedType)
     {
-      case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
+      case TInst(_.get() => classType, _) if (!isAbstract(classType)):
         var methodName = serializeMethodName(classType.pack, classType.name);
         for (usingClassRef in Context.getLocalUsing())
         {

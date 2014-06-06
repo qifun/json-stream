@@ -10,6 +10,14 @@ import haxe.macro.Type;
 @:allow(com.qifun.jsonStream)
 class GeneratorUtilities
 {
+  private static function isAbstract(classType:ClassType):Bool return
+  {
+    classType.isInterface ||
+    !classType.kind.match(KNormal) ||
+    classType.constructor == null ||
+    !Context.follow(classType.constructor.get().type).match(TFun([], _));
+  }
+
   private static var _lowPriorityDynamicType:Type;
 
   private static var lowPriorityDynamicType(get, never):Type;

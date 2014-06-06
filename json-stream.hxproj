@@ -24,7 +24,7 @@
     <option directives="flash-use-stage" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
-    <option mainClass="Main" />
+    <option mainClass="GenericClassTest" />
     <option enabledebug="True" />
     <option additional="" />
   </build>
@@ -42,7 +42,7 @@
     <compile path="tests\Int64ValueType.hx" />
     <compile path="tests\Int64Enum.hx" />
     <compile path="tests\Main.hx.backup" />
-    <compile path="tests\Main.hx" />
+    <compile path="tests\GenericClassTest.hx" />
   </compileTargets>
   <!-- Assets to embed into the output SWF -->
   <library>

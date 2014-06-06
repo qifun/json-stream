@@ -687,7 +687,7 @@ class JsonDeserializerGenerator
   {
     switch (Context.follow(type))
     {
-      case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
+      case TInst(_.get() => classType, _) if (!isAbstract(classType)):
         var methodName = deserializeMethodName(classType.pack, classType.name);
         if (deserializingTypes.get(methodName) == null)
         {
@@ -848,7 +848,7 @@ class JsonDeserializerGenerator
   {
     switch (Context.follow(expectedType))
     {
-      case TInst(_.get() => classType, _) if (!classType.isInterface && classType.kind.match(KNormal)):
+      case TInst(_.get() => classType, _) if (!isAbstract(classType)):
         var methodName = deserializeMethodName(classType.pack, classType.name);
         for (usingClassRef in Context.getLocalUsing())
         {
