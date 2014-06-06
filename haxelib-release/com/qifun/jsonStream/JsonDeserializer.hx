@@ -119,9 +119,7 @@ class JsonDeserializer
       pos: Context.currentPos(),
       expr: ENew(typedJsonStreamTypePath, [ stream ]),
     };
-    var result = macro $typedJsonStream.pluginDeserialize();
-    //trace(ExprTools.toString(result));
-    result;
+    macro ($typedJsonStream.pluginDeserialize():$expectedComplexType);
   }
 
 }
