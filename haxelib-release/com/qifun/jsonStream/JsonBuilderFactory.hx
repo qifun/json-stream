@@ -1,11 +1,11 @@
 package com.qifun.jsonStream;
 
 import com.qifun.jsonStream.JsonBuilder;
-import com.qifun.jsonStream.GeneratorUtilities.*;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.unknown.UnknownType;
 
 #if macro
+import com.qifun.jsonStream.GeneratorUtilities.*;
 import haxe.ds.StringMap;
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.Context;
@@ -81,16 +81,16 @@ class JsonBuilderFactory
     switch (expectedType)
     {
       case TInst(_, [ resultType ]):
-        var pluginStreamComplexType = TPath(
+        var pluginStreamTypePath =
         {
           pack: [ "com", "qifun", "jsonStream" ],
           name: "JsonBuilderFactory",
           sub: "JsonBuilderPluginStream",
-          params: [ TPType(TypeTools.toComplexType(Context.getExpectedType())) ],
-        });
-        macro new JsonBuilder(function(stream:$pluginStreamComplexType, onComplete):Void
+          params: [ TPType(TypeTools.toComplexType(resultType)) ],
+        };
+        macro new JsonBuilder(function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream, onComplete):Void
         {
-          stream.pluginBuild(onComplete);
+          new $pluginStreamTypePath(stream).pluginBuild(onComplete);
         });
       case _: throw "Expect JsonBuilder!";
     }
@@ -148,7 +148,7 @@ class JsonBuilderFactoryGenerator
               var path = usingClass.module.split(".");
               path.push(usingClass.name);
               var pathExpr = MacroStringTools.toFieldExpr(path);
-              return macro $pathExpr.$methodName($stream);
+              return macro $pathExpr.$methodName($stream, $onComplete);
             }
             else
             {
@@ -157,6 +157,10 @@ class JsonBuilderFactoryGenerator
           }
         }
         var contextBuilder = getContextBuilder();
+        if (contextBuilder == null)
+        {
+          Context.error('No plugin or deserializer for $expectedType.', Context.currentPos());
+        }
         if (contextBuilder.deserializingTypes.get(methodName) == null)
         {
           contextBuilder.deserializingTypes.set(methodName, classType);
@@ -255,18 +259,6 @@ class JsonBuilderFactoryGenerator
     }
   }
 
-  private var lowPriorityDynamicType =
-    Context.getType(
-      "com.qifun.jsonStream.LowPriorityDynamic");
-
-  private var hasUnknownTypeFieldType =
-    Context.getType(
-      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeField");
-
-  private var hasUnknownTypeSetterType =
-    Context.getType(
-      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeSetter");
-
   private static function getContextBuilder():JsonBuilderFactoryGenerator return
   {
     var localClass = Context.getLocalClass().get();
@@ -319,13 +311,13 @@ class JsonBuilderFactoryGenerator
           case _ : null;
         }
         var fallbackExpr =
-          if (Context.unify(expectedType, contextBuilder.lowPriorityDynamicType))
+          if (Context.unify(expectedType, lowPriorityDynamicType))
           {
             macro new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw($value).async());
           }
           else if (
-            Context.unify(expectedType, contextBuilder.hasUnknownTypeFieldType) ||
-            Context.unify(expectedType, contextBuilder.hasUnknownTypeSetterType))
+            Context.unify(expectedType, hasUnknownTypeFieldType) ||
+            Context.unify(expectedType, hasUnknownTypeSetterType))
           {
             macro
             {
@@ -903,8 +895,10 @@ class JsonBuilderFactoryGenerator
           value = v;
         }
         result;
+      case NULL:
+        null;
       case _:
-        throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
+        throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT", "NULL" ]);
     }
 
     var expectedComplexType = TPath(expectedTypePath);
@@ -1100,7 +1094,7 @@ enum JsonBuilderError
 {
   TOO_MANY_FIELDS<Handler>(read:Handler->Void, expected:Int);
   NOT_ENOUGH_FIELDS<Handler>(read:Handler->Void, expected:Int, actual:Int);
-  UNMATCHED_JSON_TYPE(stream:AsynchronousJsonStream, expected: Array<String>);
+  UNMATCHED_JSON_TYPE(stream:AsynchronousJsonStream, expected:Array<String>);
 }
 
 

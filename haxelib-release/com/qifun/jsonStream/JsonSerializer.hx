@@ -1,6 +1,4 @@
 package com.qifun.jsonStream;
-
-import com.qifun.jsonStream.GeneratorUtilities.*;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
@@ -9,6 +7,7 @@ import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import com.qifun.jsonStream.unknown.UnknownType;
 import Type in StdType;
 #if macro
+  import com.qifun.jsonStream.GeneratorUtilities.*;
   import haxe.ds.StringMap;
   import haxe.macro.ComplexTypeTools;
   import haxe.macro.Context;

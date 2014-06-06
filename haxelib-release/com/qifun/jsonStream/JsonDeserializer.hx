@@ -1,11 +1,11 @@
 package com.qifun.jsonStream;
 
 import com.dongxiguo.continuation.utils.Generator;
-import com.qifun.jsonStream.GeneratorUtilities.*;
 import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import com.qifun.jsonStream.unknown.UnknownType;
 
 #if macro
+import com.qifun.jsonStream.GeneratorUtilities.*;
 import haxe.ds.StringMap;
 import haxe.macro.ComplexTypeTools;
 import haxe.macro.Context;
@@ -770,13 +770,13 @@ class JsonDeserializerGenerator
           case _ : null;
         }
         var fallbackExpr =
-          if (Context.unify(expectedType, contextBuilder.lowPriorityDynamicType))
+          if (Context.unify(expectedType, lowPriorityDynamicType))
           {
             macro new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw($value));
           }
           else if (
-            Context.unify(expectedType, contextBuilder.hasUnknownTypeFieldType) ||
-            Context.unify(expectedType, contextBuilder.hasUnknownTypeSetterType))
+            Context.unify(expectedType, hasUnknownTypeFieldType) ||
+            Context.unify(expectedType, hasUnknownTypeSetterType))
           {
             macro
             {
@@ -1022,17 +1022,6 @@ class JsonDeserializerGenerator
     };
   }
 
-  private var lowPriorityDynamicType =
-    Context.getType(
-      "com.qifun.jsonStream.LowPriorityDynamic");
-
-  private var hasUnknownTypeFieldType =
-    Context.getType(
-      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeField");
-
-  private var hasUnknownTypeSetterType =
-    Context.getType(
-      "com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeSetter");
 
 }
 
