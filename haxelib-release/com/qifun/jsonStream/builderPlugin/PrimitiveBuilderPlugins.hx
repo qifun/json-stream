@@ -69,7 +69,7 @@ class UIntBuilderPlugin
         case NULL:
           null;
         case _:
-          throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
+          throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
       }
     })(stream.underlying, onComplete);
   }
@@ -91,7 +91,7 @@ class IntBuilderPlugin
         case NULL:
           null;
         case _:
-          throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
+          throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
       }
     })(stream.underlying, onComplete);
   }

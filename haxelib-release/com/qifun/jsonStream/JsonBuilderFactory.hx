@@ -77,21 +77,31 @@ class JsonBuilderFactory
 
   macro public static function newBuilder<Result>():ExprOf<JsonBuilder<Result>> return
   {
-    var expectedType = Context.follow(Context.getExpectedType());
-    switch (expectedType)
+    var expectedType = Context.getExpectedType();
+    if (expectedType == null)
+    {
+      Context.error("Require explicit return type!", Context.currentPos());
+    }
+    switch (Context.follow(expectedType))
     {
       case TInst(_, [ resultType ]):
+        var resultComplexType = TypeTools.toComplexType(resultType);
+        if (resultComplexType == null)
+        {
+          Context.error("Require explicit return type!", Context.currentPos());
+        }
         var pluginStreamTypePath =
         {
           pack: [ "com", "qifun", "jsonStream" ],
           name: "JsonBuilderFactory",
           sub: "JsonBuilderPluginStream",
-          params: [ TPType(TypeTools.toComplexType(resultType)) ],
+          params: [ TPType(resultComplexType) ],
         };
-        macro new JsonBuilder(function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream, onComplete):Void
-        {
-          new $pluginStreamTypePath(stream).pluginBuild(onComplete);
-        });
+        macro new com.qifun.jsonStream.JsonBuilder(
+          function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream, onComplete):Void
+          {
+            new $pluginStreamTypePath(stream).pluginBuild(onComplete);
+          });
       case _: throw "Expect JsonBuilder!";
     }
   }

@@ -102,19 +102,26 @@ class JsonDeserializer
   **/
   macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Null<Result>> return
   {
+    var expectedComplexType = TypeTools.toComplexType(Context.getExpectedType());
+    if (expectedComplexType == null)
+    {
+      Context.error("Require explicit return type!", Context.currentPos());
+    }
     var typedJsonStreamTypePath =
     {
       pack: [ "com", "qifun", "jsonStream" ],
       name: "JsonDeserializer",
       sub: "JsonDeserializerPluginStream",
-      params: [ TPType(TypeTools.toComplexType(Context.getExpectedType())) ],
+      params: [ TPType(expectedComplexType) ],
     };
     var typedJsonStream =
     {
       pos: Context.currentPos(),
       expr: ENew(typedJsonStreamTypePath, [ stream ]),
     };
-    macro $typedJsonStream.pluginDeserialize();
+    var result = macro $typedJsonStream.pluginDeserialize();
+    //trace(ExprTools.toString(result));
+    result;
   }
 
 }

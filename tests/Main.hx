@@ -8,6 +8,7 @@ class Main
     var runner = new TestRunner();
     runner.add(new RawTest());
     runner.add(new SimpleTest());
+    runner.add(new EnumWithParameterTest());
     var isSuccess = runner.run();
     if (!isSuccess)
     {

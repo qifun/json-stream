@@ -119,7 +119,7 @@ class JsonSerializer
   /**
     把`data`序列化为`JsonStream`.
 
-    注意：`serialize`是宏。会根据`data`的类型，把具体的序列化操作转发给当前模块中已经`using`的某个类执行。
+    注意：`serialize`是宏，会根据`data`的类型，把具体的序列化操作转发给当前模块中已经`using`的某个类执行。
     <ul>
       <li>如果`data`是基本类型，执行序列化的类可能是`serializerPlugin`包中的内置插件。</li>
       <li>如果`data`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([ ... ]))`创建。</li>
@@ -127,7 +127,8 @@ class JsonSerializer
   **/
   macro public static function serialize(data:Expr):ExprOf<JsonStream> return
   {
-    macro $data.pluginSerialize();
+    macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData(
+      $data).pluginSerialize();
   }
 
 }
@@ -457,7 +458,14 @@ class JsonSerializerGenerator
               expr: macro com.qifun.jsonStream.JsonStream.OBJECT(
                 new com.dongxiguo.continuation.utils.Generator(
                   com.dongxiguo.continuation.Continuation.cpsFunction(
-                    function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void $block))),
+                    function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void
+                      yield(
+                        new com.qifun.jsonStream.JsonStream.JsonStreamPair(
+                          $v{constructorName},
+                          com.qifun.jsonStream.JsonStream.OBJECT(
+                            new com.dongxiguo.continuation.utils.Generator(
+                              com.dongxiguo.continuation.Continuation.cpsFunction(
+                                function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void $block))))).async()))),
             });
         case { name: constructorName } :
           cases.push(
