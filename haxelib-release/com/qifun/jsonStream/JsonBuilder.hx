@@ -1,4 +1,7 @@
 package com.qifun.jsonStream;
+import com.dongxiguo.continuation.utils.Generator;
+import haxe.macro.Expr;
+import com.qifun.jsonStream.JsonStream;
 
 abstract JsonObjectBuilder(Null<String>->Null<AsynchronousJsonStream>->Void) from (Null<String>->Null<AsynchronousJsonStream>->Void)
 {
@@ -45,6 +48,11 @@ abstract JsonObjectBuilder(Null<String>->Null<AsynchronousJsonStream>->Void) fro
     var result:Null<JsonArrayBuilder> = null;
     this(key, ARRAY(function(jab) return result = jab));
     result;
+  }
+
+  public inline function addStream(key:String, value:JsonStream):Void
+  {
+    this(key, JsonStreamToAsynchronous.jsonStreamToAsynchronous(value));
   }
 
 }
@@ -95,6 +103,10 @@ abstract JsonArrayBuilder(Null<AsynchronousJsonStream>->Void) from (Null<Asynchr
     result;
   }
 
+  public inline function addStream(value:JsonStream):Void
+  {
+    this(JsonStreamToAsynchronous.jsonStreamToAsynchronous(value));
+  }
 }
 
 /**
@@ -132,20 +144,14 @@ class JsonBuilder<Result>
     asynchronousFunction(NULL, newSetter());
   }
 
-  public var numberValue(never, set):Float;
-
-  inline function set_numberValue(value:Float):Float return
+  public inline function setNumber(value:Float):Void
   {
     asynchronousFunction(NUMBER(value), newSetter());
-    value;
   }
 
-  public var stringValue(never, set):String;
-
-  inline function set_stringValue(value:String):String return
+  public inline function setString(value:String):Void
   {
     asynchronousFunction(STRING(value), newSetter());
-    value;
   }
 
   public inline function setObject():JsonObjectBuilder return
@@ -174,6 +180,12 @@ class JsonBuilder<Result>
     b;
   }
 
+  public inline function setStream(value:JsonStream):Void
+  {
+    asynchronousFunction(
+      JsonStreamToAsynchronous.jsonStreamToAsynchronous(value), newSetter());
+  }
+
 }
 
 /**
@@ -190,4 +202,79 @@ enum AsynchronousJsonStream
   NUMBER(value:Float);
   OBJECT(read:(Null<String>->Null<AsynchronousJsonStream>->Void)->Void);
   ARRAY(read:(Null<AsynchronousJsonStream>->Void)->Void);
+}
+
+private class JsonStreamToAsynchronous
+{
+
+  macro static function newReadArrayFunction(elements:Expr) return
+  {
+    macro function(handler):Void
+    {
+      if ($elements.hasNext())
+      {
+        handler(jsonStreamToAsynchronous($elements.next()));
+      }
+      else
+      {
+        handler(null);
+      }
+    }
+  }
+
+  macro static function newReadObjectFunction(pairs:Expr) return
+  {
+    macro function(handler):Void
+    {
+      if ($pairs.hasNext())
+      {
+        var pair = $pairs.next();
+        handler(pair.key, jsonStreamToAsynchronous(pair.value));
+      }
+      else
+      {
+        handler(null, null);
+      }
+    }
+  }
+
+  public static function jsonStreamToAsynchronous(stream:JsonStream):AsynchronousJsonStream return
+  {
+    switch (stream)
+    {
+      case STRING(value):
+        STRING(value);
+      case NUMBER(value):
+        NUMBER(value);
+      case TRUE:
+        TRUE;
+      case FALSE:
+        FALSE;
+      case NULL:
+        NULL;
+      case OBJECT(pairs):
+        var generator =
+          Std.instance(pairs, (Generator:Class<Generator<JsonStreamPair>>));
+        if (generator != null)
+        {
+          OBJECT(newReadObjectFunction(generator));
+        }
+        else
+        {
+          OBJECT(newReadObjectFunction(pairs));
+        }
+      case ARRAY(elements):
+        var generator =
+          Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          ARRAY(newReadArrayFunction(generator));
+        }
+        else
+        {
+          ARRAY(newReadArrayFunction(elements));
+        }
+    }
+
+  }
 }
