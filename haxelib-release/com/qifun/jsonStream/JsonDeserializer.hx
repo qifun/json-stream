@@ -1057,60 +1057,6 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 
 @:dox(hide)
 @:final
-extern class FallbackUnknownTypeJsonDeserializer
-{
-  @:extern
-  public inline static function deserializeUnknown<Element>(stream:JsonDeserializerPluginStream<Element>, type:String):Dynamic return
-  {
-    null;
-  }
-}
-
-@:dox(hide)
-@:final
-extern class UnknownTypeSetterJsonDeserializer
-{
-
-  @:generic
-  @:extern
-  public static inline function deserializeUnknown<Result:{ function new():Void; var unknownType(never, set):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
-  {
-    var result = new Result();
-    result.unknownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
-    result;
-  }
-
-}
-
-@:dox(hide)
-@:final
-extern class UnknownTypeFieldJsonDeserializer
-{
-
-  @:generic
-  @:extern
-  public static inline function deserializeUnknown<Result:{ function new():Void; var unknownType(null, default):UnknownType; }>(stream:JsonDeserializerPluginStream<Result>, type:String):Dynamic return
-  {
-    var result = new Result();
-    result.unknownType = new UnknownType(type, JsonDeserializer.deserializeRaw(stream.underlying));
-    result;
-  }
-
-}
-
-@:dox(hide)
-@:final
-extern class DynamicUnknownTypeJsonDeserializer
-{
-  @:extern
-  public static inline function deserializeUnknown<T:LowPriorityDynamic>(stream:JsonDeserializerPluginStream<T>, type:String):Dynamic return
-  {
-    new com.qifun.jsonStream.unknown.UnknownType(type, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(stream.underlying));
-  }
-}
-
-@:dox(hide)
-@:final
 class JsonDeserializerRuntime
 {
 
