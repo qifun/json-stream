@@ -777,7 +777,7 @@ class JsonDeserializerGenerator
         var fallbackExpr =
           if (Context.unify(expectedType, lowPriorityDynamicType))
           {
-            macro new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw($value));
+            macro (new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw($value)):Dynamic);
           }
           else if (
             Context.unify(expectedType, hasUnknownTypeFieldType) ||
