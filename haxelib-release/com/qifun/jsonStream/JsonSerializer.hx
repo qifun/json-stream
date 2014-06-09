@@ -738,8 +738,10 @@ class JsonSerializerGenerator
     }
     var processDynamic =
       createFunction(0, macro dynamicValueType, macro dynamicData);
-    macro (function(dynamicData:Dynamic):com.qifun.jsonStream.JsonStream
-      return com.qifun.jsonStream.JsonStream.OBJECT(
+    macro (function(dynamicData:Dynamic):com.qifun.jsonStream.JsonStream return
+      dynamicData == null ?
+      com.qifun.jsonStream.JsonStream.NULL :
+      com.qifun.jsonStream.JsonStream.OBJECT(
         new com.dongxiguo.continuation.utils.Generator(
           com.dongxiguo.continuation.Continuation.cpsFunction(
             function(
