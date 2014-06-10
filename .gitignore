@@ -1,3 +1,4 @@
-/bin
-/dox
+/bin/
+/dox/
 /cross-platform.xml
+/target/

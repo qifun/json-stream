@@ -16,8 +16,8 @@
   </output>
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
-    <class path="haxelib-release" />
-    <class path="tests" />
+    <class path="src\haxe" />
+    <class path="src\test-haxe" />
   </classpaths>
   <!-- Build options -->
   <build>
