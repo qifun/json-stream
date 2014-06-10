@@ -26,7 +26,14 @@ class RawTest extends JsonTestCase
     var stream = JsonSerializer.serializeRaw(data);
     var data2 = JsonDeserializer.deserializeRaw(stream);
     var nativeData2 = selectLatter(nativeData, data2.underlying);
-    Some(nativeData2).match(Some({ field1: 123 }));
+    Some(nativeData2).match(Some(
+    {
+      field1: 123,
+      field2: 8.0,
+      field3: "foo",
+      field4: [ "foo", null, [], "bar", (_:Array<Dynamic>) => [ (_:Array<Dynamic>) => [ [], 2, null, (_: { ?a:Int }) => { a: 0, } ], "baz", [], ], (_: { ?b:Dynamic }) => { b: null } ],
+      field5: null,
+    }));
 
     assertDeepEquals(data, data2);
   }
