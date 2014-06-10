@@ -47,7 +47,7 @@ class GenericClassTest extends JsonTestCase
         ];
         data.self2 =
         {
-          var data = new FinalClass2<Array<Array<BaseClass<Int, BaseClass<Int, Dynamic>>>> , Array<String>>();
+          var data = new FinalClass2<Array<Array<BaseClass<Int, BaseClass<Int, Dynamic>>>>, Array<String>>();
           data.self = new BaseClass<Array<String>, BaseClass<Array<Array<BaseClass<Int, BaseClass<Int, Dynamic>>>>, Int>>();
           // Workaround for https://github.com/HaxeFoundation/haxe/issues/3118
           #if cs (data:Dynamic) #else data #end.a1 = [ null, null, null ];
