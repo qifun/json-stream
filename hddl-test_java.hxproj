@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project version="2">
+  <!-- Output SWF options -->
+  <output>
+    <movie outputType="Application" />
+    <movie input="" />
+    <movie path="bin\optional-stem-test_java" />
+    <movie fps="30" />
+    <movie width="800" />
+    <movie height="600" />
+    <movie version="1" />
+    <movie minorVersion="0" />
+    <movie platform="Java" />
+    <movie background="#FFFFFF" />
+    <movie preferredSDK="Haxe 3.1.1;3.1.1;" />
+  </output>
+  <!-- Other classes to be compiled into your SWF -->
+  <classpaths>
+    <class path="src\haxe" />
+    <class path="src\test-haxe" />
+  </classpaths>
+  <!-- Build options -->
+  <build>
+    <option directives="no-inline&#xA;no-compilation" />
+    <option flashStrict="True" />
+    <option noInlineOnDebug="True" />
+    <option mainClass="Main" />
+    <option enabledebug="True" />
+    <option additional="" />
+  </build>
+  <!-- haxelib libraries -->
+  <haxelib>
+    <library name="continuation" />
+  </haxelib>
+  <!-- Class files to compile (other referenced classes will automatically be included) -->
+  <compileTargets>
+    <compile path="src\Main.hx" />
+    <compile path="haxelib-release\com\qifun\structuralizaion\Structuralization.hx" />
+    <compile path="tests\Main2.hx" />
+    <compile path="tests\HaxeJavaCrash.hx" />
+    <compile path="tests\Bug.hx" />
+    <compile path="tests\Int64ValueType.hx" />
+    <compile path="tests\Int64Enum.hx" />
+    <compile path="tests\Main.hx.backup" />
+    <compile path="tests\Main.hx" />
+    <compile path="src\test-haxe\Main.hx" />
+  </compileTargets>
+  <!-- Paths to exclude from the Project Explorer tree -->
+  <hiddenPaths>
+    <hidden path="obj" />
+  </hiddenPaths>
+  <!-- Executed before build -->
+  <preBuildCommand />
+  <!-- Executed after build -->
+  <postBuildCommand alwaysRun="False" />
+  <!-- Other project options -->
+  <options>
+    <option showHiddenPaths="False" />
+    <option testMovie="Unknown" />
+    <option testMovieCommand="" />
+  </options>
+  <!-- Plugin storage -->
+  <storage />
+</project>
