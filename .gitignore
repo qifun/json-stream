@@ -1,4 +1,3 @@
 /bin/
-/dox/
-/cross-platform.xml
 /target/
+.*
