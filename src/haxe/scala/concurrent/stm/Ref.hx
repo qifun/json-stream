@@ -1,6 +1,7 @@
 package scala.concurrent.stm;
 
 import haxe.Int64;
+import java.StdTypes;
 import scala.reflect.OptManifest;
 
 extern interface Ref<A>
@@ -35,6 +36,9 @@ extern class RefSingleton
   @:overload(function(initialValue:Bool):Ref<Dynamic>{})
   @:overload(function(initialValue:Float):Ref<Dynamic>{})
   @:overload(function(initialValue:Int64):Ref<Dynamic>{})
+  @:overload(function(initialValue:Int8):Ref<Dynamic>{})
+  @:overload(function(initialValue:Int16):Ref<Dynamic>{})
+  @:overload(function(initialValue:Char16):Ref<Dynamic>{})
   public function apply<A>(initialValue: A, om: OptManifest<A>): Ref<A>;
 
 }

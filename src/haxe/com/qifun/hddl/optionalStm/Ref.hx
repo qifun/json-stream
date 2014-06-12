@@ -4,6 +4,8 @@ import scala.reflect.ClassTag.ClassTagSingleton;
 
 #if java
 
+import java.StdTypes;
+
 @:multiType(A)
 abstract Ref<A>(scala.concurrent.stm.Ref<A>)
 {
@@ -21,6 +23,27 @@ abstract Ref<A>(scala.concurrent.stm.Ref<A>)
   @:extern
   @:to
   static inline function toInt64Ref(t:scala.concurrent.stm.Ref<Int64>, initialValue:Int64):scala.concurrent.stm.Ref<Int64>
+  {
+    return cast scala.concurrent.stm.Ref.RefSingleton.getInstance().apply(initialValue);
+  }
+
+  @:extern
+  @:to
+  static inline function toChar16Ref(t:scala.concurrent.stm.Ref<Char16>, initialValue:Char16):scala.concurrent.stm.Ref<Char16>
+  {
+    return cast scala.concurrent.stm.Ref.RefSingleton.getInstance().apply(initialValue);
+  }
+
+  @:extern
+  @:to
+  static inline function toInt16Ref(t:scala.concurrent.stm.Ref<Int16>, initialValue:Int16):scala.concurrent.stm.Ref<Int16>
+  {
+    return cast scala.concurrent.stm.Ref.RefSingleton.getInstance().apply(initialValue);
+  }
+
+  @:extern
+  @:to
+  static inline function toInt8Ref(t:scala.concurrent.stm.Ref<Int8>, initialValue:Int8):scala.concurrent.stm.Ref<Int8>
   {
     return cast scala.concurrent.stm.Ref.RefSingleton.getInstance().apply(initialValue);
   }
