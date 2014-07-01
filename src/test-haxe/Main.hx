@@ -9,6 +9,7 @@ class Main
     runner.add(new SimpleTest());
     runner.add(new SimpleAbstractTest());
     runner.add(new EnumWithParameterTest());
+    runner.add(new RpcTest());
     runner.add(new GenericClassTest());
     var isSuccess = runner.run();
     if (!isSuccess)
