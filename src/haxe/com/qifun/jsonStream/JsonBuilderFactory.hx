@@ -169,7 +169,10 @@ class JsonBuilderFactoryGenerator
         var contextBuilder = getContextBuilder();
         if (contextBuilder == null)
         {
-          Context.error('No plugin or deserializer for $expectedType.', Context.currentPos());
+          Context.error(
+            'No plugin or builder factory for ${
+              TypeTools.toString(expectedType)
+            }.', Context.currentPos());
         }
         if (contextBuilder.deserializingTypes.get(methodName) == null)
         {

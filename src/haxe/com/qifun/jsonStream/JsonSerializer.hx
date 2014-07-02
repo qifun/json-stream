@@ -789,6 +789,13 @@ class JsonSerializerGenerator
           }
         }
         var contextBuilder = getContextBuilder();
+        if (contextBuilder == null)
+        {
+          Context.error(
+            'No plugin or serializer for ${
+              TypeTools.toString(expectedType)
+            }.', Context.currentPos());
+        }
         if (contextBuilder.serializingTypes.get(methodName) == null)
         {
           contextBuilder.serializingTypes.set(methodName, followedType);
