@@ -869,7 +869,7 @@ class JsonBuilderFactoryGenerator
     var expectedTypePath =
     {
       pack: classType.pack,
-      name: classModule.substring(classModule.lastIndexOf(".")),
+      name: classModule.substring(classModule.lastIndexOf(".") + 1),
       sub: classType.name,
       params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
     };

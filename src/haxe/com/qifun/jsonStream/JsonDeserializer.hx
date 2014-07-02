@@ -622,7 +622,7 @@ class JsonDeserializerGenerator
     var expectedTypePath =
     {
       pack: classType.pack,
-      name: classModule.substring(classModule.lastIndexOf(".")),
+      name: classModule.substring(classModule.lastIndexOf(".") + 1),
       sub: classType.name,
       params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
     };
@@ -668,6 +668,8 @@ class JsonDeserializerGenerator
       case _:
         throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
     }
+
+    // trace(ExprTools.toString(switchStream));
 
     {
       args:

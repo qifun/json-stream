@@ -485,7 +485,7 @@ class JsonSerializerGenerator
       TPath(
         {
           pack: enumType.pack,
-          name: enumModule.substring(enumModule.lastIndexOf(".")),
+          name: enumModule.substring(enumModule.lastIndexOf(".") + 1),
           sub: enumType.name,
           params: [ for (tp in enumType.params) TPType(TPath({ name: tp.name, pack: []})) ]
         });
@@ -611,7 +611,7 @@ class JsonSerializerGenerator
           type: TPath(
             {
               pack: classType.pack,
-              name: classModule.substring(classModule.lastIndexOf(".")),
+              name: classModule.substring(classModule.lastIndexOf(".") + 1),
               sub: classType.name,
               params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
             }),
