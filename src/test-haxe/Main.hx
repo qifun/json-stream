@@ -11,6 +11,7 @@ class Main
     runner.add(new EnumWithParameterTest());
     runner.add(new RpcTest());
     runner.add(new GenericClassTest());
+    runner.add(new TextTest());
     var isSuccess = runner.run();
     if (!isSuccess)
     {
