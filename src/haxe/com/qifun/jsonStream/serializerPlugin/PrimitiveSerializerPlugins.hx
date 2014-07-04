@@ -1,8 +1,7 @@
 package com.qifun.jsonStream.serializerPlugin;
 
 import com.dongxiguo.continuation.Continuation;
-import com.dongxiguo.continuation.utils.Generator.Generator;
-import com.dongxiguo.continuation.utils.Generator.YieldFunction;
+import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonStream;
 import haxe.Int64;
