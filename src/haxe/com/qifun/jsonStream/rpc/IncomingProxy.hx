@@ -1,6 +1,5 @@
 package com.qifun.jsonStream.rpc;
 
-import com.qifun.jsonStream.JsonBuilder;
 import com.qifun.jsonStream.JsonStream;
 
 @:autoBuild(com.qifun.jsonStream.rpc.IncomingProxyGenerator.buildFromSuperClass())
@@ -15,5 +14,5 @@ class IncomingProxy<ServiceInterface>
   }
 
   // 由宏实现
-  // function incomingRpc(request:AsynchronousJsonStream, handler:JsonStream->Void):Void;
+  // function incomingRpc(request:JsonStream, handler:JsonStream->Void):Void;
 }

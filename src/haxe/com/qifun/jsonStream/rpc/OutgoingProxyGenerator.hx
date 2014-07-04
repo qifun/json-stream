@@ -11,12 +11,49 @@ using Lambda;
 
 import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
-import com.qifun.jsonStream.JsonBuilder;
 import com.qifun.jsonStream.JsonStream;
 
 @:dox(hide)
 class OutgoingProxyRuntime
 {
+
+  @:extern
+  @:noUsing
+  private static inline function extract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    if (iterator.hasNext())
+    {
+      var element = iterator.next();
+      if (iterator.hasNext())
+      {
+        throw JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS(iterator, 1);
+      }
+      else
+      {
+        handler(element);
+      }
+    }
+    else
+    {
+      throw JsonDeserializer.JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 1, 0);
+    }
+  }
+
+  @:extern
+  @:noUsing
+  public static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
+    if (generator == null)
+    {
+      extract1(iterator, handler);
+    }
+    else
+    {
+      extract1(generator, handler);
+    }
+  }
+
   public static function object1(key1:String, value1:JsonStream):JsonStream return
   {
     JsonStream.OBJECT(new Generator(Continuation.cpsFunction(
@@ -92,7 +129,11 @@ class OutgoingProxyGenerator
                   readArray,
                   responseHandler,
                   responseIndex + 1);
-              macro $readArray(function(elementStream):Void new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream<$complexResponseType>(elementStream).pluginBuild(function($responseName:$complexResponseType):Void $next));
+              macro com.qifun.jsonStream.rpc.IncomingProxyGenerator.IncomingProxyRuntime.optimizedExtract1($readArray, function(elementStream):Void
+              {
+                var $responseName:$complexResponseType = new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$complexResponseType>(elementStream).pluginDeserialize();
+                $next;
+              });
             }
             else
             {
@@ -135,17 +176,17 @@ class OutgoingProxyGenerator
                       function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
                         com.qifun.jsonStream.JsonStream > ):Void
                         $requestBlock)))),
-              function(response:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):Void
+              function(response:com.qifun.jsonStream.JsonStream):Void
               {
                 switch (response)
                 {
-                  case com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream.ARRAY(readResponse):
+                  case com.qifun.jsonStream.JsonStream.ARRAY(readResponse):
                   {
                     $parseResponseExpr;
                   }
                   case _:
                   {
-                    throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(response, [ "ARRAY" ]);
+                    throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(response, [ "ARRAY" ]);
                   }
                 }
               });

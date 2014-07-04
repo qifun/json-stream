@@ -1,10 +1,9 @@
 package com.qifun.jsonStream.rpc;
 
-import com.qifun.jsonStream.JsonBuilder;
+import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonStream;
-#if macro
-import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
+#if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
 import haxe.macro.ExprTools;
@@ -59,7 +58,7 @@ class IncomingProxyGenerator
     serviceClassType:ClassType,
     serviceParameters,
     rpcMethodName: ExprOf<String>,
-    parameters:ExprOf<AsynchronousJsonStream>):Expr
+    parameters:ExprOf<JsonStream>):Expr
   {
     var cases:Array<Case> = [];
     for (field in serviceClassType.fields.get())
@@ -119,7 +118,7 @@ class IncomingProxyGenerator
                         com.qifun.jsonStream.JsonStream>):Void $yieldBlock))),
               }),
           }
-          function parseArguments(readArray:Expr, argumentIndex:Int):Expr return
+          function parseRestRequest(readArray:Expr, argumentIndex:Int):Expr return
           {
             if (argumentIndex < numRequestArguments)
             {
@@ -129,8 +128,14 @@ class IncomingProxyGenerator
                 serviceParameters);
               var complexRequestType = TypeTools.toComplexType(requestType);
               var requestName = "request" + argumentIndex;
-              var next = parseArguments(readArray, argumentIndex + 1);
-              macro $readArray(function(elementStream):Void new com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderPluginStream<$complexRequestType>(elementStream).pluginBuild(function($requestName:$complexRequestType):Void $next));
+              var next = parseRestRequest(readArray, argumentIndex + 1);
+              macro com.qifun.jsonStream.rpc.IncomingProxyGenerator.IncomingProxyRuntime.optimizedExtract1(
+                $readArray,
+                  function(elementStream):Void
+                  {
+                    var $requestName:$complexRequestType = new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$complexRequestType>(elementStream).pluginDeserialize();
+                    $next;
+                  });
             }
             else
             {
@@ -150,22 +155,22 @@ class IncomingProxyGenerator
               }
             }
           }
-          var parseAllArguments =
+          var parseRequestExpr =
             withDefaultTypeParameters(
-              parseArguments(macro readRequest, 0),
+              parseRestRequest(macro readRequest, 0),
               field.params);
           cases.push(
             {
               values: [ macro $v{methodName} ],
               expr: macro switch($parameters)
               {
-                case com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream.ARRAY(readRequest):
+                case com.qifun.jsonStream.JsonStream.ARRAY(readRequest):
                 {
-                  $parseAllArguments;
+                  $parseRequestExpr;
                 }
                 case _:
                 {
-                  throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(request, [ "ARRAY" ]);
+                  throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(request, [ "ARRAY" ]);
                 }
               }
             });
@@ -206,8 +211,7 @@ class IncomingProxyGenerator
                 type: TPath(
                   {
                     pack: [ "com", "qifun", "jsonStream" ],
-                    name: "JsonBuilder",
-                    sub: "AsynchronousJsonStream",
+                    name: "JsonStream",
                   })
               },
               {
@@ -236,16 +240,18 @@ class IncomingProxyGenerator
             {
               switch (request)
               {
-                case com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream.OBJECT(pairs):
+                case com.qifun.jsonStream.JsonStream.OBJECT(pairs):
                 {
-                  pairs(function(rpcMethodName, parameters):Void
+                  com.qifun.jsonStream.rpc.IncomingProxyGenerator.IncomingProxyRuntime.optimizedExtract1(pairs, function(pair):Void
                   {
+                    var rpcMethodName = pair.key;
+                    var parameters = pair.value;
                     $switchRpcMethodName;
                   });
                 }
                 case _:
                 {
-                  com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(request, [ "OBJECT" ]);
+                  com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(request, [ "OBJECT" ]);
                 }
               }
             }
@@ -272,7 +278,6 @@ class IncomingProxyGenerator
     }
   }
 
-
   macro public static function buildFromInterface(
     expectedModule:String,
     expectedName:String):Array<Field> return
@@ -297,4 +302,47 @@ class IncomingProxyGenerator
     throw 'Cannot find $expectedModule.$expectedName!';
 
   }
+}
+
+@:dox(hide)
+class IncomingProxyRuntime
+{
+
+  @:extern
+  @:noUsing
+  private static inline function extract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    if (iterator.hasNext())
+    {
+      var element = iterator.next();
+      if (iterator.hasNext())
+      {
+        throw JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS(iterator, 1);
+      }
+      else
+      {
+        handler(element);
+      }
+    }
+    else
+    {
+      throw JsonDeserializer.JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 1, 0);
+    }
+  }
+
+  @:extern
+  @:noUsing
+  public static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  {
+    var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
+    if (generator == null)
+    {
+      extract1(iterator, handler);
+    }
+    else
+    {
+      extract1(generator, handler);
+    }
+  }
+
 }

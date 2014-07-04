@@ -8,7 +8,7 @@ import com.qifun.jsonStream.JsonStream;
 interface IOutgoingProxy<ServiceInterface>
 {
   // 由用户实现
-  function outgoingRpc(request:JsonStream, handler:AsynchronousJsonStream->Void):Void;
+  function outgoingRpc(request:JsonStream, handler:JsonStream->Void):Void;
 
   // 宏实现若干Service中的方法
 }

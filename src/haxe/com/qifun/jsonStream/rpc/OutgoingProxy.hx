@@ -1,6 +1,5 @@
 package com.qifun.jsonStream.rpc;
 
-import com.qifun.jsonStream.JsonBuilder;
 import com.qifun.jsonStream.JsonStream;
 
 
@@ -8,7 +7,7 @@ import com.qifun.jsonStream.JsonStream;
 class OutgoingProxy<ServiceInterface>
 {
   // 由用户实现
-  @:protected function outgoingRpc(request:JsonStream, handler:AsynchronousJsonStream->Void):Void
+  @:protected function outgoingRpc(request:JsonStream, handler:JsonStream->Void):Void
   {
     throw "Not implemented!";
   }
