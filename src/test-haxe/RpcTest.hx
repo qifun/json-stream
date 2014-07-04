@@ -53,7 +53,7 @@ class MyIncomingProxy implements IIncomingProxy<IMyService>
 
 class MyOutgoingProxy implements IOutgoingProxy<IMyService>
 {
-  public function outgoingRpc(request:JsonStream, handler:AsynchronousJsonStream->Void):Void
+  public function outgoingRpc(request:JsonStream, handler:JsonStream->Void):Void
   {
     // TODO:
   }
