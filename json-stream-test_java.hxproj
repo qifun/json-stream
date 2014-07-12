@@ -27,7 +27,7 @@
     <option noInlineOnDebug="True" />
     <option mainClass="Main" />
     <option enabledebug="True" />
-    <option additional="--macro patchTypes('stateless-future-util.patch')&#xA;-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
+    <option additional="-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>
