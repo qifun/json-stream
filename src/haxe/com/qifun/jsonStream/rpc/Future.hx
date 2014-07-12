@@ -175,8 +175,6 @@ extern class Future<Handler> { }
   {
     if (Context.defined("stateless_future") && Context.defined("java"))
     {
-
-      trace(Context.follow(Context.typeof(future)));
       switch (Context.follow(Context.typeof(future)))
       {
         case TInst(
