@@ -5,10 +5,9 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 
 #if macro
-import haxe.macro.Context;
-import haxe.macro.TypeTools;
-import haxe.macro.Expr;
 import haxe.macro.Type;
+import haxe.macro.Expr;
+import haxe.macro.*;
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonSerializer;
 #end
@@ -114,7 +113,7 @@ class OutgoingProxyFactory
     return sb.toString();
   }
 
-  static function outgoingProxyField(serviceClassType:ClassType):Field return
+  static function outgoingProxyField(accessExpr:Expr, localPrefix:Expr, serviceClassType:ClassType):Field return
   {
     var typeParameters =
     [
@@ -235,24 +234,20 @@ class OutgoingProxyFactory
               }
             }
           ];
-          //implementationArgs.push(
-            //{
-              //name: "responseHandler",
-              //type: TypeTools.toComplexType(responseHandlerType),
-            //});
           var methodBody =
             macro return com.qifun.jsonStream.rpc.Future.FutureHelper.newFuture(
               function(responseHandler, catcher:Dynamic->Void):Void
               {
-                this.outgoingRpc(
-                  com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
-                    $v{methodName},
-                    com.qifun.jsonStream.JsonStream.ARRAY(
-                      new com.dongxiguo.continuation.utils.Generator(
-                        com.dongxiguo.continuation.Continuation.cpsFunction(
-                          function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
-                            com.qifun.jsonStream.JsonStream > ):Void
-                            $requestBlock)))),
+                com.qifun.jsonStream.rpc.Future.FutureHelper.start(
+                  this.outgoingRpc.apply(
+                    com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
+                      $v{methodName},
+                      com.qifun.jsonStream.JsonStream.ARRAY(
+                        new com.dongxiguo.continuation.utils.Generator(
+                          com.dongxiguo.continuation.Continuation.cpsFunction(
+                            function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
+                              com.qifun.jsonStream.JsonStream > ):Void
+                              $requestBlock))))),
                   function(response:com.qifun.jsonStream.JsonStream):Void
                   {
                     switch (response)
@@ -266,7 +261,8 @@ class OutgoingProxyFactory
                         throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(response, [ "ARRAY" ]);
                       }
                     }
-                  });
+                  },
+                  $localPrefix.handleError(catcher));
               });
           //trace(ExprTools.toString(methodBody));
           fields.push(
@@ -308,6 +304,7 @@ class OutgoingProxyFactory
       pos: Context.currentPos(),
       params: typeParameterDeclarations,
       isExtern: false,
+      meta: [ { name: ":access", params: [ accessExpr ], pos: Context.currentPos(), } ],
       kind: TDClass(
         {
           pack: [ "com", "qifun", "jsonStream", "rpc" ],
@@ -351,12 +348,45 @@ class OutgoingProxyFactory
     }
   }
 
+  static function catcherField():Field return
+  {
+    name: "handleError",
+    access: [ AStatic ],
+    pos: Context.currentPos(),
+    kind: FFun(
+      {
+        args:
+        [
+          {
+            type: null,
+            name: "catcher",
+          }
+        ],
+        ret: null,
+        expr: macro return
+          function(errorResponse:com.qifun.jsonStream.JsonStream):Void
+          {
+            var error:Dynamic = com.qifun.jsonStream.JsonDeserializer.deserialize(errorResponse);
+            catcher(error);
+          },
+      }),
+  }
+
   #end
 
   @:noUsing
   macro public static function generateOutgoingProxyFactory(includeModules:Array<String>):Array<Field> return
   {
     var fields = Context.getBuildFields();
+
+    fields.push(catcherField());
+    var localClass = Context.getLocalClass().get();
+    var packExpr = MacroStringTools.toFieldExpr(localClass.pack);
+    var localModuleName = localClass.module.substring(localClass.module.lastIndexOf(".") + 1);
+    var moduleExpr = packExpr == null ? macro $i{localModuleName} : macro $packExpr.$localModuleName;
+    var localName = localClass.name;
+    var localPrefix = macro $moduleExpr.$localName;
+    var accessExpr = packExpr == null ? macro $i{localName} : macro $packExpr.$localName;
     for (moduleName in includeModules)
     {
       for (rootType in Context.getModule(moduleName))
@@ -365,7 +395,7 @@ class OutgoingProxyFactory
         {
           case TInst(_.get() => classType, args) if (classType.isInterface):
           {
-            fields.push(outgoingProxyField(classType));
+            fields.push(outgoingProxyField(accessExpr, localPrefix, classType));
           }
           default:
         }

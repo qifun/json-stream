@@ -6,9 +6,9 @@ import com.qifun.jsonStream.JsonStream;
 class OutgoingProxy
 {
 
-  var outgoingRpc:JsonStream->(JsonStream->Void)->Void;
+  var outgoingRpc:IJsonRpc;
 
-  public function new(outgoingRpc:JsonStream->(JsonStream->Void)->Void)
+  public function new(outgoingRpc:IJsonRpc)
   {
     this.outgoingRpc = outgoingRpc;
   }
