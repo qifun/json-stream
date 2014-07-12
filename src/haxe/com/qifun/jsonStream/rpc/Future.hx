@@ -1,6 +1,7 @@
 package com.qifun.jsonStream.rpc;
 
 import haxe.macro.Context;
+import haxe.macro.ExprTools;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.TypeTools;
@@ -47,7 +48,7 @@ extends AbstractFunction2<Function1<AwaitResult, BoxedUnit>, PartialFunction<Thr
         }
         else
         {
-          throw e;
+          scala.util.control.Exception.allCatcher().apply(e);
         }
       });
     return BoxedUnit.UNIT;
@@ -76,6 +77,20 @@ extern class Future<Handler> { }
   #if stateless_future
 
   #if macro
+  private static function getTupleTypePath(args:Array<Type>):TypePath return
+  {
+    if (args.length == 0)
+    {
+      pack: [ "scala", "runtime" ],
+      name: "BoxedUnit",
+    }
+    else
+    {
+      pack: [ "scala" ],
+      name: 'Tuple${args.length}',
+      params: [for (arg in args) TPType(TypeTools.toComplexType(arg)) ],
+    }
+  }
 
   private static function untupled<Tuple>(tupleArguments:Array<Type>, tupleFunction:ExprOf<Tuple->Void>):Expr
   {
@@ -91,6 +106,7 @@ extern class Future<Handler> { }
       });
       argExprs.push(macro $i{name});
     }
+    var tupleTypePath = getTupleTypePath(tupleArguments);
     return
     {
       pos: tupleFunction.pos,
@@ -99,7 +115,7 @@ extern class Future<Handler> { }
         {
           args: argDefinitions,
           ret: null,
-          expr: macro $tupleFunction($a{argExprs}),
+          expr: macro $tupleFunction(new $tupleTypePath($a{argExprs})),
         })
     };
   }
@@ -129,13 +145,19 @@ extern class Future<Handler> { }
         {
           var tupleArguments = [ for (arg in args) arg.t ];
           var tupledFunctionExpr = untupled(tupleArguments, macro tupleHandler);
-          return macro new com.qifun.statelessFuture.util.FunctionFuture(new com.qifun.jsonStream.rpc.Future.HaxeToScalaForeachFunction(
-            function(tupleHandler, catcher:com.qifun.jsonStream.rpc.Future.Catcher):Void
+          var tupleTypePath = getTupleTypePath(tupleArguments);
+          var tupleComplexType = TPath(tupleTypePath);
+          return macro
+          {
+            function haxeForeach(tupleHandler:$tupleComplexType->Void, catcher:Dynamic->Void):Void
             {
-              $startFunction(
-                $tupledFunctionExpr,
-                catcher);
-            }));
+              $startFunction($tupledFunctionExpr, catcher);
+            }
+            // 此处由于Haxe bugs，所以必须加上Dynamic
+            var scalaForeach:Dynamic = new com.qifun.jsonStream.rpc.Future.HaxeToScalaForeachFunction(haxeForeach);
+            var future:Dynamic = new com.qifun.statelessFuture.util.FunctionFuture(scalaForeach);
+            future;
+          }
         }
         default:
         {
@@ -217,8 +239,8 @@ extern class Future<Handler> { }
   {
     if (args.length == 0)
     {
-      pack: [ "scala" ],
-      name: "Unit",
+      pack: [ "scala", "runtime" ],
+      name: "BoxedUnit",
     }
     else
     {
@@ -468,3 +490,4 @@ private typedef Tuple0 = BoxedUnit;
 
 #end
 #end
+

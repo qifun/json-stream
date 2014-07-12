@@ -22,12 +22,12 @@
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="no-inline&#xA;stateless_future" />
+    <option directives="no-inline&#xA;stateless_future&#xA;no-compilation" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
-    <option mainClass="Rpc2Test" />
+    <option mainClass="Main" />
     <option enabledebug="True" />
-    <option additional="--macro patchTypes('scala.patch')&#xA;-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
+    <option additional="--macro patchTypes('stateless-future-util.patch')&#xA;-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>
@@ -35,7 +35,7 @@
   </haxelib>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="src\test-haxe\Rpc2Test.hx" />
+    <compile path="src\test-haxe\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>

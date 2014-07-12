@@ -6,8 +6,6 @@ haxeOptions ++= Seq("-dce", "no")
 
 haxeOptions ++= Seq("-D", "stateless_future")
 
-haxeOptions ++= Seq("--macro", raw"""patchTypes('scala.patch')""")
-
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 
 doxPlatforms := Seq("java", "cs")
