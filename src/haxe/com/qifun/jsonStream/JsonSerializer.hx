@@ -894,8 +894,10 @@ class JsonSerializerGenerator
     }
   }
 
-  // 类似serialize，但是能递归解决类型，以便能够在@:build宏返回以前就立即执行
-  private static function resolvedSerialize(expectedComplexType:ComplexType, data:Expr, ?params:Array<TypeParamDecl>):Expr return
+  /**
+    类似`serialize`，但是能递归解决类型，以便能够在`@:build`宏返回以前就立即执行。
+  **/
+  public static function resolvedSerialize(expectedComplexType:ComplexType, data:Expr, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedDataTypePath =
     {

@@ -977,8 +977,10 @@ class JsonDeserializerGenerator
     }
   }
 
-  // 类似deserialize，但是能递归解决类型，以便能够在@:build宏返回以前就立即执行
-  private static function resolvedDeserialize(expectedComplexType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
+  /**
+    类似`deserialize`，但是能递归解决类型，以便能够在`@:build`宏返回以前就立即执行。
+  **/
+  public static function resolvedDeserialize(expectedComplexType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedJsonStreamTypePath =
     {
@@ -1104,7 +1106,7 @@ class JsonDeserializerRuntime
 
   @:extern
   @:noUsing
-  private static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  public static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
   {
     var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
     if (generator == null)
