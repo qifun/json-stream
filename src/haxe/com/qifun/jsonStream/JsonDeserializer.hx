@@ -46,6 +46,7 @@ class JsonDeserializer
   /**
     不使用插件，强制把`stream`反序列化为弱类型的JSON对象。
   **/
+  @:noUsing
   public static function deserializeRaw(stream:JsonStream):Null<RawJson> return
   {
     new RawJson(switch (stream)
@@ -100,6 +101,7 @@ class JsonDeserializer
       <li>如果`Result`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ ... ]))`创建。</li>
     </ul>
   **/
+  @:noUsing
   macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Null<Result>> return
   {
     var expectedComplexType = TypeTools.toComplexType(Context.getExpectedType());
@@ -735,6 +737,7 @@ class JsonDeserializerGenerator
     }
   }
 
+  @:noUsing
   public static function dynamicDeserialize(stream:ExprOf<JsonStream>, expectedType:Type):Expr return
   {
     var expectedComplexType = TypeTools.toComplexType(Context.follow(expectedType));
@@ -846,6 +849,7 @@ class JsonDeserializerGenerator
     macro $modulePath.$className;
   }
 
+  @:noUsing
   public static function generatedDeserialize(expectedType:Type, stream:ExprOf<JsonStream>):Expr return
   {
     switch (Context.follow(expectedType))
@@ -980,6 +984,7 @@ class JsonDeserializerGenerator
   /**
     类似`deserialize`，但是能递归解决类型，以便能够在`@:build`宏返回以前就立即执行。
   **/
+  @:noUsing
   public static function resolvedDeserialize(expectedComplexType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedJsonStreamTypePath =

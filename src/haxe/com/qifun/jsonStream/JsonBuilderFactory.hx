@@ -141,6 +141,7 @@ class JsonBuilderFactoryGenerator
     macro $modulePath.$className;
   }
 
+  @:noUsing
   public static function generatedBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:Expr, expectedType:Type):Expr return
   {
     switch (Context.follow(expectedType))
@@ -278,6 +279,7 @@ class JsonBuilderFactoryGenerator
     allBuilders.get(localClass.module + "." + localClass.name);
   }
 
+  @:noUsing
   public static function dynamicBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:ExprOf<Dynamic->Void>, expectedType:Type):Expr return
   {
     var expectedComplexType = TypeTools.toComplexType(Context.follow(expectedType));

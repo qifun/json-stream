@@ -54,6 +54,7 @@ class OutgoingProxyRuntime
     }
   }
 
+  @:noUsing
   public static function object1(key1:String, value1:JsonStream):JsonStream return
   {
     JsonStream.OBJECT(new Generator(Continuation.cpsFunction(

@@ -125,16 +125,19 @@ extern class Future<Handler> { }
   #end
 
   #if doc_gen
+  @:noUsing
   macro public static function start<Handler>(future:ExprOf<Future<Handler>>, completeHandler:ExprOf<Handler>, errorHandler:ExprOf<Catcher>):ExprOf<Void>
   {
     return throw "For documentation generation only!";
   }
 
+  @:noUsing
   macro public static function newFuture<Handler>(startFunction:ExprOf<Handler->Catcher->Void>):ExprOf<Future<Handler>>
   {
     return throw "For documentation generation only!";
   }
   #else
+  @:noUsing
   macro public static function newFuture<Handler, Tuple>(startFunction:ExprOf<Handler->Catcher->Void>):ExprOf<NativeFuture<Tuple>>
   {
     if (Context.defined("stateless_future") && Context.defined("java"))
@@ -171,6 +174,7 @@ extern class Future<Handler> { }
     }
   }
 
+  @:noUsing
   macro public static function start<Handler, Tuple>(future:ExprOf<NativeFuture<Tuple>>, completeHandler:ExprOf<Handler>, errorHandler:ExprOf<Catcher>):ExprOf<Void>
   {
     if (Context.defined("stateless_future") && Context.defined("java"))

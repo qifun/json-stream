@@ -125,6 +125,7 @@ class JsonSerializer
       <li>如果`data`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([ ... ]))`创建。</li>
     </ul>
   **/
+  @:noUsing
   macro public static function serialize(data:Expr):ExprOf<JsonStream> return
   {
     macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData(
@@ -677,6 +678,7 @@ class JsonSerializerGenerator
     }
   }
 
+  @:noUsing
   public static function dynamicSerialize(data:Expr, expectedComplexType:ComplexType):ExprOf<JsonStream> return
   {
     var localUsings = Context.getLocalUsing();
@@ -762,6 +764,7 @@ class JsonSerializerGenerator
     macro $modulePath.$className;
   }
 
+  @:noUsing
   public static function generatedSerialize(data:Expr, expectedType:Type):Expr return
   {
     var followedType = Context.follow(expectedType);
@@ -897,6 +900,7 @@ class JsonSerializerGenerator
   /**
     类似`serialize`，但是能递归解决类型，以便能够在`@:build`宏返回以前就立即执行。
   **/
+  @:noUsing
   public static function resolvedSerialize(expectedComplexType:ComplexType, data:Expr, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedDataTypePath =
@@ -959,10 +963,12 @@ class JsonSerializerRuntime
 
   public static inline function nullize<T>(t:T):Null<T> return t;
 
+  @:noUsing
   public static
   #if (!java) inline #end // Don't inline for Java targets, because of https://github.com/HaxeFoundation/haxe/issues/3094
   function isNotNull<T>(maybeNull:Null<T>):Bool return maybeNull != null;
 
+  @:noUsing
   public static function yieldUnknownFieldMap(
     unknownFieldMap:UnknownFieldMap,
     yield:YieldFunction<JsonStreamPair>, onComplete:Void->Void):Void
@@ -981,6 +987,7 @@ class JsonSerializerRuntime
       })(unknownFieldMap, yield, onComplete);
   }
 
+  @:noUsing
   public static function serializeUnknwonEnumValue(unknownEnumValue:UnknownEnumValue):JsonStream return
   {
     switch (unknownEnumValue)
@@ -999,6 +1006,7 @@ class JsonSerializerRuntime
     }
   }
 
+  @:noUsing
   public static function serializeUnknown(unknown:Dynamic):JsonStreamPair return
   {
     var unknownType = Std.instance(unknown, UnknownType);

@@ -238,6 +238,7 @@ private class JsonStreamToAsynchronous
     }
   }
 
+  @:noUsing
   public static function jsonStreamToAsynchronous(stream:JsonStream):AsynchronousJsonStream return
   {
     switch (stream)
