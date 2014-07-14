@@ -15,7 +15,7 @@ import java.lang.Throwable;
 #end
 
 
-private typedef Catcher = Dynamic->Void;
+typedef Catcher = Dynamic->Void;
 
 #if stateless_future
 #if java
