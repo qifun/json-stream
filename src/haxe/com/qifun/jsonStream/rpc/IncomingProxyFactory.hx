@@ -285,7 +285,7 @@ class IncomingProxyFactory
             }
           ],
           ret: null,
-          expr: macro return new com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRpc(
+          expr: macro return new com.qifun.jsonStream.rpc.IncomingProxy(
             function (request:com.qifun.jsonStream.JsonStream):Future<com.qifun.jsonStream.JsonStream->Void>
             {
               function startFuture(
@@ -349,25 +349,6 @@ class IncomingProxyFactory
     }
     fields;
   }
-}
-
-@:dox(hide)
-@:final
-class IncomingProxyRpc implements IJsonRpc
-{
-
-  var underlying:JsonStream->Future<JsonStream->Void>;
-
-  public function new(underlying:JsonStream->Future<JsonStream->Void>)
-  {
-    this.underlying = underlying;
-  }
-
-  public function apply(request:JsonStream):Future<JsonStream->Void>
-  {
-    return underlying(request);
-  }
-
 }
 
 @:dox(hide)
