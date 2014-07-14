@@ -18,14 +18,13 @@ class LowPriorityDynamicSerializerPlugin
 
   @:noDynamicSerialize
   macro public static function pluginSerialize(
-    data:ExprOf<JsonSerializerPluginData<LowPriorityDynamic>>)
-    :ExprOf<JsonStream> return
+    self:ExprOf<JsonSerializerPluginData<LowPriorityDynamic>>):ExprOf<JsonStream> return
   {
-    switch (Context.follow(Context.typeof(data)))
+    switch (Context.follow(Context.typeof(self)))
     {
       case TAbstract(_, [ expectedType ]):
         JsonSerializerGenerator.dynamicSerialize(
-          macro $data.underlying,
+          macro $self.underlying,
           TypeTools.toComplexType(expectedType));
       case _:
         throw "Expected JsonSerializerPluginData";

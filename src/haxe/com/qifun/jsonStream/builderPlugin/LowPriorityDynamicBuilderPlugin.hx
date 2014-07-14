@@ -16,14 +16,14 @@ class LowPriorityDynamicBuilderPlugin
 
   @:noAsynchronousDynamicDeserialize
   macro public static function pluginBuild(
-    stream:ExprOf<JsonBuilderPluginStream<LowPriorityDynamic>>,
+    self:ExprOf<JsonBuilderPluginStream<LowPriorityDynamic>>,
     onComplete:ExprOf<Dynamic->Void>):ExprOf<Void> return
   {
-    switch (Context.follow(Context.typeof(stream)))
+    switch (Context.follow(Context.typeof(self)))
     {
       case TAbstract(_, [ expectedType ]):
         JsonBuilderFactoryGenerator.dynamicBuild(
-          macro $stream.underlying,
+          macro $self.underlying,
           onComplete,
           expectedType);
       case _:

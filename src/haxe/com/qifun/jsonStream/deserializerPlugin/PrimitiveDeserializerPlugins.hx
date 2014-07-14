@@ -75,16 +75,16 @@ class Int64DeserializerPlugin
     }
   }
 
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int64>):Null<Int64> return
+  public static function pluginDeserialize(self:JsonDeserializerPluginStream<Int64>):Null<Int64> return
   {
-    switch (stream.underlying)
+    switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(elements):
         optimizedExtractInt64(elements);
       case NULL:
         null;
-      case _:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -92,16 +92,16 @@ class Int64DeserializerPlugin
 @:final
 class UIntDeserializerPlugin
 {
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<UInt>):Null<UInt> return
+  public static function pluginDeserialize(self:JsonDeserializerPluginStream<UInt>):Null<UInt> return
   {
-    switch (stream.underlying)
+    switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.NUMBER(value):
         cast value;
       case NULL:
         null;
-      case _:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -109,16 +109,16 @@ class UIntDeserializerPlugin
 @:final
 class IntDeserializerPlugin
 {
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Int>):Null<Int> return
+  public static function pluginDeserialize(self:JsonDeserializerPluginStream<Int>):Null<Int> return
   {
-    switch (stream.underlying)
+    switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.NUMBER(value):
         cast value;
       case NULL:
         null;
-      case _:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -127,16 +127,16 @@ class IntDeserializerPlugin
   @:final
   class SingleDeserializerPlugin
   {
-    public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Single>):Null<Single> return
+    public static function pluginDeserialize(self:JsonDeserializerPluginStream<Single>):Null<Single> return
     {
-      switch (stream.underlying)
+      switch (self.underlying)
       {
         case com.qifun.jsonStream.JsonStream.NUMBER(value):
           value;
         case NULL:
           null;
-        case _:
-          throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+        case stream:
+          throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
       }
     }
   }
@@ -145,16 +145,16 @@ class IntDeserializerPlugin
 @:final
 class FloatDeserializerPlugin
 {
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Float>):Null<Float> return
+  public static function pluginDeserialize(self:JsonDeserializerPluginStream<Float>):Null<Float> return
   {
-    switch (stream.underlying)
+    switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.NUMBER(value):
         value;
       case NULL:
         null;
-      case _:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "ARRAY", "NULL"]);
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
     }
   }
 }
@@ -162,15 +162,15 @@ class FloatDeserializerPlugin
 @:final
 class BoolDeserializerPlugin
 {
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<Bool>):Null<Bool> return
+  public static function pluginDeserialize(self:JsonDeserializerPluginStream<Bool>):Null<Bool> return
   {
-    switch (stream.underlying)
+    switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.FALSE: false;
       case com.qifun.jsonStream.JsonStream.TRUE: true;
       case NULL: null;
-      case _:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "FALSE", "TRUE", "NULL"]);
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "FALSE", "TRUE", "NULL"]);
     }
   }
 }
@@ -178,16 +178,16 @@ class BoolDeserializerPlugin
 @:final
 class StringDeserializerPlugin
 {
-  public static function pluginDeserialize(stream:JsonDeserializerPluginStream<String>):Null<String> return
+  public static function pluginDeserialize(self:JsonDeserializerPluginStream<String>):Null<String> return
   {
-    switch (stream.underlying)
+    switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.STRING(value):
         value;
       case NULL:
         null;
-      case _:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream.underlying, [ "STRING", "NULL"]);
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "NULL"]);
     }
   }
 }
@@ -197,9 +197,9 @@ class ArrayDeserializerPlugin
 {
 
   @:dox(hide)
-  public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Array<Element>> return
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Array<Element>> return
   {
-    switch (stream.underlying)
+    switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
@@ -228,9 +228,9 @@ class ArrayDeserializerPlugin
     }
   }
 
-  macro public static function pluginDeserialize<Element>(stream:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Null<Array<Element>>> return
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Null<Array<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($stream, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
 }
 

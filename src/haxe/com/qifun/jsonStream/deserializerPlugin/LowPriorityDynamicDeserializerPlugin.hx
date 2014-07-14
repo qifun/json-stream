@@ -18,14 +18,14 @@ class LowPriorityDynamicDeserializerPlugin
 
   @:noDynamicDeserialize
   macro public static function pluginDeserialize(
-    stream:ExprOf<JsonDeserializerPluginStream<LowPriorityDynamic>>)
+    self:ExprOf<JsonDeserializerPluginStream<LowPriorityDynamic>>)
     :ExprOf<Null<Dynamic>> return
   {
-    switch (Context.follow(Context.typeof(stream)))
+    switch (Context.follow(Context.typeof(self)))
     {
       case TAbstract(_, [ expectedType ]):
         JsonDeserializerGenerator.dynamicDeserialize(
-          macro $stream.underlying,
+          macro $self.underlying,
           expectedType);
       case _:
         throw "Expected JsonDeserializerPluginStream";

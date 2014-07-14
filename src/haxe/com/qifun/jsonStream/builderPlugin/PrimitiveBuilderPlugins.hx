@@ -12,7 +12,7 @@ import haxe.macro.Expr;
 class Int64BuilderPlugin
 {
 
-  public static function pluginBuild(stream:JsonBuilderPluginStream<Int64>, onComplete:Null<Int64>->Void):Void
+  public static function pluginBuild(self:JsonBuilderPluginStream<Int64>, onComplete:Null<Int64>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Int64> return
     {
@@ -48,7 +48,7 @@ class Int64BuilderPlugin
         case stream:
           throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 
 }
@@ -58,7 +58,7 @@ class UIntBuilderPlugin
 {
   public static
   #if (!cs && !java) inline #end // Workaround
-  function pluginBuild(stream:JsonBuilderPluginStream<UInt>, onComplete:Null<UInt>->Void):Void
+  function pluginBuild(self:JsonBuilderPluginStream<UInt>, onComplete:Null<UInt>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<UInt> return
     {
@@ -71,7 +71,7 @@ class UIntBuilderPlugin
         case _:
           throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 }
 
@@ -80,7 +80,7 @@ class IntBuilderPlugin
 {
   public static
   #if (!cs && !java) inline #end // Workaround
-  function pluginBuild(stream:JsonBuilderPluginStream<Int>, onComplete:Null<Int>->Void):Void
+  function pluginBuild(self:JsonBuilderPluginStream<Int>, onComplete:Null<Int>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Int> return
     {
@@ -93,7 +93,7 @@ class IntBuilderPlugin
         case _:
           throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 }
 
@@ -103,7 +103,7 @@ class IntBuilderPlugin
 @:final
 class SingleBuilderPlugin
 {
-  public static function pluginBuild(stream:JsonBuilderPluginStream<Single>, onComplete:Null<Single>->Void):Void
+  public static function pluginBuild(self:JsonBuilderPluginStream<Single>, onComplete:Null<Single>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Single> return
     {
@@ -116,7 +116,7 @@ class SingleBuilderPlugin
         case _:
           throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 }
 
@@ -127,7 +127,7 @@ class SingleBuilderPlugin
 @:final
 class FloatBuilderPlugin
 {
-  public static function pluginBuild(stream:JsonBuilderPluginStream<Float>, onComplete:Null<Float>->Void):Void
+  public static function pluginBuild(self:JsonBuilderPluginStream<Float>, onComplete:Null<Float>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Float> return
     {
@@ -140,7 +140,7 @@ class FloatBuilderPlugin
         case _:
           throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 }
 
@@ -148,7 +148,7 @@ class FloatBuilderPlugin
 @:final
 class BoolBuilderPlugin
 {
-  public static function pluginBuild(stream:JsonBuilderPluginStream<Bool>, onComplete:Null<Bool>->Void):Void
+  public static function pluginBuild(self:JsonBuilderPluginStream<Bool>, onComplete:Null<Bool>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<Bool> return
     {
@@ -160,7 +160,7 @@ class BoolBuilderPlugin
         case _:
           throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "FALSE", "TRUE", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 }
 
@@ -168,7 +168,7 @@ class BoolBuilderPlugin
 @:final
 class StringBuilderPlugin
 {
-  public static function pluginBuild(stream:JsonBuilderPluginStream<String>, onComplete:Null<String>->Void):Void
+  public static function pluginBuild(self:JsonBuilderPluginStream<String>, onComplete:Null<String>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Null<String> return
     {
@@ -181,7 +181,7 @@ class StringBuilderPlugin
         case _:
           throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 }
 
@@ -191,7 +191,7 @@ class ArrayBuilderPlugin
 {
 
   @:dox(hide)
-  public static function buildForElement<Element>(stream:JsonBuilderPluginStream<Array<Element>>, elementDeserializeFunction:JsonBuilderPluginStream<Element>->(Element->Void)->Void, onComplete:Null<Array<Element>>->Void):Void
+  public static function buildForElement<Element>(self:JsonBuilderPluginStream<Array<Element>>, elementDeserializeFunction:JsonBuilderPluginStream<Element>->(Element->Void)->Void, onComplete:Null<Array<Element>>->Void):Void
   {
     Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Array<Element> return
     {
@@ -210,11 +210,11 @@ class ArrayBuilderPlugin
         case _:
           throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL" ]);
       }
-    })(stream.underlying, onComplete);
+    })(self.underlying, onComplete);
   }
 
-  macro public static function pluginBuild<Element>(stream:haxe.macro.Expr.ExprOf<JsonBuilderPluginStream<Array<Element>>>, onComplete:haxe.macro.Expr.ExprOf<Null<Array<Element>>->Void>):haxe.macro.Expr.ExprOf<Void> return
+  macro public static function pluginBuild<Element>(self:haxe.macro.Expr.ExprOf<JsonBuilderPluginStream<Array<Element>>>, onComplete:haxe.macro.Expr.ExprOf<Null<Array<Element>>->Void>):haxe.macro.Expr.ExprOf<Void> return
   {
-    macro com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin.buildForElement($stream, function(substream, onElementComplete) { return substream.pluginBuild(onElementComplete); }, $onComplete);
+    macro com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin.buildForElement($self, function(substream, onElementComplete) { return substream.pluginBuild(onElementComplete); }, $onComplete);
   }
 }

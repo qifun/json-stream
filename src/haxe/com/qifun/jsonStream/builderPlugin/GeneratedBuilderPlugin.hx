@@ -21,12 +21,12 @@ class GeneratedBuilderPlugin
 {
 
   @:noDynamicDeserialize
-  macro public static function pluginBuild<T>(stream:ExprOf<JsonBuilderPluginStream<T>>, onComplete:ExprOf<T->Void>):ExprOf<Void> return
+  macro public static function pluginBuild<T>(self:ExprOf<JsonBuilderPluginStream<T>>, onComplete:ExprOf<T->Void>):ExprOf<Void> return
   {
-    switch (Context.follow(Context.typeof(stream)))
+    switch (Context.follow(Context.typeof(self)))
     {
       case TAbstract(_, [ expectedType ]):
-        JsonBuilderFactoryGenerator.generatedBuild(macro $stream.underlying, onComplete, expectedType);
+        JsonBuilderFactoryGenerator.generatedBuild(macro $self.underlying, onComplete, expectedType);
       case _:
         throw "Expected JsonBuilderPluginStream";
     }
