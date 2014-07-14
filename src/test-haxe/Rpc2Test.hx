@@ -23,10 +23,10 @@ class Rpc2OutgoingProxyFactory
 }
 
 
-//
-//@:build(com.qifun.jsonStream.rpc.IncomingProxyFactory.generateIncomingProxyFactory(["Services"]))
-//class Rpc2IncomingProxyFactory
-//{
-//
-//}
-//
+
+@:build(com.qifun.jsonStream.rpc.IncomingProxyFactory.generateIncomingProxyFactory(["Services"]))
+class Rpc2IncomingProxyFactory
+{
+
+}
+
