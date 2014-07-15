@@ -104,25 +104,11 @@ class IncomingProxyFactory
         {
           var methodName = field.name;
           var numRequestArguments = args.length;
-          var responseTypes = Future.FutureTypeResolver.getAwaitResultTypes(futureType);
-          var yieldExprs =
-          [
-            for (i in 0...responseTypes.length)
-            {
-              var responseType = TypeTools.applyTypeParameters(
-                responseTypes[i],
-                serviceClassType.params,
-                serviceParameters);
-              var complexResponseType = TypeTools.toComplexType(responseType);
-              var responseName = "response" + i;
-              macro yield(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData<$complexResponseType>($i{responseName}).pluginSerialize()).async();
-            }
-          ];
-          var yieldBlock =
-          {
-            pos: Context.currentPos(),
-            expr: EBlock(yieldExprs),
-          }
+          var responseType = TypeTools.applyTypeParameters(
+            Future.FutureTypeResolver.getAwaitResultTypes(futureType),
+            serviceClassType.params,
+            serviceParameters);
+          var complexResponseType = TypeTools.toComplexType(responseType);
           var declareResponseHandler =
           {
             pos: Context.currentPos(),
@@ -131,20 +117,15 @@ class IncomingProxyFactory
               {
                 args:
                 [
-                  for (i in 0...responseTypes.length)
                   {
-                    {
-                      name: "response" + i,
-                      type: null,
-                    }
+                    name: "response",
+                    type: null,
                   }
                 ],
                 ret: null,
-                expr: macro responseHandler.onSuccess(com.qifun.jsonStream.JsonStream.ARRAY(
-                  new com.dongxiguo.continuation.utils.Generator(
-                    com.dongxiguo.continuation.Continuation.cpsFunction(
-                      function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
-                        com.qifun.jsonStream.JsonStream>):Void $yieldBlock)))),
+                expr: macro responseHandler.onSuccess(
+                  new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData<$complexResponseType>(
+                    response).pluginSerialize()),
               }),
           }
           function parseRestRequest(readArray:Expr, argumentIndex:Int):Expr return

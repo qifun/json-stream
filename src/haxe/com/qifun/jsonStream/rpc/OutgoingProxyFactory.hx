@@ -162,7 +162,8 @@ class OutgoingProxyFactory
             name: fieldName,
           }:
           {
-            var responseTypes = Future.FutureTypeResolver.getAwaitResultTypes(futureType);
+            var reponseType = Future.FutureTypeResolver.getAwaitResultTypes(futureType);
+            var complexResponseType = TypeTools.toComplexType(reponseType);
             var methodName = field.name;
             var numRequestArguments = args.length;
             var methodParameterDeclarations:Array<TypeParamDecl>  =
@@ -194,51 +195,11 @@ class OutgoingProxyFactory
               expr: EBlock(requestYieldExprs),
               pos: Context.currentPos(),
             }
-
-            function parseResponses(
-              readArray:Expr,
-              responseHandler:Expr,
-              responseIndex:Int):Expr return
-            {
-              if (responseIndex < responseTypes.length)
-              {
-                var reponseType = responseTypes[responseIndex];
-                var complexResponseType = TypeTools.toComplexType(reponseType);
-                var responseName = "response" + responseIndex;
-                var next =
-                  parseResponses(
-                    readArray,
-                    responseHandler,
-                    responseIndex + 1);
-                var deserializeExpr =
-                  JsonDeserializerGenerator.resolvedDeserialize(
-                    complexResponseType,
-                    macro elementStream,
-                    allParameterDeclarations);
-                macro com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.optimizedExtract1($readArray, function(elementStream):Void
-                {
-                  var $responseName:$complexResponseType = $deserializeExpr;
-                  $next;
-                });
-              }
-              else
-              {
-                var parameters =
-                [
-                  for (i in 0...responseTypes.length)
-                  {
-                    var responseName = "response" + i;
-                    macro $i{responseName};
-                  }
-                ];
-                macro $responseHandler($a{parameters});
-              }
-            }
-            var parseResponseExpr =
-              parseResponses(
-                macro readResponse,
-                macro responseHandler,
-                0);
+            var deserializeExpr =
+              JsonDeserializerGenerator.resolvedDeserialize(
+                complexResponseType,
+                macro responseStream,
+                allParameterDeclarations);
             var implementationArgs:Array<FunctionArg> =
             [
               for (i in 0...numRequestArguments)
@@ -252,7 +213,7 @@ class OutgoingProxyFactory
             ];
             var methodBody =
               macro return com.qifun.jsonStream.rpc.Future.FutureHelper.newFuture(
-                function(responseHandler, catcher:Dynamic->Void):Void
+                function(responseHandler:$complexResponseType->Void, catcher:Dynamic->Void):Void
                 {
                   this.outgoingRpc.apply(
                     com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
@@ -272,13 +233,9 @@ class OutgoingProxyFactory
                           {
                             $localPrefix.handleError(catcher, errorStream);
                           }
-                          case SUCCESS(com.qifun.jsonStream.JsonStream.ARRAY(readResponse)):
+                          case SUCCESS(responseStream):
                           {
-                            $parseResponseExpr;
-                          }
-                          case SUCCESS(response):
-                          {
-                            throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(response, [ "ARRAY" ]);
+                            responseHandler($deserializeExpr);
                           }
                         }
                       }));
