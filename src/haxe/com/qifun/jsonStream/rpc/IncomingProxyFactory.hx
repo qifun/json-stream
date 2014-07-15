@@ -236,12 +236,43 @@ class IncomingProxyFactory
       }
     ];
     var serviceModule = serviceClassType.module;
-    var switchRpcMethodName =
-      buildSwitchExprForService(
-        serviceClassType,
-        [ for (p in serviceClassType.params) p.t ],
-        macro rpcMethodName,
-        macro parameters);
+    var methodBody = if (Context.defined("doc_gen"))
+    {
+      macro return ((throw "For documentation generation only!"):com.qifun.jsonStream.rpc.IJsonMethod);
+    }
+    else
+    {
+      var parameterTypes = [ for (p in serviceClassType.params) p.t ];
+      var switchRpcMethodName =
+        buildSwitchExprForService(serviceClassType, parameterTypes, macro rpcMethodName, macro parameters);
+      macro return new com.qifun.jsonStream.rpc.IncomingProxy(
+        function (
+          request:com.qifun.jsonStream.JsonStream,
+          responseHandler:com.qifun.jsonStream.rpc.IJsonMethod.IJsonResponseHandler):Void
+        {
+          switch (request)
+          {
+            case com.qifun.jsonStream.JsonStream.OBJECT(pairs):
+            {
+              com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRuntime.optimizedExtract1(
+                pairs,
+                function(pair):Void
+                {
+                  var rpcMethodName = pair.key;
+                  var parameters = pair.value;
+                  $switchRpcMethodName;
+                });
+            }
+            case _:
+            {
+              com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(
+                request,
+                [ "OBJECT" ]);
+            }
+          }
+        });
+    }
+
     {
       name: proxyMethodName(serviceClassType.pack, serviceClassType.name),
       access: [ AStatic, APublic ],
@@ -263,32 +294,7 @@ class IncomingProxyFactory
             }
           ],
           ret: null,
-          expr: macro return new com.qifun.jsonStream.rpc.IncomingProxy(
-            function (
-              request:com.qifun.jsonStream.JsonStream,
-              responseHandler:com.qifun.jsonStream.rpc.IJsonMethod.IJsonResponseHandler):Void
-            {
-              switch (request)
-              {
-                case com.qifun.jsonStream.JsonStream.OBJECT(pairs):
-                {
-                  com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRuntime.optimizedExtract1(
-                    pairs,
-                    function(pair):Void
-                    {
-                      var rpcMethodName = pair.key;
-                      var parameters = pair.value;
-                      $switchRpcMethodName;
-                    });
-                }
-                case _:
-                {
-                  com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(
-                    request,
-                    [ "OBJECT" ]);
-                }
-              }
-            }),
+          expr: methodBody,
         }),
     }
   }
