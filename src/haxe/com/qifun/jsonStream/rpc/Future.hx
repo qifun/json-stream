@@ -20,6 +20,8 @@ typedef Catcher = Dynamic->Void;
 #if stateless_future
 #if java
 
+@:dox(hide)
+@:final
 class HaxeToScalaOnCompleteFunction<AwaitResult>
 extends AbstractFunction1<AwaitResult, BoxedUnit>
 {
