@@ -41,7 +41,7 @@ class IncomingProxyFactory
   static function proxyMethodName(pack:Array<String>, name:String):String
   {
     var sb = new StringBuf();
-    sb.add("newProxy_");
+    sb.add("incomingProxy_");
     for (p in pack)
     {
       processName(sb, p);
@@ -91,7 +91,6 @@ class IncomingProxyFactory
   private static function buildSwitchExprForService(
     serviceClassType:ClassType,
     serviceParameters,
-    localPrefix:Expr,
     rpcMethodName: ExprOf<String>,
     parameters:ExprOf<JsonStream>):Expr
   {
@@ -141,11 +140,11 @@ class IncomingProxyFactory
                   }
                 ],
                 ret: null,
-                expr: macro return com.qifun.jsonStream.JsonStream.ARRAY(
+                expr: macro responseHandler.onSuccess(com.qifun.jsonStream.JsonStream.ARRAY(
                   new com.dongxiguo.continuation.utils.Generator(
                     com.dongxiguo.continuation.Continuation.cpsFunction(
                       function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
-                        com.qifun.jsonStream.JsonStream>):Void $yieldBlock))),
+                        com.qifun.jsonStream.JsonStream>):Void $yieldBlock)))),
               }),
           }
           function parseRestRequest(readArray:Expr, argumentIndex:Int):Expr return
@@ -182,7 +181,10 @@ class IncomingProxyFactory
                 com.qifun.jsonStream.rpc.Future.FutureHelper.start(
                   serviceImplementation.$methodName($a{parameters}),
                   $declareResponseHandler,
-                  $localPrefix.handleError(catcher));
+                  function(errorResponse:Dynamic):Void
+                  {
+                    responseHandler.onFailure(com.qifun.jsonStream.JsonSerializer.serialize(errorResponse));
+                  });
               }
             }
           }
@@ -216,30 +218,7 @@ class IncomingProxyFactory
     };
   }
 
-  static function catcherField():Field return
-  {
-    name: "handleError",
-    access: [ AStatic ],
-    pos: Context.currentPos(),
-    kind: FFun(
-      {
-        args:
-        [
-          {
-            type: null,
-            name: "catcher",
-          }
-        ],
-        ret: null,
-        expr: macro return
-          function(errorResponse:Dynamic):Void
-          {
-            catcher(com.qifun.jsonStream.JsonSerializer.serialize(errorResponse));
-          },
-      }),
-  }
-
-  static function incomingProxyField(localPrefix:Expr, serviceClassType:ClassType):Field return
+  static function incomingProxyField(serviceClassType:ClassType):Field return
   {
     var typeParameters =
     [
@@ -261,7 +240,6 @@ class IncomingProxyFactory
       buildSwitchExprForService(
         serviceClassType,
         [ for (p in serviceClassType.params) p.t ],
-        localPrefix,
         macro rpcMethodName,
         macro parameters);
     {
@@ -286,34 +264,30 @@ class IncomingProxyFactory
           ],
           ret: null,
           expr: macro return new com.qifun.jsonStream.rpc.IncomingProxy(
-            function (request:com.qifun.jsonStream.JsonStream):Future<com.qifun.jsonStream.JsonStream->Void>
+            function (
+              request:com.qifun.jsonStream.JsonStream,
+              responseHandler:com.qifun.jsonStream.rpc.IJsonMethod.IJsonResponseHandler):Void
             {
-              function startFuture(
-                responseHandler:com.qifun.jsonStream.JsonStream->Void,
-                catcher:Dynamic->Void):Void
+              switch (request)
               {
-                switch (request)
+                case com.qifun.jsonStream.JsonStream.OBJECT(pairs):
                 {
-                  case com.qifun.jsonStream.JsonStream.OBJECT(pairs):
-                  {
-                    com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRuntime.optimizedExtract1(
-                      pairs,
-                      function(pair):Void
-                      {
-                        var rpcMethodName = pair.key;
-                        var parameters = pair.value;
-                        $switchRpcMethodName;
-                      });
-                  }
-                  case _:
-                  {
-                    com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(
-                      request,
-                      [ "OBJECT" ]);
-                  }
+                  com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRuntime.optimizedExtract1(
+                    pairs,
+                    function(pair):Void
+                    {
+                      var rpcMethodName = pair.key;
+                      var parameters = pair.value;
+                      $switchRpcMethodName;
+                    });
+                }
+                case _:
+                {
+                  com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(
+                    request,
+                    [ "OBJECT" ]);
                 }
               }
-              return com.qifun.jsonStream.rpc.Future.FutureHelper.newFuture(startFuture);
             }),
         }),
     }
@@ -326,13 +300,6 @@ class IncomingProxyFactory
   macro public static function generateIncomingProxyFactory(includeModules:Array<String>):Array<Field> return
   {
     var fields = Context.getBuildFields();
-    fields.push(catcherField());
-    var localClass = Context.getLocalClass().get();
-    var packExpr = MacroStringTools.toFieldExpr(localClass.pack);
-    var localModuleName = localClass.module.substring(localClass.module.lastIndexOf(".") + 1);
-    var moduleExpr = packExpr == null ? macro $i{localModuleName} : macro $packExpr.$localModuleName;
-    var localName = localClass.name;
-    var localPrefix = macro $moduleExpr.$localName;
     for (moduleName in includeModules)
     {
       for (rootType in Context.getModule(moduleName))
@@ -341,7 +308,7 @@ class IncomingProxyFactory
         {
           case TInst(_.get() => classType, args) if (classType.isInterface):
           {
-            fields.push(incomingProxyField(localPrefix, classType));
+            fields.push(incomingProxyField(classType));
           }
           default:
         }

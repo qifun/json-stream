@@ -6,9 +6,9 @@ import com.qifun.jsonStream.JsonStream;
 class OutgoingProxy
 {
 
-  var outgoingRpc:IJsonRpc;
+  var outgoingRpc:IJsonMethod;
 
-  public function new(outgoingRpc:IJsonRpc)
+  public function new(outgoingRpc:IJsonMethod)
   {
     this.outgoingRpc = outgoingRpc;
   }

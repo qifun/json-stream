@@ -233,7 +233,7 @@ extern class Future<Handler> { }
         ]):
         return awaitResultTypes;
       default:
-        throw "Expect com.qifun.statelessFuture.Awaitable";
+        return Context.error("Expect com.qifun.statelessFuture.Awaitable", Context.currentPos());
     }
   }
 

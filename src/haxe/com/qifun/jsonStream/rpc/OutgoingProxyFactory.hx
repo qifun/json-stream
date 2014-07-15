@@ -3,6 +3,7 @@ package com.qifun.jsonStream.rpc;
 import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
+import com.qifun.jsonStream.rpc.JsonHandler.JsonResponse;
 
 #if macro
 import haxe.macro.Type;
@@ -91,7 +92,7 @@ class OutgoingProxyFactory
   static function proxyMethodName(pack:Array<String>, name:String):String
   {
     var sb = new StringBuf();
-    sb.add("newProxy_");
+    sb.add("outgoingProxy_");
     for (p in pack)
     {
       processName(sb, p);
@@ -239,31 +240,34 @@ class OutgoingProxyFactory
             macro return com.qifun.jsonStream.rpc.Future.FutureHelper.newFuture(
               function(responseHandler, catcher:Dynamic->Void):Void
               {
-                com.qifun.jsonStream.rpc.Future.FutureHelper.start(
-                  this.outgoingRpc.apply(
-                    com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
-                      $v{methodName},
-                      com.qifun.jsonStream.JsonStream.ARRAY(
-                        new com.dongxiguo.continuation.utils.Generator(
-                          com.dongxiguo.continuation.Continuation.cpsFunction(
-                            function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
-                              com.qifun.jsonStream.JsonStream > ):Void
-                              $requestBlock))))),
-                  function(response:com.qifun.jsonStream.JsonStream):Void
-                  {
-                    switch (response)
+                this.outgoingRpc.apply(
+                  com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
+                    $v{methodName},
+                    com.qifun.jsonStream.JsonStream.ARRAY(
+                      new com.dongxiguo.continuation.utils.Generator(
+                        com.dongxiguo.continuation.Continuation.cpsFunction(
+                          function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
+                            com.qifun.jsonStream.JsonStream > ):Void
+                            $requestBlock)))),
+                  new com.qifun.jsonStream.rpc.JsonHandler(
+                    function(response:com.qifun.jsonStream.rpc.JsonHandler.JsonResponse):Void
                     {
-                      case com.qifun.jsonStream.JsonStream.ARRAY(readResponse):
+                      switch (response)
                       {
-                        $parseResponseExpr;
+                        case FAILURE(errorStream):
+                        {
+                          $localPrefix.handleError(catcher, errorStream);
+                        }
+                        case SUCCESS(com.qifun.jsonStream.JsonStream.ARRAY(readResponse)):
+                        {
+                          $parseResponseExpr;
+                        }
+                        case SUCCESS(response):
+                        {
+                          throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(response, [ "ARRAY" ]);
+                        }
                       }
-                      case _:
-                      {
-                        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(response, [ "ARRAY" ]);
-                      }
-                    }
-                  },
-                  $localPrefix.handleError(catcher));
+                    }));
               });
           //trace(ExprTools.toString(methodBody));
           fields.push(
@@ -361,15 +365,18 @@ class OutgoingProxyFactory
           {
             type: null,
             name: "catcher",
+          },
+          {
+            type: null,
+            name: "errorResponse",
           }
         ],
         ret: null,
-        expr: macro return
-          function(errorResponse:com.qifun.jsonStream.JsonStream):Void
-          {
-            var error:Dynamic = com.qifun.jsonStream.JsonDeserializer.deserialize(errorResponse);
-            catcher(error);
-          },
+        expr: macro
+        {
+          var error:Dynamic = com.qifun.jsonStream.JsonDeserializer.deserialize(errorResponse);
+          catcher(error);
+        },
       }),
   }
 
