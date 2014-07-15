@@ -148,66 +148,35 @@ typedef Future<AwaitResult> = { }
   #end
 
   @:noUsing
-  macro public static function newFuture<AwaitResult>(startFunction:ExprOf<(AwaitResult->Void)->Catcher->Void>):ExprOf<Future<AwaitResult>>
+  public static function newFuture<AwaitResult>(startFunction:(AwaitResult->Void)->Catcher->Void):Future<AwaitResult>
   {
-    if (Context.defined("stateless_future") && Context.defined("java"))
-    {
-      switch (Context.follow(Context.typeof(startFunction)))
-      {
-        case TFun([{t: TFun([ _.t => awaitResultType ], _)}, _], _):
-        {
-          var awaitResultComplexType = TypeTools.toComplexType(awaitResultType);
-          return macro
-          {
-            // 此处由于Haxe bugs，所以必须加上Dynamic
-            var scalaForeach:Dynamic = new com.qifun.jsonStream.rpc.Future.HaxeToScalaForeachFunction(
-              function(tupleHandler:$awaitResultComplexType->Void, catcher:Dynamic->Void):Void
-                $startFunction(tupleHandler, catcher));
-            var future:Dynamic = new com.qifun.statelessFuture.util.FunctionFuture(scalaForeach);
-            future;
-          }
-        }
-        default:
-        {
-          return Context.error("Expect function", startFunction.pos);
-        }
-      }
-    }
-    else
-    {
-      throw "Not implemented";
-    }
+    #if (stateless_future && java)
+    // 此处由于Haxe bugs，所以必须加上untyped
+    return untyped new com.qifun.statelessFuture.util.FunctionFuture(
+      untyped new HaxeToScalaForeachFunction(
+        function(tupleHandler:AwaitResult->Void, catcher:Dynamic->Void):Void
+          startFunction(tupleHandler, catcher)));
+    #else
+    return throw "Not implemented";
+    #end
   }
 
   @:noUsing
-  macro public static function start<AwaitResult>(future:ExprOf<Future<AwaitResult>>, completeHandler:ExprOf<AwaitResult->Void>, errorHandler:ExprOf<Catcher>):ExprOf<Void>
+  public static function start<AwaitResult>(
+    future:Future<AwaitResult>,
+    completeHandler:AwaitResult->Void,
+    errorHandler:Catcher):Void
   {
-    if (Context.defined("stateless_future") && Context.defined("java"))
-    {
-      switch (Context.follow(Context.typeof(future)))
-      {
-        case TInst(
-          _,
-          [
-            Context.follow(_) => awaitResultType,
-            _
-          ]):
-        {
-          return macro $future.foreach(
-            cast new com.qifun.jsonStream.rpc.Future.HaxeToScalaOnCompleteFunction($completeHandler),
-            new com.qifun.jsonStream.rpc.Future.HaxeToScalaCatcher($errorHandler));
-        }
-        default:
-        {
-          return Context.error("Expect Future.", Context.currentPos());
-        }
-      }
-    }
-    else
-    {
-      throw "Not implemented";
-    }
+    #if (stateless_future && java)
+    // 此处由于Haxe bugs，所以必须加上untyped
+    future.foreach(
+      untyped new com.qifun.jsonStream.rpc.Future.HaxeToScalaOnCompleteFunction(completeHandler),
+      new com.qifun.jsonStream.rpc.Future.HaxeToScalaCatcher(errorHandler));
+    #else
+    throw "Not implemented";
+    #end
   }
+
 
 }
 
