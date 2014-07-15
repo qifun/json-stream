@@ -320,7 +320,7 @@ class OutgoingProxyFactory
   static var JSON_METHOD_COMPLEX_TYPE(default, never) = TPath(
     {
       pack: [ "com", "qifun", "jsonStream", "rpc" ],
-      name: "IJsonMethod",
+      name: "IJsonService",
     });
 
   static function catcherField():Field return

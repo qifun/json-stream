@@ -1,9 +1,9 @@
 package com.qifun.jsonStream.rpc;
 
-import com.qifun.jsonStream.rpc.IJsonMethod;
+import com.qifun.jsonStream.rpc.IJsonService;
 
 @:final
-class IncomingProxy implements IJsonMethod
+class IncomingProxy implements IJsonService
 {
 
   var underlying:JsonStream->IJsonResponseHandler->Void;

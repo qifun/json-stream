@@ -1,7 +1,7 @@
 package com.qifun.jsonStream.rpc;
 
 @:nativeGen
-interface IJsonMethod
+interface IJsonService
 {
   function apply(request:JsonStream, responseHandler:IJsonResponseHandler):Void;
 }

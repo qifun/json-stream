@@ -219,7 +219,7 @@ class IncomingProxyFactory
     var serviceModule = serviceClassType.module;
     var methodBody = if (Context.defined("doc_gen"))
     {
-      macro return ((throw "For documentation generation only!"):com.qifun.jsonStream.rpc.IJsonMethod);
+      macro return ((throw "For documentation generation only!"):com.qifun.jsonStream.rpc.IJsonService);
     }
     else
     {
@@ -229,7 +229,7 @@ class IncomingProxyFactory
       macro return new com.qifun.jsonStream.rpc.IncomingProxy(
         function (
           request:com.qifun.jsonStream.JsonStream,
-          responseHandler:com.qifun.jsonStream.rpc.IJsonMethod.IJsonResponseHandler):Void
+          responseHandler:com.qifun.jsonStream.rpc.IJsonService.IJsonResponseHandler):Void
         {
           switch (request)
           {
