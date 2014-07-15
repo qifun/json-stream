@@ -4,6 +4,7 @@ import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonStream;
+import haxe.ds.Vector;
 import haxe.Int64;
 
 @:final
@@ -120,6 +121,35 @@ class ArraySerializerPlugin
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<Array<Element>>>):ExprOf<JsonStream> return
   {
     macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+  }
+}
+
+@:final
+class VectorSerializerPlugin
+{
+
+  public static function serializeForElement<Element>(self:JsonSerializerPluginData<Vector<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  {
+    if (self.underlying == null)
+    {
+      NULL;
+    }
+    else
+    {
+      ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+      {
+        for (i in 0...self.underlying.length)
+        {
+          var element = self.underlying[i];
+          yield(elementSerializeFunction(new JsonSerializerPluginData(element))).async();
+        }
+      })));
+    }
+  }
+
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<Vector<Element>>>):ExprOf<JsonStream> return
+  {
+    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
 }
 

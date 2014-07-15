@@ -3,6 +3,7 @@ package com.qifun.jsonStream.builderPlugin;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonBuilder;
 import com.qifun.jsonStream.JsonBuilderFactory;
+import haxe.ds.Vector;
 import haxe.Int64;
 #if macro
 import haxe.macro.Expr;
@@ -216,5 +217,39 @@ class ArrayBuilderPlugin
   macro public static function pluginBuild<Element>(self:haxe.macro.Expr.ExprOf<JsonBuilderPluginStream<Array<Element>>>, onComplete:haxe.macro.Expr.ExprOf<Null<Array<Element>>->Void>):haxe.macro.Expr.ExprOf<Void> return
   {
     macro com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin.buildForElement($self, function(substream, onElementComplete) { return substream.pluginBuild(onElementComplete); }, $onComplete);
+  }
+}
+
+
+@:final
+class VectorBuilderPlugin
+{
+
+  @:dox(hide)
+  public static function buildForElement<Element>(self:JsonBuilderPluginStream<Vector<Element>>, elementDeserializeFunction:JsonBuilderPluginStream<Element>->(Element->Void)->Void, onComplete:Null<Vector<Element>>->Void):Void
+  {
+    Continuation.cpsFunction(function(stream:AsynchronousJsonStream):Vector<Element> return
+    {
+      switch (stream)
+      {
+        case ARRAY(read):
+          var result = [];
+          var element = null;
+          while ((element = read().async()) != null)
+          {
+            result.push(elementDeserializeFunction(new JsonBuilderPluginStream(element)).async());
+          }
+          Vector.fromArrayCopy(result);
+        case NULL:
+          null;
+        case _:
+          throw JsonBuilderError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL" ]);
+      }
+    })(self.underlying, onComplete);
+  }
+
+  macro public static function pluginBuild<Element>(self:haxe.macro.Expr.ExprOf<JsonBuilderPluginStream<Vector<Element>>>, onComplete:haxe.macro.Expr.ExprOf<Null<Vector<Element>>->Void>):haxe.macro.Expr.ExprOf<Void> return
+  {
+    macro com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.VectorBuilderPlugin.buildForElement($self, function(substream, onElementComplete) { return substream.pluginBuild(onElementComplete); }, $onComplete);
   }
 }

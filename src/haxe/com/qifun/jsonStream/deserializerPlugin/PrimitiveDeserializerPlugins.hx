@@ -3,6 +3,7 @@ package com.qifun.jsonStream.deserializerPlugin;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
+import haxe.ds.Vector;
 import haxe.Int64;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
@@ -231,6 +232,50 @@ class ArrayDeserializerPlugin
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<Array<Element>>>):ExprOf<Null<Array<Element>>> return
   {
     macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+  }
+}
+
+@:final
+class VectorDeserializerPlugin
+{
+
+  @:dox(hide)
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Vector<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Vector<Element>> return
+  {
+    switch (self.underlying)
+    {
+      case com.qifun.jsonStream.JsonStream.ARRAY(value):
+        var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          Vector.fromArrayCopy(
+            [
+              for (element in generator)
+              {
+                elementDeserializeFunction(new JsonDeserializerPluginStream(element));
+              }
+            ]);
+        }
+        else
+        {
+          Vector.fromArrayCopy(
+            [
+              for (element in value)
+              {
+                elementDeserializeFunction(new JsonDeserializerPluginStream(element));
+              }
+            ]);
+        }
+      case NULL:
+        null;
+      case _:
+        throw "Expect array";
+    }
+  }
+
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<Vector<Element>>>):ExprOf<Null<Vector<Element>>> return
+  {
+    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
 }
 
