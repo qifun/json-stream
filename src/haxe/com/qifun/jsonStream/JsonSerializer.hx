@@ -963,6 +963,7 @@ class JsonSerializerGenerator
 class JsonSerializerRuntime
 {
 
+  @:noUsing
   public static inline function nullize<T>(t:T):Null<T> return t;
 
   @:noUsing
