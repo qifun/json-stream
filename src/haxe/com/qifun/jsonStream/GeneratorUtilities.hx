@@ -6,12 +6,13 @@ import haxe.macro.Expr;
 import haxe.macro.Context;
 import haxe.macro.Type;
 import haxe.macro.TypeTools;
+using Lambda;
 
 @:dox(hide)
 @:allow(com.qifun.jsonStream)
 class GeneratorUtilities
 {
-  private static function hasEmptyConstructor(classType:ClassType):Bool
+  private static function hasEmptyConstructor(classType:ClassType):Bool return
   {
     var constructor = classType.constructor;
     if (constructor == null)
@@ -19,16 +20,26 @@ class GeneratorUtilities
       var superClass = classType.superClass;
       if (superClass == null)
       {
-        return false;
+        false;
       }
       else
       {
-        return hasEmptyConstructor(classType.superClass.t.get());
+        hasEmptyConstructor(classType.superClass.t.get());
       }
     }
     else
     {
-      return constructor.get().type.match(TFun([], _));
+      switch (constructor.get().type)
+      {
+        case TFun(args, _) if (args.foreach(function(arg)return arg.opt)):
+        {
+          true;
+        }
+        default:
+        {
+          false;
+        }
+      }
     }
   }
 

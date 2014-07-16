@@ -100,6 +100,8 @@ class JsonSerializer
   /**
     创建序列化的实现类。必须用在`@:build`中。
 
+    注意：如果`includeModules`中的某个类没有构造函数，或者构造函数不支持空参数，那么这个类不会被序列化。
+
     @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义要序列化的数据结构。
   **/
   @:noUsing
