@@ -45,6 +45,9 @@ typedef StringSerializerPlugin = com.qifun.jsonStream.serializerPlugin.Primitive
 typedef ArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin;
 
 @:dox(hide)
+typedef VectorSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin;
+
+@:dox(hide)
 typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.serializerPlugin.LowPriorityDynamicSerializerPlugin;
 
 
@@ -80,6 +83,9 @@ typedef StringDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Primi
 
 @:dox(hide)
 typedef ArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.ArrayDeserializerPlugin;
+
+@:dox(hide)
+typedef VectorDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin;
 
 @:dox(hide)
 typedef LowPriorityDynamicDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.LowPriorityDynamicDeserializerPlugin;
@@ -118,6 +124,9 @@ typedef StringBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilde
 
 @:dox(hide)
 typedef ArrayBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.ArrayBuilderPlugin;
+
+@:dox(hide)
+typedef VectorBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.VectorBuilderPlugin;
 
 @:dox(hide)
 typedef LowPriorityDynamicBuilderPlugin = com.qifun.jsonStream.builderPlugin.LowPriorityDynamicBuilderPlugin;
