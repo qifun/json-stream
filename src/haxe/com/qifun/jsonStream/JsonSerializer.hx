@@ -45,7 +45,7 @@ class Sample
 class JsonSerializer
 {
 
-  private static function iterateJsonObject(instance:Dynamic) return
+  private static function iterateJsonObject(instance:Dynamic):Generator<JsonStreamPair> return
   {
     new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStreamPair>):Void
     {
@@ -56,7 +56,7 @@ class JsonSerializer
     }));
   }
 
-  private static function iterateJsonArray(instance:Array<RawJson>) return
+  private static function iterateJsonArray(instance:Array<RawJson>):Generator<JsonStream> return
   {
     new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
     {
