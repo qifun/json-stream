@@ -29,7 +29,7 @@ class GeneratorUtilities
     }
     else
     {
-      switch (constructor.get().type)
+      switch (Context.follow(constructor.get().type))
       {
         case TFun(args, _) if (args.foreach(function(arg)return arg.opt)):
         {
@@ -47,7 +47,7 @@ class GeneratorUtilities
   {
     classType.isInterface ||
     !classType.kind.match(KNormal) ||
-    hasEmptyConstructor(classType);
+    !hasEmptyConstructor(classType);
   }
 
   private static var _lowPriorityDynamicType:Type;
