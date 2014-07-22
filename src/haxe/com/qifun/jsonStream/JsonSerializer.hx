@@ -130,8 +130,10 @@ class JsonSerializer
   @:noUsing
   macro public static function serialize(data:Expr):ExprOf<JsonStream> return
   {
-    macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData(
+    var result = macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData(
       $data).pluginSerialize();
+    result.pos = Context.currentPos();
+    result;
   }
 
 }
