@@ -35,7 +35,7 @@ class FinalClass<G> extends BaseClass2<Array<Array<BaseClass<G, BaseClass<G, Dyn
 @:final
 class FinalClass2<A, B> extends BaseClass<A,B>
 {
-  var vector1:Vector<Int>;
+  //var vector1:Vector<Int>; // 由于Haxe的bug，Java平台无法使用Vector<Int>
   var vector2:Vector<A>;
   var vector3:Vector<B>;
   var vector4:Vector<String>;
