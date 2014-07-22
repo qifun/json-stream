@@ -1,4 +1,5 @@
 package ;
+import haxe.ds.Vector;
 
 @:final
 class SimpleClass
@@ -21,4 +22,22 @@ abstract SimpleAbstract(String)
   {
     this = underlying;
   }
+}
+
+
+@:final
+class User
+{
+  public function new() {}
+	public var info:UserInfo = new UserInfo();
+  public var skills:Array<Int> = [];
+}
+
+@:final
+class UserInfo 
+{
+	public function new() {}
+  public var hp:Int;
+  public var mp:Int;
+  public var skills:Array<Int> = [];
 }
