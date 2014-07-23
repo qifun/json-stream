@@ -8,7 +8,7 @@ import com.qifun.jsonStream.io.BsonParser
 
 class HaxeClassReader[T](haxeDeserializeFunction: JsonStream => T) extends RawBSONDocumentDeserializer[T] {
   def deserialize(buffer: ReadableBuffer):T = {
-    val jsonStream = BsonParser.readBsonStream(new ByteBufferInput(buffer))
+    val jsonStream = BsonParser.readBsonStream(buffer)
     haxeDeserializeFunction(jsonStream)
   }
 }

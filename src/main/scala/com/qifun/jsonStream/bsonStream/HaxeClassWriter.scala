@@ -9,17 +9,7 @@ import reactivemongo.bson.BSONDocument
 class HaxeClassWriter[T](haxeSerializeFunction: T => JsonStream) extends RawBSONDocumentSerializer[T] {
   def serialize(obj: T) = {
     val writeableBuffer = new ChannelBufferWritableBuffer
-    BsonParser.outputBsonStream(new ByteBufferOutput(writeableBuffer), haxeSerializeFunction(obj))
+    BsonParser.outputBsonStream(writeableBuffer, haxeSerializeFunction(obj))
     writeableBuffer
   }
 }
-object UseBSONDocument {
-  implicit object BSONDocumentWriteableBuffer extends RawBSONDocumentSerializer[BSONDocument] {
-    def serialize(bsondoc: BSONDocument) = {
-      val writeableBuffer = new ChannelBufferWritableBuffer
-      BSONDocument.write(bsondoc, writeableBuffer)
-      writeableBuffer
-    }
-  }
-}
-
