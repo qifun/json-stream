@@ -52,11 +52,11 @@ class BsonReader
       }
       case 0x04: // array
       {
-        var arrayBufferLength = buffer.readInt();
-        var arrayBuffer = buffer.slice(arrayBufferLength - 4);
-        buffer.discard(arrayBufferLength - 4);
         JsonStream.ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
         {
+          var arrayBufferLength = buffer.readInt();
+          var arrayBuffer = buffer.slice(arrayBufferLength - 4);
+          buffer.discard(arrayBufferLength - 4);
           var lastLabel:Int = -1;
           while (arrayBuffer.readable() > 1)
           {     
@@ -151,13 +151,13 @@ class BsonReader
   {
     JsonStream.OBJECT(
     {
-      var length = input.readInt();
-      //此时bsonBufferEnd已经被读入，而bson长度中包括了bsonBufferEnd的4个字节.
-      //如此相加之后这4个字节被额外重复计算了一次，所以实际结束位置需要减去4字节。
-      var buffer = input.slice(length - 4);
-      input.discard(length - 4);
       new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStreamPair>):Void
       {
+        var length = input.readInt();
+        //此时bsonBufferEnd已经被读入，而bson长度中包括了bsonBufferEnd的4个字节.
+        //如此相加之后这4个字节被额外重复计算了一次，所以实际结束位置需要减去4字节。
+        var buffer = input.slice(length - 4);
+        input.discard(length - 4);
         while (buffer.readable() > 1)
         {
           var valueTypeCode:Int8 = buffer.readByte();
