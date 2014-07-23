@@ -21,10 +21,6 @@ import com.qifun.jsonStream.io._
 import com.qifun.jsonStream.bsonStream._
 class JsonBsonTest {
 
-  object ByteBufferOutput extends Output {
-    override def writeByte(b: Int) = print(b.toByte.toChar)
-  }
-
   implicit object UserClass2Writer extends HaxeClassWriter[UserTest](UserTestSerializer.serialize_com_qifun_jsonStream_UserTest)
   implicit object UserClass2Reader extends HaxeClassReader[UserTest](UserTestDeserializer.deserialize_com_qifun_jsonStream_UserTest)
   
@@ -54,7 +50,7 @@ class JsonBsonTest {
         }
       }
     }
-    PrettyTextPrinter.print(ByteBufferOutput, UserTestSerializer.serialize_com_qifun_jsonStream_UserTest(us), 0)
+    PrettyTextPrinter.toString(UserTestSerializer.serialize_com_qifun_jsonStream_UserTest(us))
     writeablebuffer.buffer.clear()
     
     BSONDocument.write(bson, writeablebuffer)
@@ -80,7 +76,7 @@ class JsonBsonTest {
   }
   
   @Test
-  def `TypeTest`() : Unit =
+  def `primitiveTypeTest`() : Unit =
   {
     implicit object TypeTestWriter extends HaxeClassWriter[TypeTest](TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest)
     implicit object TypeTestReader extends HaxeClassReader[TypeTest](TypeTestDeserializer.deserialize_com_qifun_jsonStream_TypeTest) 

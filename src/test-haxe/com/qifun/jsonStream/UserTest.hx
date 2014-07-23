@@ -4,7 +4,7 @@ package com.qifun.jsonStream;
 class UserTest
 {
   public function new() {}
-	public var info:UserInfoTest = new UserInfoTest();
+  public var info:UserInfoTest = new UserInfoTest();
 }
 
 
