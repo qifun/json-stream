@@ -111,4 +111,10 @@ class PrettyTextPrinter
     }
   }
 
+  public static function toString(value:JsonStream):String return
+  {
+    var output = new haxe.io.BytesOutput();
+    print(output, value, 0);
+    output.getBytes().toString();
+  }
 }
