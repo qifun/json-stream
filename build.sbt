@@ -14,6 +14,8 @@ resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositor
 
 resolvers += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/" 
 
+libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % "test"
+
 libraryDependencies ++= Seq(
   "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
 )
