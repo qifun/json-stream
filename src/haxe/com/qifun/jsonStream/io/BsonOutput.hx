@@ -1,9 +1,26 @@
 package com.qifun.jsonStream.io;
-import haxe.io.Output;
+import reactivemongo.bson.buffer.WritableBuffer;
 
-class BsonOutput extends Output
+#if java
+
+@:forward(writeByte, writeInt, writeDouble, writeString, writeCString, index, setInt)
+abstract BsonOutput(WritableBuffer) { }
+
+//#else cs
+
+
+#else
+interface IBsonOutput 
 {
-  public function index():Int return { 0; }
-  public function setInt(index:Int, value:Int):Void { }
-  public function writeCString(str:String):Void { }
+  public function index():Int;
+  public function setInt(index:Int, value:Int):Void;
+  public function writeCString(str:String):Void;
+  public function writeString(str:String):Void;
+  public function writeDouble(d:Float):Void;
+  public function writeInt(i:Int):Void;
+  public function writeByte(b:Int):Void
 }
+
+@:forward(writeByte, writeInt, writeDouble, writeString, writeCString, index, setInt)
+abstract BsonOutput(IBsonOutput) { }
+#end

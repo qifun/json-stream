@@ -1,14 +1,41 @@
 package com.qifun.jsonStream.io;
-import haxe.io.Input;
 
+import reactivemongo.bson.buffer.ReadableBuffer;
 
-class BsonInput extends Input
+#if (java)
+@:forward(readByte, readInt, readDouble, readString, readCString, discard, size, index, readable)
+abstract BsonInput(ReadableBuffer) 
 {
-  public function discard(n:Int):Void { }
-  public function index():Int return { 0; }
-  public function size():Int return { 0; }
-  public function slice(n: Int):BsonInput return { null; }
-  public function readNString():String return { ""; }
-  public function readCString():String return { ""; }
-  public function readable():Int return { 0; }
+  inline function new(underlying:ReadableBuffer)
+  {
+    this = underlying;
+  }
+  
+  public inline function slice(n:Int):BsonInput
+  {
+    return new BsonInput(this.slice(n));
+  }
 }
+
+//#else cs
+
+
+#else
+interface IBsonInput
+{
+  public function readByte():Int;
+  public function readInt32():Int;
+  public function readDouble():Float;
+  public function discard(n:Int):Void;
+  public function index():Int;
+  public function size():Int;
+  public function slice(n: Int):IBsonInput;
+  public function readString():String;
+  public function readCString():String;
+  public function readable():Int;
+}
+
+@:forward(readByte, readInt, readDouble, readString, readCString, discard, slice, size, index, readable)
+abstract BsonInput(IBsonInput) { }
+
+#end
