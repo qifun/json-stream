@@ -35,8 +35,8 @@ class JsonBsonTest {
     us.info.skills.push(Integer.valueOf(9527))
     us.info.skills.push(Integer.valueOf(8888))
 
-    val writeablebuffer = UserClass2Writer.serialize(us)
-    val bson = BSONDocument.read(writeablebuffer.toReadableBuffer);
+    val writeableBuffer = UserClass2Writer.serialize(us)
+    val bson = BSONDocument.read(writeableBuffer.toReadableBuffer);
     for (i <- bson.stream.toList) {
       assertEquals(i.get._1, "info")
       assertEquals(i.get._2.code, 0x03)
@@ -51,14 +51,14 @@ class JsonBsonTest {
       }
     }
     PrettyTextPrinter.toString(UserTestSerializer.serialize_com_qifun_jsonStream_UserTest(us))
-    writeablebuffer.buffer.clear()
+    writeableBuffer.buffer.clear()
     
-    BSONDocument.write(bson, writeablebuffer)
-    val obj = UserClass2Reader.deserialize(writeablebuffer.toReadableBuffer)    
+    BSONDocument.write(bson, writeableBuffer)
+    val obj = UserClass2Reader.deserialize(writeableBuffer.toReadableBuffer)    
     
     BSONDocument("info" -> BSONDocument("hp" -> 150.0, "mp" -> 200.0, "skills" -> Array(9527, 8888)))
-    BSONDocument.write(bson, writeablebuffer)
-    val obj2 = UserClass2Reader.deserialize(writeablebuffer.toReadableBuffer)
+    BSONDocument.write(bson, writeableBuffer)
+    val obj2 = UserClass2Reader.deserialize(writeableBuffer.toReadableBuffer)
  
     assertEquals(obj.info.hp, 150)
     assertEquals(obj.info.mp, 200)
@@ -80,23 +80,23 @@ class JsonBsonTest {
   {
     implicit object TypeTestWriter extends HaxeClassWriter[TypeTest](TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest)
     implicit object TypeTestReader extends HaxeClassReader[TypeTest](TypeTestDeserializer.deserialize_com_qifun_jsonStream_TypeTest) 
-    val typetest = new TypeTest
-    typetest.bo = true
-    typetest.f = 3.1415926
-    typetest.i = 42
-    typetest.str = "这是一个中文字符串。"
-    val bson = BSONDocument.read(TypeTestWriter.serialize(typetest).toReadableBuffer)
+    val typeTest = new TypeTest
+    typeTest.bo = true
+    typeTest.f = 3.1415926
+    typeTest.i = 42
+    typeTest.str = "这是一个中文字符串。"
+    val bson = BSONDocument.read(TypeTestWriter.serialize(typeTest).toReadableBuffer)
     for(i <- bson.stream.toList) {
       println(i.get._1 + "->" + i.get._2)
     }
     
-    val writeablebuffer = new ChannelBufferWritableBuffer
-    BSONDocument.write(bson,writeablebuffer)
-    val obj = TypeTestReader.deserialize(writeablebuffer.toReadableBuffer)
+    val writeableBuffer = new ChannelBufferWritableBuffer
+    BSONDocument.write(bson,writeableBuffer)
+    val obj = TypeTestReader.deserialize(writeableBuffer.toReadableBuffer)
     
-    assertEquals(typetest.bo, obj.bo)
-    assertTrue(typetest.f == obj.f)//assertEquals cann't compare double type
-    assertEquals(typetest.i, obj.i)
-    assertEquals(typetest.str, obj.str)
+    assertEquals(typeTest.bo, obj.bo)
+    assertTrue(typeTest.f == obj.f)//assertEquals cann't compare double type
+    assertEquals(typeTest.i, obj.i)
+    assertEquals(typeTest.str, obj.str)
   } 
 }
