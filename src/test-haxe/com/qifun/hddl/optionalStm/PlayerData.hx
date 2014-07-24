@@ -1,3 +1,5 @@
+package com.qifun.hddl.optionalStm;
+
 import com.qifun.hddl.optionalStm.TArray;
 import com.qifun.hddl.optionalStm.TMap;
 import com.qifun.hddl.optionalStm.TSet;

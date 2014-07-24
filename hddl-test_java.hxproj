@@ -24,7 +24,7 @@
     <option directives="no-inline&#xA;no-compilation" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
-    <option mainClass="Main" />
+    <option mainClass="com.qifun.hddl.optionalStm.Main" />
     <option enabledebug="True" />
     <option additional="" />
   </build>
@@ -44,6 +44,7 @@
     <compile path="tests\Main.hx.backup" />
     <compile path="tests\Main.hx" />
     <compile path="src\test-haxe\Main.hx" />
+    <compile path="src\test-haxe\com\qifun\hddl\optionalStm\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
