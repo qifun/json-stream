@@ -100,14 +100,11 @@ class IncomingProxyFactory
       switch (field)
       {
         case { kind: FVar(_) | FMethod(MethMacro) }: continue;
-        case { kind: FMethod(methodKind), type: TFun(args, futureType) }:
+        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_, [ awaitResultType ])) }:
         {
           var methodName = field.name;
           var numRequestArguments = args.length;
-          var responseType = TypeTools.applyTypeParameters(
-            Future.FutureTypeResolver.getAwaitResultTypes(futureType),
-            serviceClassType.params,
-            serviceParameters);
+          var responseType = TypeTools.applyTypeParameters(awaitResultType, serviceClassType.params, serviceParameters);
           var complexResponseType = TypeTools.toComplexType(responseType);
           var declareResponseHandler =
           {
@@ -159,8 +156,7 @@ class IncomingProxyFactory
               ];
               macro
               {
-                com.qifun.jsonStream.rpc.Future.FutureHelper.start(
-                  serviceImplementation.$methodName($a{parameters}),
+                serviceImplementation.$methodName($a{parameters}).start(
                   $declareResponseHandler,
                   function(errorResponse:Dynamic):Void
                   {

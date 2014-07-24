@@ -89,18 +89,18 @@ extends AbstractFunction2<Function1<AwaitResult, BoxedUnit>, PartialFunction<Thr
   @param Handler 任务完成时调用的回调函数类型。
 **/
 #if (stateless_future && java)
-typedef Future<AwaitResult> = com.qifun.statelessFuture.Awaitable<AwaitResult, BoxedUnit>;
+typedef NativeFuture<AwaitResult> = com.qifun.statelessFuture.Awaitable<AwaitResult, BoxedUnit>;
 #else
-typedef Future<AwaitResult> = { }
+typedef NativeFuture<AwaitResult> = (AwaitResult->Void)->Catcher->Void;
 #end
 
-@:final class FutureHelper
+abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
 {
 
   #if stateless_future
 
   #if macro
-  private static function getTupleTypePath(args:Array<Type>):TypePath return
+  static function getTupleTypePath(args:Array<Type>):TypePath return
   {
     if (args.length == 0)
     {
@@ -115,7 +115,7 @@ typedef Future<AwaitResult> = { }
     }
   }
 
-  private static function untupled<Tuple>(tupleArguments:Array<Type>, tupleFunction:ExprOf<Tuple->Void>):Expr
+  static function untupled<Tuple>(tupleArguments:Array<Type>, tupleFunction:ExprOf<Tuple->Void>):Expr
   {
     var argDefinitions:Array<FunctionArg> = [];
     var argExprs = [];
@@ -147,67 +147,34 @@ typedef Future<AwaitResult> = { }
 
   #end
 
-  @:noUsing
-  public static function newFuture<AwaitResult>(startFunction:(AwaitResult->Void)->Catcher->Void):Future<AwaitResult>
+  public function new(startFunction:(AwaitResult->Void)->Catcher->Void)
   {
     #if (stateless_future && java)
     // 此处由于Haxe bugs，所以必须加上untyped
-    return untyped new com.qifun.statelessFuture.util.FunctionFuture(
+    this = untyped new com.qifun.statelessFuture.util.FunctionFuture(
       untyped new HaxeToScalaForeachFunction(
         function(tupleHandler:AwaitResult->Void, catcher:Dynamic->Void):Void
           startFunction(tupleHandler, catcher)));
     #else
-    return throw "Not implemented";
+    this = startFunction;
     #end
   }
 
-  @:noUsing
-  public static function start<AwaitResult>(
-    future:Future<AwaitResult>,
+  public function start<AwaitResult>(
     completeHandler:AwaitResult->Void,
     errorHandler:Catcher):Void
   {
     #if (stateless_future && java)
     // 此处由于Haxe bugs，所以必须加上untyped
-    future.foreach(
+    this.foreach(
       untyped new com.qifun.jsonStream.rpc.Future.HaxeToScalaOnCompleteFunction(completeHandler),
       new com.qifun.jsonStream.rpc.Future.HaxeToScalaCatcher(errorHandler));
     #else
-    throw "Not implemented";
+    this(completeHandler, errorHandler);
     #end
   }
 
-
 }
-
-@:dox(hide) class FutureTypeResolver
-{
-
-  #if stateless_future
-  #if macro
-
-  @:noUsing
-  public static function getAwaitResultTypes(futureType:Type):Type
-  {
-    switch (Context.follow(futureType))
-    {
-      case TInst(
-        _, // Awaitable
-        [
-          awaitResultType,
-          _, //BoxedUnit
-        ]):
-        return awaitResultType;
-      default:
-        return Context.error("Expect com.qifun.statelessFuture.Awaitable", Context.currentPos());
-    }
-  }
-
-  #end
-
-  #end
-}
-
 
 #if stateless_future
 #if java

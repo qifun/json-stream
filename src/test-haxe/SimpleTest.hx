@@ -10,26 +10,6 @@ using SimpleBuildMacro;
 
 class SimpleTest extends JsonTestCase
 {
-  function testUser()
-  {
-    var user = new User();
-    user.info.hp = 150;
-    user.info.mp = 200;
-    user.info.skills.push(9527);
-    user.info.skills.push(8888);
-    assertDeepEquals(
-      {
-        skills: [],
-        info: {
-            hp: 150,
-            mp: 200,
-            skills: [
-                9527,
-                8888
-            ]
-        }
-      }, JsonDeserializer.deserializeRaw(JsonSerializer.serialize(user)));
-  }
 
   function testEmptyBuilder()
   {

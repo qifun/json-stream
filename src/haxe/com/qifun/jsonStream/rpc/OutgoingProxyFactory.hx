@@ -158,12 +158,11 @@ class OutgoingProxyFactory
           case
           {
             kind: FMethod(methodKind),
-            type: TFun(args, futureType),
+            type: TFun(args, Context.follow(_) => TAbstract(_, [ responseType ])),
             name: fieldName,
           }:
           {
-            var reponseType = Future.FutureTypeResolver.getAwaitResultTypes(futureType);
-            var complexResponseType = TypeTools.toComplexType(reponseType);
+            var complexResponseType = TypeTools.toComplexType(responseType);
             var methodName = field.name;
             var numRequestArguments = args.length;
             var methodParameterDeclarations:Array<TypeParamDecl>  =
@@ -212,7 +211,7 @@ class OutgoingProxyFactory
               }
             ];
             var methodBody =
-              macro return com.qifun.jsonStream.rpc.Future.FutureHelper.newFuture(
+              macro return new com.qifun.jsonStream.rpc.Future(
                 function(responseHandler:$complexResponseType->Void, catcher:Dynamic->Void):Void
                 {
                   this.outgoingRpc.apply(
@@ -255,7 +254,12 @@ class OutgoingProxyFactory
                 kind: FFun(
                   {
                     args: implementationArgs,
-                    ret: TypeTools.toComplexType(futureType),
+                    ret: TPath(
+                      {
+                        pack: [ "com", "qifun", "jsonStream", "rpc" ],
+                        name: "Future",
+                        params: [ TPType(TypeTools.toComplexType(responseType)) ]
+                      }),
                     expr: methodBody,
                     params:
                     [
