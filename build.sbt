@@ -2,6 +2,7 @@ haxeSettings
 
 haxeOptions ++= Seq("-lib", "continuation")
 
+libraryDependencies += ("org.scala-stm" %% "scala-stm" % "0.7")
 haxeOptions ++= Seq("-dce", "no")
 
 haxeOptions ++= Seq("-D", "stateless_future")
