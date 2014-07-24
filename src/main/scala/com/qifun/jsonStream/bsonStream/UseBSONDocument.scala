@@ -8,9 +8,9 @@ import reactivemongo.core.netty.ChannelBufferWritableBuffer
  */
 object UseBSONDocument {
   implicit object BSONDocumentWriteableBuffer extends RawBSONDocumentSerializer[BSONDocument] {
-    def serialize(bsondoc: BSONDocument) = {
+    def serialize(bsonDocument: BSONDocument) = {
       val writeableBuffer = new ChannelBufferWritableBuffer
-      BSONDocument.write(bsondoc, writeableBuffer)
+      BSONDocument.write(bsonDocument, writeableBuffer)
       writeableBuffer
     }
   }
