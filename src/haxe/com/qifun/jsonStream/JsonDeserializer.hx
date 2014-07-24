@@ -600,7 +600,7 @@ class JsonDeserializerGenerator
             type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
           }:
             hasUnknownFieldMap = true;
-          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
+          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
             var fieldName = field.name;
             var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
             cases.push(
