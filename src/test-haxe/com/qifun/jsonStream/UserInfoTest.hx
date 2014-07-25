@@ -4,7 +4,7 @@ package com.qifun.jsonStream;
 class UserInfoTest
 {
   public function new() {}
-  public var hp:Int;
+  public var hp:haxe.Int64;
   public var mp:Int;
   public var skills:Array<Int> = [];
 }

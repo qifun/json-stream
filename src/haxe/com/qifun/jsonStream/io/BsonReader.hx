@@ -2,6 +2,7 @@ package com.qifun.jsonStream.io;
 
 import com.dongxiguo.continuation.utils.Generator;
 import haxe.Constraints.Function;
+import haxe.Int64;
 import haxe.io.BytesBuffer;
 import haxe.io.Input;
 import haxe.io.Output;
@@ -10,7 +11,6 @@ import haxe.Json;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
-import java.types.Int8;
 
 enum BsonReaderException
 {
@@ -20,20 +20,26 @@ enum BsonReaderException
 }
 
 /**
-Bson流格式
-整个Bson流的长度，单位字节，类型Int32，4字节
-----下面一段会重复出现
->下一个键值对的Value类型
->下一个键值对的Key，类型Cstring
->下一个键值对的Value
-----
-结束标记，0，类型Byte，1字节
+    Bson流格式
+
+    整个Bson流的长度，单位字节，类型Int32，4字节
+
+    下面一段会重复出现
+
+    >下一个键值对的Value类型
+    
+    >下一个键值对的Key，类型Cstring
+    
+    >下一个键值对的Value
+    
+    结束标记，0，类型Byte，1字节
 **/
 class BsonReader
+
 {
   public function new() { }
   
-  private static function readBsonValue(buffer:BsonInput, valueTypeCode:Int8):JsonStream return
+  private static function readBsonValue(buffer:BsonInput, valueTypeCode:java.types.Int8):JsonStream return
   {
     switch(valueTypeCode)
     {
@@ -43,8 +49,7 @@ class BsonReader
       }
       case 0x02: // String
       {
-        var str:String = buffer.readString();
-        JsonStream.STRING(str);
+        JsonStream.STRING(buffer.readString());
       }
       case 0x03: // BSONDocument
       {
@@ -60,7 +65,7 @@ class BsonReader
           var lastLabel:Int = -1;
           while (arrayBuffer.readable() > 1)
           {     
-            var code:Int8 = arrayBuffer.readByte();
+            var code:java.types.Int8 = arrayBuffer.readByte();
             var label:Int = Std.parseInt(arrayBuffer.readCString());
             while (++lastLabel < label)
             {
@@ -121,10 +126,7 @@ class BsonReader
       }
       case 0x10: // Int
       {
-        JsonStream.NUMBER(buffer.readInt());
-      }
-      {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        JsonStream.INT32(buffer.readInt());
       }
       case 0x11: // BSONTimestamp // timestamp,
       {
@@ -132,7 +134,9 @@ class BsonReader
       }
       case 0x12: // Long // long, 64-Int
       {
-        throw BsonReaderException.TODO_MODULE;//TODO
+        var tmp:haxe.Int64 = buffer.readLong();
+        trace("read int64 :" + tmp);
+        JsonStream.INT64(Int64.getHigh(tmp), Int64.getLow(tmp));
       }
       case 0xFF: // min key Special type which compares lower than all other possible BSON element values.
       {
@@ -142,7 +146,6 @@ class BsonReader
       {
         throw BsonReaderException.ILLEGAL_TYPE;
       }
-      
       default: throw BsonReaderException.UNKNOWN_TYPECODE;
     }
   }
@@ -160,7 +163,7 @@ class BsonReader
         input.discard(length - 4);
         while (buffer.readable() > 1)
         {
-          var valueTypeCode:Int8 = buffer.readByte();
+          var valueTypeCode:java.types.Int8 = buffer.readByte();
           var key:String = buffer.readCString();
           yield(new JsonStreamPair(key, readBsonValue(buffer, valueTypeCode))).async();
         }

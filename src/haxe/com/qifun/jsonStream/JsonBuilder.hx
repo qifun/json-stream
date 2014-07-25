@@ -275,6 +275,14 @@ private class JsonStreamToAsynchronous
         {
           ARRAY(newReadArrayFunction(elements));
         }
+      case INT32(value):
+      {
+        NUMBER(value);
+      }
+      case INT64(high, low):
+      {
+        NULL;
+      }
     }
 
   }

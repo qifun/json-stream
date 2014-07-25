@@ -7,9 +7,19 @@ import com.qifun.jsonStream.JsonStream;
 import haxe.ds.Vector;
 import haxe.Int64;
 
+
 @:final
 class Int64SerializerPlugin
 {
+  
+  private static function toInt64(d:Dynamic):Int64 return
+  {
+    #if java
+    untyped __java__("(long)d");
+    #else
+    d;
+    #end
+  }
   /* inline */ // 如果加入inline，会导致Java平台编译错误
   public static function pluginSerialize(self:JsonSerializerPluginData<Int64>):JsonStream return
   {
@@ -19,12 +29,8 @@ class Int64SerializerPlugin
     }
     else
     {
-      ARRAY(
-        new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
-        {
-          yield(NUMBER(Int64.getHigh(self.underlying))).async();
-          yield(NUMBER(Int64.getLow(self.underlying))).async();
-        })));
+      var i64 = (self:Dynamic);
+      INT64(Int64.getHigh(toInt64(i64)), Int64.getLow(toInt64(i64)));
     }
   }
 }
@@ -37,7 +43,7 @@ class UIntSerializerPlugin
   /* inline */ // 如果加入inline，会导致Java平台编译错误
   public static function pluginSerialize(self:JsonSerializerPluginData<UInt>):JsonStream return
   {
-    self == null ? NULL : NUMBER(self.underlying);
+    self == null ? NULL : INT32(self.underlying);
   }
 }
 
@@ -46,7 +52,7 @@ class IntSerializerPlugin
 {
   public static inline function pluginSerialize(self:JsonSerializerPluginData<Int>):JsonStream return
   {
-    self.underlying == null ? NULL : NUMBER(self.underlying);
+    self.underlying == null ? NULL : INT32(self.underlying);
   }
 }
 

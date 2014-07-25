@@ -2,6 +2,7 @@ package com.qifun.jsonStream.io;
 
 import com.dongxiguo.continuation.utils.Generator;
 import haxe.Constraints.Function;
+import haxe.Int64;
 import haxe.io.BytesBuffer;
 import haxe.io.Input;
 import haxe.io.Output;
@@ -10,7 +11,6 @@ import haxe.Json;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
-import java.types.Int8;
 
 enum BsonWriterException
 {
@@ -145,6 +145,18 @@ class BsonWriter
       {
         output.writeByte(0x0A);
         output.writeCString(key);
+      }
+      case INT32(value):
+      {
+        output.writeByte(0x10);
+        output.writeCString(key);
+        output.writeInt(Std.parseInt(Json.stringify(value)));
+      }
+      case INT64(high, low):
+      {
+        output.writeByte(0x12);
+        output.writeCString(key);
+        output.writeLong(Int64.make(high, low));
       }
       default:
       {

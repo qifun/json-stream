@@ -1,7 +1,10 @@
 package com.qifun.jsonStream.io ;
 import com.qifun.jsonStream.JsonStream.JsonStreamPair;
+import com.dongxiguo.continuation.utils.Generator;
+import com.dongxiguo.continuation.Continuation;
 import haxe.format.JsonPrinter;
 import haxe.io.Output;
+import haxe.Int64;
 import haxe.Json;
 
 class PrettyTextPrinter
@@ -107,6 +110,14 @@ class PrettyTextPrinter
       case NULL:
       {
         output.writeString("null");
+      }
+      case INT32(value):
+      {
+        output.writeString(Json.stringify(value));
+      }
+      case INT64(high, low):
+      {
+        output.writeString(Int64.toStr(Int64.make(high, low)));
       }
     }
   }

@@ -3,7 +3,7 @@ package com.qifun.jsonStream.io;
 import reactivemongo.bson.buffer.ReadableBuffer;
 
 #if (java)
-@:forward(readByte, readInt, readDouble, readString, readCString, discard, size, index, readable)
+@:forward(readByte, readInt, readLong, readDouble, readString, readCString, discard, size, index, readable)
 abstract BsonInput(ReadableBuffer) 
 {
   inline function new(underlying:ReadableBuffer)

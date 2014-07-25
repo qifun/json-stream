@@ -82,6 +82,10 @@ class Int64DeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(elements):
         optimizedExtractInt64(elements);
+      case INT64(high, low):
+      {
+        Int64.make(high, low);
+      }
       case NULL:
         null;
       case stream:
@@ -107,6 +111,7 @@ class UIntDeserializerPlugin
   }
 }
 
+
 @:final
 class IntDeserializerPlugin
 {
@@ -114,8 +119,12 @@ class IntDeserializerPlugin
   {
     switch (self.underlying)
     {
-      case com.qifun.jsonStream.JsonStream.NUMBER(value):
+      case NUMBER(value):
         cast value;
+      case INT32(value):
+      {
+        value;
+      }
       case NULL:
         null;
       case stream:

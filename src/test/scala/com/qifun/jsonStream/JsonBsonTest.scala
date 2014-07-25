@@ -30,7 +30,7 @@ class JsonBsonTest {
   @Test
   def `array_and_sub_object_in_Hax_object_Test`() : Unit = {
     val us = new UserTest()
-    us.info.hp = 150
+    us.info.hp = Long.MaxValue 
     us.info.mp = 200
     us.info.skills.push(Integer.valueOf(9527))
     us.info.skills.push(Integer.valueOf(8888))
@@ -43,36 +43,33 @@ class JsonBsonTest {
       println(i.get._1 + "->" + i.get._2)
       val subBson = i.get._2.seeAsTry[BSONDocument].get
       for (j <- subBson.stream toList) {
-        println("subBson :" + j.get._1 + "->" + j.get._2)
+        println("subBson :" + j.get._1 + "->" + j.get._2 + "code:" + j.get._2.code)
         if(j.get._1 == "skills"){
-          for (k<- j.get._2.seeAsTry[BSONArray].get.stream.toList.map(_.get.seeAsTry[BSONDouble].get.value)) 
+          for (k<- j.get._2.seeAsTry[BSONArray].get.stream.toList.map(_.get.seeAsTry[BSONInteger].get.value)) 
             println("elem of Array skill:" + k)
         }
       }
     }
-    PrettyTextPrinter.toString(UserTestSerializer.serialize_com_qifun_jsonStream_UserTest(us))
+    println(PrettyTextPrinter.toString(UserTestSerializer.serialize_com_qifun_jsonStream_UserTest(us)))
     writeableBuffer.buffer.clear()
     
     BSONDocument.write(bson, writeableBuffer)
     val obj = UserClass2Reader.deserialize(writeableBuffer.toReadableBuffer)    
-    
     BSONDocument("info" -> BSONDocument("hp" -> 150.0, "mp" -> 200.0, "skills" -> Array(9527, 8888)))
     BSONDocument.write(bson, writeableBuffer)
     val obj2 = UserClass2Reader.deserialize(writeableBuffer.toReadableBuffer)
- 
-    assertEquals(obj.info.hp, 150)
+    println(obj.info.hp,obj2.info.hp)
+    assertEquals(obj.info.hp, Long.MaxValue)
     assertEquals(obj.info.mp, 200)
     assertEquals(obj.info.skills.length, 2)
     assertEquals(obj.info.skills.__get(0), 9527.0)
     assertEquals(obj.info.skills.__get(1), 8888.0)
-    
-    assertEquals(obj2.info.hp, 150)
+    assertEquals(obj2.info.hp, Long.MaxValue)
     assertEquals(obj2.info.mp, 200)
     assertEquals(obj2.info.skills.length, 2)
     assertEquals(obj2.info.skills.__get(0), 9527.0)
     assertEquals(obj2.info.skills.__get(1), 8888.0)
 
-    
   }
   
   @Test

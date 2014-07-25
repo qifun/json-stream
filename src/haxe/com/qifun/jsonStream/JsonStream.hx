@@ -1,4 +1,5 @@
 package com.qifun.jsonStream;
+import haxe.Int64;
 
 @:final class JsonStreamPair
 {
@@ -18,6 +19,7 @@ package com.qifun.jsonStream;
 **/
 enum JsonStream
 {
+  //safe type
   NUMBER(value:Float);
   STRING(value:String);
   TRUE;
@@ -25,4 +27,8 @@ enum JsonStream
   NULL;
   OBJECT(pairs:Iterator<JsonStreamPair>);
   ARRAY(elements:Iterator<JsonStream>);
+  //unsafe type
+  INT32(value:Int);
+  INT64(high:Int, low:Int);
 }
+

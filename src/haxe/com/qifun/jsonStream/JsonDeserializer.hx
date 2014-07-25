@@ -3,6 +3,7 @@ package com.qifun.jsonStream;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import com.qifun.jsonStream.unknown.UnknownType;
+import haxe.Int64;
 
 #if macro
 import com.qifun.jsonStream.GeneratorUtilities.*;
@@ -70,6 +71,10 @@ class JsonDeserializer
         false;
       case JsonStream.NULL:
         null;
+      case JsonStream.INT32(value):
+        value;
+      case JsonStream.INT64(high, low):
+        Int64.make(high, low);
     });
   }
 

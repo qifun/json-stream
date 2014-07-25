@@ -3,7 +3,7 @@ import reactivemongo.bson.buffer.WritableBuffer;
 
 #if java
 
-@:forward(writeByte, writeInt, writeDouble, writeString, writeCString, index, setInt)
+@:forward(writeByte, writeInt, writeLong, writeDouble, writeString, writeCString, index, setInt)
 abstract BsonOutput(WritableBuffer) { }
 
 //#else cs
@@ -18,7 +18,7 @@ interface IBsonOutput
   public function writeString(str:String):Void;
   public function writeDouble(d:Float):Void;
   public function writeInt(i:Int):Void;
-  public function writeByte(b:Int):Void
+  public function writeByte(b:Int):Void;
 }
 
 @:forward(writeByte, writeInt, writeDouble, writeString, writeCString, index, setInt)
