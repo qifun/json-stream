@@ -18,17 +18,18 @@ class IncomingProxyFactory
 
   #if macro
 
-  static function processName(sb:StringBuf, s:String):Void
+  private static function processName(sb:StringBuf, s:String):Void
   {
     var i = 0;
-    while (i != -1)
+    while (true)
     {
       var prev = i;
-      i = s.indexOf("_", prev);
-      if (i != -1)
+      var found = s.indexOf("_", prev);
+      if (found != -1)
       {
         sb.addSub(s, prev, i - prev);
         sb.add("__");
+        i = found + 1;
       }
       else
       {
