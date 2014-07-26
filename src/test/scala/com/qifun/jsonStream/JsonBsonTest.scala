@@ -28,7 +28,7 @@ class JsonBsonTest {
   implicit object UserInfoClass2Reader extends HaxeClassReader[UserInfoTest](UserTestDeserializer.deserialize_com_qifun_jsonStream_UserInfoTest)
 
   @Test
-  def `array_and_sub_object_in_Hax_object_Test`() : Unit = {
+  def `array and sub object in Haxe objecte test`() : Unit = {
     val us = new UserTest()
     us.info.hp = Long.MaxValue 
     us.info.mp = 200
@@ -69,7 +69,6 @@ class JsonBsonTest {
     assertEquals(obj2.info.skills.length, 2)
     assertEquals(obj2.info.skills.__get(0), 9527.0)
     assertEquals(obj2.info.skills.__get(1), 8888.0)
-
   }
   
   @Test

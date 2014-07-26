@@ -603,10 +603,44 @@ class JsonDeserializerGenerator
           {
             name: "unknownFieldMap",
             kind: FVar(AccNormal | AccNo | AccCall, _),
-            type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
+            type:
+              Context.follow(_) =>
+              TAbstract(
+                _.get() =>
+                {
+                  module: "com.qifun.jsonStream.unknown.UnknownFieldMap",
+                  name: "UnknownFieldMap"
+                },
+                []),
           }:
             hasUnknownFieldMap = true;
+          case
+          {
+            kind: FVar(AccNormal | AccNo, AccNormal | AccNo),
+            meta: meta,
+            type:
+              Context.follow(_) =>
+              TInst(
+                _.get() =>
+                {
+                  module: "haxe.Int64",
+                  name: "Int64"
+                },
+                [])
+              } if (!meta.has(":transient")):
+          {
+            // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
+            var fieldName = field.name;
+            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
+            cases.push(
+              {
+                values: [ macro $v{fieldName} ],
+                guard: null,
+                expr: macro result.$fieldName = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.toInt64($d),
+              });
+          }
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
+          {
             var fieldName = field.name;
             var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
             cases.push(
@@ -615,8 +649,11 @@ class JsonDeserializerGenerator
                 guard: null,
                 expr: macro result.$fieldName = $d,
               });
+          }
           case _:
+          {
             continue;
+          }
         }
       }
       var superClass = classType.superClass;
@@ -1079,6 +1116,17 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 @:final
 class JsonDeserializerRuntime
 {
+
+  @:noUsing
+  #if (!java) inline #end
+  public static function toInt64(d:Dynamic):Int64 return
+  {
+    #if java
+    untyped __java__("(long)d"); // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
+    #else
+    d;
+    #end
+  }
 
   @:generic
   //@:extern
