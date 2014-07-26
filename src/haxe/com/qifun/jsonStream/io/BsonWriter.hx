@@ -12,10 +12,9 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
 
-enum BsonWriterException
+enum BsonWriterError
 {
-  ILLEGAL_JSONOBJECT;
-  ILLEGAL_JSONSTREAM;
+  UNMATCHED_JSON_TYPE(stream:JsonStream, expected:Array<String>);
 }
 
 class BsonWriter
@@ -52,7 +51,7 @@ class BsonWriter
       }
       default:
       {
-        throw BsonWriterException.ILLEGAL_JSONOBJECT;
+        throw BsonWriterError.UNMATCHED_JSON_TYPE(value, ["OBJECT"]);
       }
     }
   }
@@ -172,7 +171,7 @@ class BsonWriter
       }
       default:
       {
-        throw BsonWriterException.ILLEGAL_JSONSTREAM;
+        throw BsonWriterError.UNMATCHED_JSON_TYPE(value, ["ALL TYPE"]);
       }
     }
   }

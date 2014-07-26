@@ -1,6 +1,5 @@
 package com.qifun.jsonStream.io;
 
-import com.dongxiguo.continuation.utils.Generator;
 import haxe.Constraints.Function;
 import haxe.Int64;
 import haxe.io.BytesBuffer;
@@ -12,12 +11,12 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
 
-enum BsonReaderException
+enum BsonReaderError
 {
-  ILLEGAL_TYPE;
-  UNKNOWN_TYPECODE;
-  TODO_MODULE;
-  EXCEPT_BINARY_TYPECODE;
+  UNSUPPORT_BSON_TYPE(typeCode:BsonInput, expected:Array<String>);
+  EXCEPT_BINARY_TYPECODE(typeCode:Int, expected:Array<String>);
+  UNMATCHED_JSON_TYPE(stream:JsonStream, expected:Array<String>);
+  UNMATCHED_BSON_TYPE(buffer:BsonInput, expected:Array<String>);
 }
 
 /**
@@ -40,7 +39,11 @@ class BsonReader
 {
   public function new() { }
   
+  #if java
   private static function readBsonValue(buffer:BsonInput, valueTypeCode:java.types.Int8):JsonStream return
+  #else
+  private static function readBsonValue(buffer:BsonInput, valueTypeCode:Int):JsonStream return
+  #end
   {
     switch(valueTypeCode)
     {
@@ -66,7 +69,7 @@ class BsonReader
           var lastLabel:Int = -1;
           while (arrayBuffer.readable() > 1)
           {     
-            var code:java.types.Int8 = arrayBuffer.readByte();
+            var code = arrayBuffer.readByte();
             var label:Int = Std.parseInt(arrayBuffer.readCString());
             while (++lastLabel < label)
             {
@@ -79,23 +82,32 @@ class BsonReader
       case 0x05: // BSONBinary 
       {
         var binaryLength = buffer.readInt();
-        binaryLength = 8;
         //1位type码
         var typeCode = buffer.readByte();
+        #if java
+        var tmp = new java.lang.Byte(buffer.readByte());
+        var typeCode = tmp.intValue();
+        #else
+        var typeCode = buffer.readByte();
+        #end
         if (typeCode != 0x00)
-          throw BsonReaderException.EXCEPT_BINARY_TYPECODE;
+          throw BsonReaderError.EXCEPT_BINARY_TYPECODE(typeCode, ["TYPE CODE SHOULD BE 0x00"]);
         var bytesBuffer:BytesBuffer = new BytesBuffer();
         var i:Int = -1;
         while (++i < binaryLength)
         {
+          #if java
           var byte = new java.lang.Byte(buffer.readByte());
           bytesBuffer.addByte(byte.intValue());
+          #else
+          bytesBuffer.addByte(buffer.readByte());
+          #end
         }
         JsonStream.BINARY(bytesBuffer.getBytes());
       }
       case 0x06: // BSONUndefined // undefined, 已经被BSON标准弃用
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x06", "TYPE: BSONUndefined"]);
       }     
       case 0x07: // BSONObjectID // objectid,
       {
@@ -112,31 +124,31 @@ class BsonReader
       }
       case 0x09: // DateTime // datetime, UTC datetime in a 64-Int
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x09", "TYPE: DateTime"]);
       }
       case 0x0A: // Null // null
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        JsonStream.NULL;
       }
       case 0x0B: // regex
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0B", "TYPE: BSONRegex"]);
       }
       case 0x0C: // BSONDBPointer // dbpointer 已经被BSON标准弃用
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0C", "TYPE: BSONDBPointer"]);
       }
       case 0x0D: // BSONJavaScript // JS
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0D", "TYPE: BSONJavaScript"]);
       }
       case 0x0E: // BSONSymbol // symbol
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0E", "TYPE: BSONSymbol"]);
       }
       case 0x0F: // BSONJavaScriptWS // JS with scope
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0F", "TYPE: BSONJavaScriptWithScope"]);
       }
       case 0x10: // Int
       {
@@ -144,7 +156,7 @@ class BsonReader
       }
       case 0x11: // BSONTimestamp // timestamp,
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x11", "TYPE: BSONTimeStamp"]);
       }
       case 0x12: // Long // long, 64-Int
       {
@@ -153,13 +165,21 @@ class BsonReader
       }
       case 0xFF: // min key Special type which compares lower than all other possible BSON element values.
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0xFF", "TYPE: MinKey"]);
       }
       case 0x7F: // max key Special type which compares higher than all other possible BSON element values.
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x7F", "TYPE: MaxKey"]);
       }
-      default: throw BsonReaderException.UNKNOWN_TYPECODE;
+      default:
+      {
+        #if java
+        var errorTypeCodeString = java.lang.Byte._toString(valueTypeCode);
+        #else
+        var errorTypeCodeString = Std.string(valueTypeCode);
+        #end
+        throw BsonReaderError.UNMATCHED_BSON_TYPE(buffer, ["UNMATCHED BSON TYPE CODE", errorTypeCodeString]);
+      }
     }
   }
   
@@ -176,7 +196,7 @@ class BsonReader
         input.discard(length - 4);
         while (buffer.readable() > 1)
         {
-          var valueTypeCode:java.types.Int8 = buffer.readByte();
+          var valueTypeCode = buffer.readByte();
           var key:String = buffer.readCString();
           yield(new JsonStreamPair(key, readBsonValue(buffer, valueTypeCode))).async();
         }

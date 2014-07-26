@@ -3,6 +3,7 @@ package com.qifun.jsonStream.deserializerPlugin;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
+import haxe.crypto.Base64;
 import haxe.ds.Vector;
 import haxe.Int64;
 import haxe.io.Bytes;
@@ -81,8 +82,10 @@ class Int64DeserializerPlugin
   {
     switch (self.underlying)
     {
-      case com.qifun.jsonStream.JsonStream.ARRAY(elements):
+      case ARRAY(elements):
+      {
         optimizedExtractInt64(elements);
+      }
       case INT64(high, low):
       {
         Int64.make(high, low);
@@ -197,6 +200,10 @@ class BinaryDeserializerPlugin
       case BINARY(value): 
       {
         value;
+      }
+      case STRING(value):
+      {
+         Base64.decode(value);
       }
       case NULL:
         null;
