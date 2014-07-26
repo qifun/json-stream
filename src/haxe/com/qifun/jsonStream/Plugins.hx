@@ -38,6 +38,10 @@ typedef FloatSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveS
 @:dox(hide)
 typedef BoolSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.BoolSerializerPlugin;
 
+
+@:dox(hide)
+typedef BinarySerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.BinarySerializerPlugin;
+
 @:dox(hide)
 typedef StringSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.StringSerializerPlugin;
 
@@ -77,6 +81,9 @@ typedef FloatDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Primit
 
 @:dox(hide)
 typedef BoolDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.BoolDeserializerPlugin;
+
+@:dox(hide)
+typedef BinaryDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.BinaryDeserializerPlugin;
 
 @:dox(hide)
 typedef StringDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.StringDeserializerPlugin;

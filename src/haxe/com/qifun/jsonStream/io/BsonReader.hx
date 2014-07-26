@@ -17,6 +17,7 @@ enum BsonReaderException
   ILLEGAL_TYPE;
   UNKNOWN_TYPECODE;
   TODO_MODULE;
+  EXCEPT_BINARY_TYPECODE;
 }
 
 /**
@@ -75,9 +76,22 @@ class BsonReader
           }
         })));
       }
-      case 0x05: // BSONBinary // Binary data ReactiveMongo代码中有TODO注释
+      case 0x05: // BSONBinary 
       {
-        throw BsonReaderException.ILLEGAL_TYPE;
+        var binaryLength = buffer.readInt();
+        binaryLength = 8;
+        //1位type码
+        var typeCode = buffer.readByte();
+        if (typeCode != 0x00)
+          throw BsonReaderException.EXCEPT_BINARY_TYPECODE;
+        var bytesBuffer:BytesBuffer = new BytesBuffer();
+        var i:Int = -1;
+        while (++i < binaryLength)
+        {
+          var byte = new java.lang.Byte(buffer.readByte());
+          bytesBuffer.addByte(byte.intValue());
+        }
+        JsonStream.BINARY(bytesBuffer.getBytes());
       }
       case 0x06: // BSONUndefined // undefined, 已经被BSON标准弃用
       {
@@ -135,7 +149,6 @@ class BsonReader
       case 0x12: // Long // long, 64-Int
       {
         var tmp:haxe.Int64 = buffer.readLong();
-        trace("read int64 :" + tmp);
         JsonStream.INT64(Int64.getHigh(tmp), Int64.getLow(tmp));
       }
       case 0xFF: // min key Special type which compares lower than all other possible BSON element values.

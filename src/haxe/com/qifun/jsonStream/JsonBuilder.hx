@@ -277,9 +277,13 @@ private class JsonStreamToAsynchronous
         }
       case INT32(value):
       {
-        NUMBER(value);
+        NULL;
       }
       case INT64(high, low):
+      {
+        NULL;
+      }
+      case BINARY(value):
       {
         NULL;
       }

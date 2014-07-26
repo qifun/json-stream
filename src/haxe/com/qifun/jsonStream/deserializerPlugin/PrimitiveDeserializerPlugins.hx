@@ -5,6 +5,7 @@ import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 import haxe.ds.Vector;
 import haxe.Int64;
+import haxe.io.Bytes;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
 
@@ -181,6 +182,26 @@ class BoolDeserializerPlugin
       case NULL: null;
       case stream:
         throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "FALSE", "TRUE", "NULL"]);
+    }
+  }
+}
+
+@:final
+class BinaryDeserializerPlugin
+{
+  public static function pluginDeserialize(self:JsonDeserializerPluginStream<Bytes>):Null<Bytes> return
+  {
+    
+    switch (self.underlying)
+    {
+      case BINARY(value): 
+      {
+        value;
+      }
+      case NULL:
+        null;
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "BINARY", "NULL"]);
     }
   }
 }

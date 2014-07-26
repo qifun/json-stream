@@ -119,6 +119,10 @@ class PrettyTextPrinter
       {
         output.writeString(Int64.toStr(Int64.make(high, low)));
       }
+      case BINARY(value):
+      {
+        output.writeString(value.toHex());
+      }
     }
   }
 

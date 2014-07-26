@@ -158,6 +158,18 @@ class BsonWriter
         output.writeCString(key);
         output.writeLong(Int64.make(high, low));
       }
+      case BINARY(value):
+      {
+        output.writeByte(0x05);
+        output.writeCString(key);
+        output.writeInt(value.length);
+        output.writeByte(0x00);//Binary type code
+        var i:Int = -1;
+        while (++i < value.length)
+        {
+          output.writeByte(value.get(i));
+        }
+      }
       default:
       {
         throw BsonWriterException.ILLEGAL_JSONSTREAM;

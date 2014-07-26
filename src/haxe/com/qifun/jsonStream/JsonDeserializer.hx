@@ -75,6 +75,8 @@ class JsonDeserializer
         value;
       case JsonStream.INT64(high, low):
         Int64.make(high, low);
+      case JsonStream.BINARY(value):
+        value;
     });
   }
 

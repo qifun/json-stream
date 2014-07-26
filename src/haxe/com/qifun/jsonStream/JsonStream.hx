@@ -1,5 +1,6 @@
 package com.qifun.jsonStream;
 import haxe.Int64;
+import haxe.io.Bytes;
 
 @:final class JsonStreamPair
 {
@@ -30,5 +31,6 @@ enum JsonStream
   //unsafe type
   INT32(value:Int);
   INT64(high:Int, low:Int);
+  BINARY(value:Bytes);
 }
 

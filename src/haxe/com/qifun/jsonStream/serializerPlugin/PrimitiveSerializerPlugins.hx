@@ -6,6 +6,7 @@ import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonStream;
 import haxe.ds.Vector;
 import haxe.Int64;
+import haxe.io.Bytes;
 
 
 @:final
@@ -91,7 +92,14 @@ class BoolSerializerPlugin
   }
 }
 
-
+@:final
+class BinarySerializerPlugin 
+{
+  public static function pluginSerialize(self:JsonSerializerPluginData<Bytes>):JsonStream return
+  {
+    self.underlying == null ? NULL : BINARY(self.underlying);
+  }
+}
 
 @:final
 class StringSerializerPlugin
