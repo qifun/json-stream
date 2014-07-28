@@ -5,11 +5,21 @@ import com.qifun.jsonStream.JsonStream
 import reactivemongo.core.netty.ChannelBufferWritableBuffer
 import reactivemongo.bson.BSONDocument
 import com.qifun.jsonStream.io.BsonWriter
+import scala.util.control.Exception
 
-class HaxeClassWriter[T](haxeSerializeFunction: T => JsonStream) extends RawBSONDocumentSerializer[T] {
+class HaxeClassWriter[T <: haxe.lang.HxObject](
+  haxeSerializeFunction: T => JsonStream) extends RawBSONDocumentSerializer[T] {
   def serialize(obj: T) = {
     val writeableBuffer = new ChannelBufferWritableBuffer
-    BsonWriter.writeBsonStream(writeableBuffer, haxeSerializeFunction(obj))
+    val jsonStream = haxeSerializeFunction(obj)
+    haxe.root.Type.enumIndex(jsonStream) match {
+      case 5 => BsonWriter.writeBsonObject(
+        writeableBuffer, jsonStream.params.__get(0)) //type of index '5' is Jsonstream(OBJECT)
+      case enumIndex: Int => throw (new IllegalArgumentException() {
+        val jsonStreamElemIndex = enumIndex
+        val except = 5
+      })
+    }
     writeableBuffer
   }
 }

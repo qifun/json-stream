@@ -13,10 +13,9 @@ import com.qifun.jsonStream.JsonStream;
 
 enum BsonReaderError
 {
-  UNSUPPORT_BSON_TYPE(typeCode:BsonInput, expected:Array<String>);
-  EXCEPT_BINARY_TYPECODE(typeCode:Int, expected:Array<String>);
-  UNMATCHED_JSON_TYPE(stream:JsonStream, expected:Array<String>);
-  UNMATCHED_BSON_TYPE(buffer:BsonInput, expected:Array<String>);
+  UNSUPPORT_BSON_TYPE(typeCode:Int, expected:Array<Int>);
+  EXCEPT_BINARY_TYPECODE(typeCode:Int, expected:Int);
+  UNMATCHED_BSON_TYPE(buffer:BsonInput, expected:Array<Int>);
 }
 
 /**
@@ -39,11 +38,9 @@ class BsonReader
 {
   public function new() { }
   
-  #if java
-  private static function readBsonValue(buffer:BsonInput, valueTypeCode:java.types.Int8):JsonStream return
-  #else
+  private static var EXCEPT_BSON_TYPE_CODE(default, never):Array<Int> = [0x01, 0x02, 0x03, 0x04, 0x05, 0x07, 0x08, 0x0A, 0x10, 0x12];
+  
   private static function readBsonValue(buffer:BsonInput, valueTypeCode:Int):JsonStream return
-  #end
   {
     switch(valueTypeCode)
     {
@@ -64,6 +61,7 @@ class BsonReader
         JsonStream.ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
         {
           var arrayBufferLength = buffer.readInt();
+          trace("arrayBufferLength", arrayBufferLength);
           var arrayBuffer = buffer.slice(arrayBufferLength - 4);
           buffer.discard(arrayBufferLength - 4);
           var lastLabel:Int = -1;
@@ -82,32 +80,22 @@ class BsonReader
       case 0x05: // BSONBinary 
       {
         var binaryLength = buffer.readInt();
+        trace("binaryLength", binaryLength);
         //1位type码
         var typeCode = buffer.readByte();
-        #if java
-        var tmp = new java.lang.Byte(buffer.readByte());
-        var typeCode = tmp.intValue();
-        #else
-        var typeCode = buffer.readByte();
-        #end
         if (typeCode != 0x00)
-          throw BsonReaderError.EXCEPT_BINARY_TYPECODE(typeCode, ["TYPE CODE SHOULD BE 0x00"]);
+          throw BsonReaderError.EXCEPT_BINARY_TYPECODE(typeCode, 0x00);
         var bytesBuffer:BytesBuffer = new BytesBuffer();
         var i:Int = -1;
         while (++i < binaryLength)
         {
-          #if java
-          var byte = new java.lang.Byte(buffer.readByte());
-          bytesBuffer.addByte(byte.intValue());
-          #else
           bytesBuffer.addByte(buffer.readByte());
-          #end
         }
         JsonStream.BINARY(bytesBuffer.getBytes());
       }
       case 0x06: // BSONUndefined // undefined, 已经被BSON标准弃用
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x06", "TYPE: BSONUndefined"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x06, EXCEPT_BSON_TYPE_CODE);
       }     
       case 0x07: // BSONObjectID // objectid,
       {
@@ -124,7 +112,7 @@ class BsonReader
       }
       case 0x09: // DateTime // datetime, UTC datetime in a 64-Int
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x09", "TYPE: DateTime"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x09, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x0A: // Null // null
       {
@@ -132,23 +120,23 @@ class BsonReader
       }
       case 0x0B: // regex
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0B", "TYPE: BSONRegex"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x0B, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x0C: // BSONDBPointer // dbpointer 已经被BSON标准弃用
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0C", "TYPE: BSONDBPointer"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x0C, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x0D: // BSONJavaScript // JS
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0D", "TYPE: BSONJavaScript"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x0D, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x0E: // BSONSymbol // symbol
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0E", "TYPE: BSONSymbol"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x0E, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x0F: // BSONJavaScriptWS // JS with scope
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x0F", "TYPE: BSONJavaScriptWithScope"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x0F, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x10: // Int
       {
@@ -156,7 +144,7 @@ class BsonReader
       }
       case 0x11: // BSONTimestamp // timestamp,
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x11", "TYPE: BSONTimeStamp"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x11, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x12: // Long // long, 64-Int
       {
@@ -165,11 +153,11 @@ class BsonReader
       }
       case 0xFF: // min key Special type which compares lower than all other possible BSON element values.
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0xFF", "TYPE: MinKey"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0xFF, EXCEPT_BSON_TYPE_CODE);
       }
       case 0x7F: // max key Special type which compares higher than all other possible BSON element values.
       {
-        throw BsonReaderError.UNSUPPORT_BSON_TYPE(buffer, ["TYPECODE: 0x7F", "TYPE: MaxKey"]);
+        throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x7F, EXCEPT_BSON_TYPE_CODE);
       }
       default:
       {
@@ -178,7 +166,7 @@ class BsonReader
         #else
         var errorTypeCodeString = Std.string(valueTypeCode);
         #end
-        throw BsonReaderError.UNMATCHED_BSON_TYPE(buffer, ["UNMATCHED BSON TYPE CODE", errorTypeCodeString]);
+        throw BsonReaderError.UNMATCHED_BSON_TYPE(buffer, EXCEPT_BSON_TYPE_CODE);
       }
     }
   }
@@ -198,6 +186,7 @@ class BsonReader
         {
           var valueTypeCode = buffer.readByte();
           var key:String = buffer.readCString();
+          trace("type:", valueTypeCode);
           yield(new JsonStreamPair(key, readBsonValue(buffer, valueTypeCode))).async();
         }
       }));

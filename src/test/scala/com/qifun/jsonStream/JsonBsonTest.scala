@@ -62,7 +62,7 @@ class JsonBsonTest {
         "md5Code" ->BSONBinary(byteArray, Subtype(0x00))))
     println(PrettyTextPrinter.toString(UserTestSerializer.serialize_com_qifun_jsonStream_UserTest(us)))
     writeableBuffer.buffer.clear()
-    BSONDocument.write(bson2, writeableBuffer)
+    BSONDocument.write(bson, writeableBuffer)
     val rbuffer = writeableBuffer.toReadableBuffer()
     val arr = rbuffer.readArray(rbuffer.readable)
     for(i <- arr ) print(i +" ")
