@@ -91,61 +91,70 @@ extends AbstractFunction2<Function1<AwaitResult, BoxedUnit>, PartialFunction<Thr
 #if (stateless_future && java)
 typedef NativeFuture<AwaitResult> = com.qifun.statelessFuture.Awaitable<AwaitResult, BoxedUnit>;
 #else
-typedef NativeFuture<AwaitResult> = (AwaitResult->Void)->Catcher->Void;
+
+interface ICompleteHandler<AwaitResult>
+{
+  function onSuccess(awaitResult:AwaitResult):Void;
+  function onFailure(error:Dynamic):Void;
+}
+
+interface ICatcher
+{
+  function apply(error:Dynamic):Void;
+}
+
+interface IFuture<AwaitResult>
+{
+  function start(handler:ICompleteHandler<AwaitResult>):Void;
+}
+
+@:final
+private class FunctionCompleteHandler<AwaitResult> implements ICompleteHandler<AwaitResult>
+{
+
+  var onSuccessFunction:AwaitResult->Void;
+  public function onSuccess(awaitResult:AwaitResult):Void
+  {
+    onSuccessFunction(awaitResult);
+  }
+
+  var onFailureFunction:Catcher;
+  public function onFailure(error:Dynamic):Void
+  {
+    onFailureFunction(error);
+  }
+
+  public inline function new(onSuccessFunction:AwaitResult->Void, onFailureFunction:Catcher)
+  {
+    this.onSuccessFunction = onSuccessFunction;
+    this.onFailureFunction = onFailureFunction;
+  }
+
+}
+
+@:final
+private class FunctionFuture<AwaitResult> implements IFuture<AwaitResult>
+{
+
+  var startFunction:(AwaitResult->Void)->Catcher->Void;
+
+  public inline function new(startFunction:(AwaitResult->Void)->Catcher->Void)
+  {
+    this.startFunction = startFunction;
+  }
+
+  public function start(handler:ICompleteHandler<AwaitResult>):Void
+  {
+    startFunction(handler.onSuccess.bind(), handler.onFailure.bind());
+  }
+
+}
+
+typedef NativeFuture<AwaitResult> = IFuture<AwaitResult>;
 #end
 
 abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
 {
-
-  #if stateless_future
-
-  #if macro
-  static function getTupleTypePath(args:Array<Type>):TypePath return
-  {
-    if (args.length == 0)
-    {
-      pack: [ "scala", "runtime" ],
-      name: "BoxedUnit",
-    }
-    else
-    {
-      pack: [ "scala" ],
-      name: 'Tuple${args.length}',
-      params: [for (arg in args) TPType(TypeTools.toComplexType(arg)) ],
-    }
-  }
-
-  static function untupled<Tuple>(tupleArguments:Array<Type>, tupleFunction:ExprOf<Tuple->Void>):Expr
-  {
-    var argDefinitions:Array<FunctionArg> = [];
-    var argExprs = [];
-    for (i in 0...tupleArguments.length)
-    {
-      var tupleArgument = tupleArguments[i];
-      var name = '__tupleArgument$i';
-      argDefinitions.push({
-        name: name,
-        type: TypeTools.toComplexType(tupleArgument),
-      });
-      argExprs.push(macro $i{name});
-    }
-    var tupleTypePath = getTupleTypePath(tupleArguments);
-    return
-    {
-      pos: tupleFunction.pos,
-      expr: EFunction(
-        null,
-        {
-          args: argDefinitions,
-          ret: null,
-          expr: macro $tupleFunction(new $tupleTypePath($a{argExprs})),
-        })
-    };
-  }
-
-  #end
-
-  #end
 
   public function new(startFunction:(AwaitResult->Void)->Catcher->Void)
   {
@@ -156,7 +165,7 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
         function(tupleHandler:AwaitResult->Void, catcher:Dynamic->Void):Void
           startFunction(tupleHandler, catcher)));
     #else
-    this = startFunction;
+    this = new FunctionFuture(startFunction);
     #end
   }
 
@@ -170,7 +179,7 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
       untyped new com.qifun.jsonStream.rpc.Future.HaxeToScalaOnCompleteFunction(completeHandler),
       new com.qifun.jsonStream.rpc.Future.HaxeToScalaCatcher(errorHandler));
     #else
-    this(completeHandler, errorHandler);
+    this.start(new FunctionCompleteHandler(completeHandler, errorHandler));
     #end
   }
 
