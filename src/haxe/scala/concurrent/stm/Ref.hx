@@ -1,5 +1,6 @@
 package scala.concurrent.stm;
 
+#if (java && scala_stm)
 import haxe.Int64;
 import java.StdTypes;
 import scala.reflect.OptManifest;
@@ -61,3 +62,4 @@ extern class RefSingleton
 //
   //@:native("apply")
   //public function applyInt64(initialValue:Int64):Ref<Int64>;
+#end
