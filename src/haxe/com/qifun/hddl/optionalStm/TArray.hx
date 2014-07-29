@@ -1,9 +1,9 @@
 package com.qifun.hddl.optionalStm;
 
 import haxe.Int64;
-import scala.reflect.ClassTag;
 
 #if java
+import scala.reflect.ClassTag;
 
 @:multiType(A)
 abstract TArray<A>(scala.concurrent.stm.TArray<A>)

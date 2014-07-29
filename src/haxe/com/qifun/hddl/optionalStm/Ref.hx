@@ -1,9 +1,9 @@
 package com.qifun.hddl.optionalStm;
 import haxe.Int64;
-import scala.reflect.ClassTag.ClassTagSingleton;
 
 #if java
 
+import scala.reflect.ClassTag.ClassTagSingleton;
 import java.StdTypes;
 
 @:multiType(A)
