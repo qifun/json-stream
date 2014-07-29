@@ -27,7 +27,7 @@ extends AbstractFunction1<AwaitResult, BoxedUnit>
 {
   var underlying:AwaitResult->Void;
 
-  public function new(underlying:AwaitResult->Void)
+  public inline function new(underlying:AwaitResult->Void)
   {
     super();
     this.underlying = underlying;
@@ -50,7 +50,7 @@ extends AbstractFunction2<Function1<AwaitResult, BoxedUnit>, PartialFunction<Thr
 
   var underlying:(AwaitResult->Void)->Catcher->Void;
 
-  public function new(underlying:(AwaitResult->Void)->Catcher->Void)
+  public inline function new(underlying:(AwaitResult->Void)->Catcher->Void)
   {
     super();
     this.underlying = underlying;
@@ -92,18 +92,18 @@ extends AbstractFunction2<Function1<AwaitResult, BoxedUnit>, PartialFunction<Thr
 typedef NativeFuture<AwaitResult> = com.qifun.statelessFuture.Awaitable<AwaitResult, BoxedUnit>;
 #else
 
-interface ICompleteHandler<AwaitResult>
+private interface ICompleteHandler<AwaitResult>
 {
   function onSuccess(awaitResult:AwaitResult):Void;
   function onFailure(error:Dynamic):Void;
 }
 
-interface ICatcher
+private interface ICatcher
 {
   function apply(error:Dynamic):Void;
 }
 
-interface IFuture<AwaitResult>
+private interface IFuture<AwaitResult>
 {
   function start(handler:ICompleteHandler<AwaitResult>):Void;
 }
@@ -143,7 +143,7 @@ private class FunctionFuture<AwaitResult> implements IFuture<AwaitResult>
     this.startFunction = startFunction;
   }
 
-  public function start(handler:ICompleteHandler<AwaitResult>):Void
+  public inline function start(handler:ICompleteHandler<AwaitResult>):Void
   {
     startFunction(handler.onSuccess.bind(), handler.onFailure.bind());
   }
@@ -156,7 +156,7 @@ typedef NativeFuture<AwaitResult> = IFuture<AwaitResult>;
 abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
 {
 
-  public function new(startFunction:(AwaitResult->Void)->Catcher->Void)
+  public inline function new(startFunction:(AwaitResult->Void)->Catcher->Void)
   {
     #if (stateless_future && java)
     // 此处由于Haxe bugs，所以必须加上untyped
@@ -169,7 +169,7 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
     #end
   }
 
-  public function start<AwaitResult>(
+  public inline function start<AwaitResult>(
     completeHandler:AwaitResult->Void,
     errorHandler:Catcher):Void
   {
@@ -194,7 +194,7 @@ class HaxeToScalaCatcher extends AbstractPartialFunction<java.lang.Throwable, Bo
 {
 
   var underlying:Catcher;
-  public function new(underlying:Catcher)
+  public inline function new(underlying:Catcher)
   {
     super();
     this.underlying = underlying;
