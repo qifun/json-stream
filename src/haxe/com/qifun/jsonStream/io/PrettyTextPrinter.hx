@@ -2,6 +2,7 @@ package com.qifun.jsonStream.io ;
 import com.qifun.jsonStream.JsonStream.JsonStreamPair;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
+import haxe.crypto.Base64;
 import haxe.format.JsonPrinter;
 import haxe.io.Output;
 import haxe.Int64;
@@ -113,15 +114,21 @@ class PrettyTextPrinter
       }
       case INT32(value):
       {
-        output.writeString(Json.stringify(value));
+        printNumber(output, value);
       }
       case INT64(high, low):
       {
-        output.writeString(Int64.toStr(Int64.make(high, low)));
+        print(output,ARRAY(
+        new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+        {
+          yield(NUMBER(high)).async();
+          yield(NUMBER(low)).async();
+        }))),indent);
+        
       }
       case BINARY(value):
       {
-        output.writeString(value.toHex());
+        output.writeString(Base64.encode(value));
       }
     }
   }

@@ -12,30 +12,28 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonStream;
 
-enum BsonWriterException
+enum BsonWriterError
 {
-  ILLEGAL_JSONOBJECT;
-  ILLEGAL_JSONSTREAM;
+  /**
+   
+  **/
+  UNMATCHED_JSON_TYPE(stream:JsonStream);
 }
 
 class BsonWriter
 {
   public function new() { }
-  /**
-  只有一个完整的BSON文档才能解析为Bson流
-  **/
-  public static function writeBsonStream(output:BsonOutput, value:JsonStream):Void
+
+  //TODO 支持所有类型
+  public static function writeBsonObject(output:BsonOutput, pairs:Iterator<JsonStreamPair>):Void
   {
-    switch (value)
-    {
-      case OBJECT(iterator):
-      {
+
         var now:Int = output.index();
         output.writeInt(0);
-        var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStreamPair>>));
+        var generator = Std.instance(pairs, (Generator:Class<Generator<JsonStreamPair>>));
         if (generator == null)
         {
-          for (pair in iterator)
+          for (pair in pairs)
           {
             writePair(output, pair.key, pair.value);
           }
@@ -49,12 +47,6 @@ class BsonWriter
         }
         output.setInt(now, (output.index() - now + 1));
         output.writeByte(0x00);
-      }
-      default:
-      {
-        throw BsonWriterException.ILLEGAL_JSONOBJECT;
-      }
-    }
   }
   
   private static function writePair(output:BsonOutput, key:String, value:JsonStream):Void
@@ -78,6 +70,8 @@ class BsonWriter
       { 
         output.writeByte(0x03);
         output.writeCString(key);
+        writeBsonObject(output, iterator);
+        /*
         var now:Int = output.index();
         output.writeInt(0);
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStreamPair>>));
@@ -97,6 +91,7 @@ class BsonWriter
         }
         output.setInt(now, (output.index() - now + 1));
         output.writeByte(0x00);
+        */
       }
       case ARRAY(iterator):
       {
@@ -172,7 +167,7 @@ class BsonWriter
       }
       default:
       {
-        throw BsonWriterException.ILLEGAL_JSONSTREAM;
+        throw BsonWriterError.UNMATCHED_JSON_TYPE(value);
       }
     }
   }

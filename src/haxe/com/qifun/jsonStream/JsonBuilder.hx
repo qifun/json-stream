@@ -1,7 +1,10 @@
 package com.qifun.jsonStream;
 import com.dongxiguo.continuation.utils.Generator;
+import com.dongxiguo.continuation.Continuation;
+import haxe.crypto.Base64;
 import haxe.macro.Expr;
 import com.qifun.jsonStream.JsonStream;
+import haxe.Int64;
 
 abstract JsonObjectBuilder(Null<String>->Null<AsynchronousJsonStream>->Void) from (Null<String>->Null<AsynchronousJsonStream>->Void)
 {
@@ -277,17 +280,20 @@ private class JsonStreamToAsynchronous
         }
       case INT32(value):
       {
-        NULL;
+        NUMBER(value);
       }
       case INT64(high, low):
       {
-        NULL;
+        ARRAY(newReadArrayFunction(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+        {
+          yield(NUMBER(high)).async();
+          yield(NUMBER(low)).async();
+        }))));
       }
       case BINARY(value):
       {
-        NULL;
+        STRING(Base64.encode(value));
       }
     }
-
   }
 }

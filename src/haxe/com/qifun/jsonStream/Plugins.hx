@@ -126,6 +126,8 @@ typedef FloatBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilder
 @:dox(hide)
 typedef BoolBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.BoolBuilderPlugin;
 
+//TODO Binary builder plugin 
+
 @:dox(hide)
 typedef StringBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.StringBuilderPlugin;
 

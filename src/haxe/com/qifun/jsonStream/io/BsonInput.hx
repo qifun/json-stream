@@ -3,15 +3,21 @@ package com.qifun.jsonStream.io;
 import reactivemongo.bson.buffer.ReadableBuffer;
 
 #if (java)
-@:forward(readByte, readInt, readLong, readDouble, readString, readCString, discard, size, index, readable)
+@:forward(readInt, readLong, readDouble, readString, readCString, discard, size, index, readable)
 abstract BsonInput(ReadableBuffer) 
 {
   inline function new(underlying:ReadableBuffer)
   {
     this = underlying;
   }
+
+  public inline function readByte():Int
+  {
+    var byte = new java.lang.Byte(this.readByte());
+    return byte.intValue();
+  }
   
-  public inline function slice(n:Int):BsonInput
+  public inline function slice(n:Int):BsonInput return
   {
     return new BsonInput(this.slice(n));
   }
