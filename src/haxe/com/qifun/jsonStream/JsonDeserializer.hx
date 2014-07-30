@@ -1120,11 +1120,10 @@ class JsonDeserializerRuntime
 {
 
   @:noUsing
-  #if (!java) inline #end
-  public static function toInt64(d:Dynamic):Int64 return
+  public static inline function toInt64(d:Dynamic):Int64 return
   {
     #if java
-    untyped __java__("(long)d"); // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
+    (d:java.lang.Long).longValue();
     #else
     d;
     #end
