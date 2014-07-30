@@ -8,6 +8,8 @@ haxeOptions ++= Seq("-dce", "no")
 
 haxeOptions ++= Seq("-D", "stateless_future")
 
+haxeOptions ++= Seq("-D", "scala")
+
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 
 doxPlatforms := Seq("java", "cs")
@@ -18,6 +20,6 @@ libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % "test"
 
 resolvers in ThisBuild += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/" 
+resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"

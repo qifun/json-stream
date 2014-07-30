@@ -1,4 +1,4 @@
-package com.qifun.jsonStream.test ;
+package com.qifun.jsonStream;
 
 #if java
 import scala.collection.Seq;

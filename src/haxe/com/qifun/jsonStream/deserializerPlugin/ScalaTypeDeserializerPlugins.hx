@@ -1,5 +1,7 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
+#if (scala && (java || macro))
+
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
 import haxe.ds.Vector;
@@ -7,11 +9,6 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 
-#if (scala && java)
-import scala.collection.Seq;
-#end
-
-#if scala
 /**
 ```scala.collection.Seq```的反序列化插件。
 **/
@@ -20,7 +17,7 @@ class SeqScalaDeserializerPlugin
 {
   #if java
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Seq<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Seq<Element>> return
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<scala.collection.Seq<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<scala.collection.Seq<Element>> return
   {
     switch (self.underlying)
     {
@@ -55,10 +52,12 @@ class SeqScalaDeserializerPlugin
     }
   }
   #end
-  
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<Seq<Element>>>):ExprOf<Null<Seq<Element>>> return
+
+  #if (java || macro)
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.collection.Seq<Element>>>):ExprOf<Null<scala.collection.Seq<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.SeqScalaDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.ScalaTypeDeserializerPlugins.SeqScalaDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
+  #end
 }
 #end
