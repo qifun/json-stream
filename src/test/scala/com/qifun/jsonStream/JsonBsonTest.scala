@@ -3,7 +3,6 @@ package com.qifun.jsonStream
 import reactivemongo.api._
 import reactivemongo.bson._
 import scala.concurrent.ExecutionContext
-import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.concurrent.Future
 import reactivemongo.api.collections.GenericCollectionProducer
 import reactivemongo.api.collections.buffer.ChannelCollection
