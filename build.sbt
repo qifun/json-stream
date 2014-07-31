@@ -1,4 +1,4 @@
-haxeSettings
+haxeJavaSettings
 
 haxeOptions ++= Seq("-lib", "continuation")
 
