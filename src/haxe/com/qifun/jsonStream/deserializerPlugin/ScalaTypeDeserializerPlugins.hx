@@ -1,5 +1,6 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
+
 #if (scala && (java || macro))
 
 import haxe.macro.Context;
@@ -8,6 +9,8 @@ import haxe.ds.Vector;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
+import scala.collection.mutable.ArrayBuffer;
+import scala.collection.Seq;
 
 /**
 ```scala.collection.Seq```的反序列化插件。
@@ -23,27 +26,27 @@ class SeqScalaDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        scala.Predef.wrapRefArray(Vector.fromArrayCopy({
-          var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
-          if (generator != null)
-          {
-            [
-              for (element in generator)
-              {
-                elementDeserializeFunction(new JsonDeserializerPluginStream(element));
-              }
-            ];
-          }
-          else
-          {
-            [
-              for (element in value)
-              {
-                elementDeserializeFunction(new JsonDeserializerPluginStream(element));
-              }
-            ];
-          }
-        })).seq();
+        var arrayBuffer:ArrayBuffer<Element> = scala.collection.mutable.ArrayBufferSingleton.getInstance().empty();
+        var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          [
+            for (element in generator)
+            {
+              ArrayBufferPlusEqualsOperator.plusEquals(arrayBuffer,elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            }
+          ];
+        }
+        else
+        {
+          [
+            for (element in value)
+            {
+              ArrayBufferPlusEqualsOperator.plusEquals(arrayBuffer,elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            }
+          ];
+        }
+        arrayBuffer.toSeq();
       }
       case NULL:
         null;

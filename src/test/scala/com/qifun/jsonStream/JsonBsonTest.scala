@@ -87,18 +87,15 @@ class JsonBsonTest {
       typeTest.f = 3.1415926
       typeTest.i = 42
       typeTest.str = "这是一个中文字符串。"
-      val bson = BSONDocument.read(TypeTestWriter.serialize(typeTest).toReadableBuffer)
-      for (i <- bson.stream.toList) {
-        println(i.get._1 + "->" + i.get._2)
-      }
+      typeTest.seq = scala.collection.Seq(Integer.valueOf(1),Integer.valueOf(2))
+      val jsonStream = TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest(typeTest)
 
-      val writeableBuffer = new ChannelBufferWritableBuffer
-      BSONDocument.write(bson, writeableBuffer)
-      val obj = TypeTestReader.deserialize(writeableBuffer.toReadableBuffer)
+      val obj = TypeTestDeserializer.deserialize_com_qifun_jsonStream_TypeTest(jsonStream)
 
       assertEquals(typeTest.bo, obj.bo)
       assertTrue(typeTest.f == obj.f) //assertEquals cann't compare double type
       assertEquals(typeTest.i, obj.i)
       assertEquals(typeTest.str, obj.str)
+      assertArrayEquals(typeTest.seq.toArray, obj.seq.toArray)
     }
 }
