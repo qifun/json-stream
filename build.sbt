@@ -2,7 +2,7 @@ haxeJavaSettings
 
 haxeOptions ++= Seq("-lib", "continuation")
 
-libraryDependencies += ("org.scala-stm" %% "scala-stm" % "0.7")
+libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
 haxeOptions ++= Seq("-dce", "no")
 
@@ -20,7 +20,4 @@ resolvers in ThisBuild += "Sonatype Snapshots" at "https://oss.sonatype.org/cont
 
 resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/" 
 
-libraryDependencies ++= Seq(
-  "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
-)
-
+libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
