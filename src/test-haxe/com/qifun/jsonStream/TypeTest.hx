@@ -1,4 +1,8 @@
-package com.qifun.jsonStream ;
+package com.qifun.jsonStream;
+
+#if java
+import scala.collection.Seq;
+#end
 
 @:final
 class TypeTest
@@ -8,4 +12,7 @@ class TypeTest
   public var str:String;
   public var f:Float;
   public var bo:Bool;
+  #if (java && scala)
+  public var seq:Seq<Int>;
+  #end
 }

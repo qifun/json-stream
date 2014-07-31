@@ -8,6 +8,8 @@ haxeOptions ++= Seq("-dce", "no")
 
 haxeOptions ++= Seq("-D", "stateless_future")
 
+haxeOptions ++= Seq("-D", "scala")
+
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 
 doxPlatforms := Seq("java", "cs")

@@ -3,6 +3,7 @@ package com.qifun.jsonStream;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import com.qifun.jsonStream.unknown.UnknownType;
+import haxe.ds.Vector;
 import haxe.Int64;
 
 #if macro
