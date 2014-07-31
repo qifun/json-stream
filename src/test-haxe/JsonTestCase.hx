@@ -12,7 +12,7 @@ import haxe.PosInfos;
 @:autoBuild(JsonTestCase.build())
 class JsonTestCase extends TestCase
 {
-  @:noUsing
+
   macro public static function build():Array<Field>
   {
     var localClass = Context.getLocalClass().get();

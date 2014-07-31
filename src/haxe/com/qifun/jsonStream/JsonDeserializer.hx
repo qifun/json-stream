@@ -3,6 +3,7 @@ package com.qifun.jsonStream;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.unknown.UnknownFieldMap;
 import com.qifun.jsonStream.unknown.UnknownType;
+import haxe.Int64;
 
 #if macro
 import com.qifun.jsonStream.GeneratorUtilities.*;
@@ -46,6 +47,7 @@ class JsonDeserializer
   /**
     不使用插件，强制把`stream`反序列化为弱类型的JSON对象。
   **/
+  @:noUsing
   public static function deserializeRaw(stream:JsonStream):Null<RawJson> return
   {
     new RawJson(switch (stream)
@@ -69,13 +71,21 @@ class JsonDeserializer
         false;
       case JsonStream.NULL:
         null;
+      case JsonStream.INT32(value):
+        value;
+      case JsonStream.INT64(high, low):
+        Int64.make(high, low);
+      case JsonStream.BINARY(value):
+        value;
     });
   }
 
   /**
     创建反序列化的实现类。必须用在`@:build`中。
 
-    @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义要序列化的数据结构。
+    注意：如果`includeModules`中的某个类没有构造函数，或者构造函数不支持空参数，那么这个类不会被反序列化。
+
+    @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义要反序列化的数据结构。
   **/
   @:noUsing
   macro public static function generateDeserializer(includeModules:Array<String>):Array<Field> return
@@ -100,6 +110,7 @@ class JsonDeserializer
       <li>如果`Result`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ ... ]))`创建。</li>
     </ul>
   **/
+  @:noUsing
   macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Null<Result>> return
   {
     var expectedComplexType = TypeTools.toComplexType(Context.getExpectedType());
@@ -252,14 +263,15 @@ class JsonDeserializerGenerator
   private static function processName(sb:StringBuf, s:String):Void
   {
     var i = 0;
-    while (i != -1)
+    while (true)
     {
       var prev = i;
-      i = s.indexOf("_", prev);
-      if (i != -1)
+      var found = s.indexOf("_", prev);
+      if (found != -1)
       {
         sb.addSub(s, prev, i - prev);
         sb.add("__");
+        i = found + 1;
       }
       else
       {
@@ -593,10 +605,44 @@ class JsonDeserializerGenerator
           {
             name: "unknownFieldMap",
             kind: FVar(AccNormal | AccNo | AccCall, _),
-            type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
+            type:
+              Context.follow(_) =>
+              TAbstract(
+                _.get() =>
+                {
+                  module: "com.qifun.jsonStream.unknown.UnknownFieldMap",
+                  name: "UnknownFieldMap"
+                },
+                []),
           }:
             hasUnknownFieldMap = true;
-          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
+          case
+          {
+            kind: FVar(AccNormal | AccNo, AccNormal | AccNo),
+            meta: meta,
+            type:
+              Context.follow(_) =>
+              TInst(
+                _.get() =>
+                {
+                  module: "haxe.Int64",
+                  name: "Int64"
+                },
+                [])
+              } if (!meta.has(":transient")):
+          {
+            // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
+            var fieldName = field.name;
+            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
+            cases.push(
+              {
+                values: [ macro $v{fieldName} ],
+                guard: null,
+                expr: macro result.$fieldName = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.toInt64($d),
+              });
+          }
+          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
+          {
             var fieldName = field.name;
             var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
             cases.push(
@@ -605,8 +651,11 @@ class JsonDeserializerGenerator
                 guard: null,
                 expr: macro result.$fieldName = $d,
               });
+          }
           case _:
+          {
             continue;
+          }
         }
       }
       var superClass = classType.superClass;
@@ -735,6 +784,7 @@ class JsonDeserializerGenerator
     }
   }
 
+  @:noUsing
   public static function dynamicDeserialize(stream:ExprOf<JsonStream>, expectedType:Type):Expr return
   {
     var expectedComplexType = TypeTools.toComplexType(Context.follow(expectedType));
@@ -846,6 +896,7 @@ class JsonDeserializerGenerator
     macro $modulePath.$className;
   }
 
+  @:noUsing
   public static function generatedDeserialize(expectedType:Type, stream:ExprOf<JsonStream>):Expr return
   {
     switch (Context.follow(expectedType))
@@ -977,8 +1028,11 @@ class JsonDeserializerGenerator
     }
   }
 
-  // 类似deserialize，但是能递归解决类型，以便能够在@:build宏返回以前就立即执行
-  private static function resolvedDeserialize(expectedComplexType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
+  /**
+    类似`deserialize`，但是能递归解决类型，以便能够在`@:build`宏返回以前就立即执行。
+  **/
+  @:noUsing
+  public static function resolvedDeserialize(expectedComplexType:ComplexType, stream:ExprOf<JsonStream>, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedJsonStreamTypePath =
     {
@@ -1065,6 +1119,16 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 class JsonDeserializerRuntime
 {
 
+  @:noUsing
+  public static inline function toInt64(d:Dynamic):Int64 return
+  {
+    #if java
+    (d:java.lang.Long).longValue();
+    #else
+    d;
+    #end
+  }
+
   @:generic
   //@:extern
   @:noUsing
@@ -1104,7 +1168,7 @@ class JsonDeserializerRuntime
 
   @:extern
   @:noUsing
-  private static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  public static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
   {
     var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
     if (generator == null)

@@ -18,15 +18,16 @@
   <classpaths>
     <class path="src\haxe" />
     <class path="src\test-haxe" />
+    <class path="..\haxe-scala-library\src\haxe" />
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="no-inline" />
+    <option directives="no-inline&#xA;stateless_future&#xA;no-compilation" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
     <option mainClass="Main" />
     <option enabledebug="True" />
-    <option additional="" />
+    <option additional="-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

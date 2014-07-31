@@ -22,13 +22,13 @@ class GeneratedSerializerPlugin
 
   @:noDynamicSerialize
   macro public static function pluginSerialize<T>(
-    data:ExprOf<JsonSerializerPluginData<T>>):ExprOf<JsonStream> return
+    self:ExprOf<JsonSerializerPluginData<T>>):ExprOf<JsonStream> return
   {
-    switch (Context.follow(Context.typeof(data)))
+    switch (Context.follow(Context.typeof(self)))
     {
       case TAbstract(_, [ expectedType ]):
         JsonSerializerGenerator.generatedSerialize(
-          macro $data.underlying,
+          macro $self.underlying,
           expectedType);
       case _:
         throw "Expected JsonSerializerPluginData";

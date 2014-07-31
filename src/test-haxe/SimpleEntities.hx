@@ -1,4 +1,5 @@
 package ;
+import haxe.ds.Vector;
 
 @:final
 class SimpleClass
@@ -22,3 +23,4 @@ abstract SimpleAbstract(String)
     this = underlying;
   }
 }
+

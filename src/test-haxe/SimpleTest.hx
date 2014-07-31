@@ -10,6 +10,7 @@ using SimpleBuildMacro;
 
 class SimpleTest extends JsonTestCase
 {
+
   function testEmptyBuilder()
   {
     var builder:JsonBuilder<SimpleClass> = JsonBuilderFactory.newBuilder();

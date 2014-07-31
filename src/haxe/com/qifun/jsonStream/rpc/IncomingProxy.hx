@@ -1,18 +1,21 @@
 package com.qifun.jsonStream.rpc;
 
-import com.qifun.jsonStream.JsonStream;
+import com.qifun.jsonStream.rpc.IJsonService;
 
-@:autoBuild(com.qifun.jsonStream.rpc.IncomingProxyGenerator.buildFromSuperClass())
-class IncomingProxy<ServiceInterface>
+@:final
+class IncomingProxy implements IJsonService
 {
-  var service(get, never):ServiceInterface;
 
-  // 由用户实现
-  function get_service():ServiceInterface
+  var underlying:JsonStream->IJsonResponseHandler->Void;
+
+  public function new(underlying:JsonStream->IJsonResponseHandler->Void)
   {
-    throw "Not implemented!";
+    this.underlying = underlying;
   }
 
-  // 由宏实现
-  // function incomingRpc(request:JsonStream, handler:JsonStream->Void):Void;
+  public function apply(request:JsonStream, responseHandler:IJsonResponseHandler):Void
+  {
+    underlying(request, responseHandler);
+  }
+
 }

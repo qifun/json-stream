@@ -2,6 +2,7 @@ import haxe.PosInfos;
 class JsonEquality
 {
 
+  @:noUsing
   public static function deepEquals(left:Dynamic, right:Dynamic):Bool
   {
     if (left == right)

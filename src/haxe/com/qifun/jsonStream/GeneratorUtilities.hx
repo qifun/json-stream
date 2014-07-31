@@ -5,17 +5,49 @@ package com.qifun.jsonStream;
 import haxe.macro.Expr;
 import haxe.macro.Context;
 import haxe.macro.Type;
+import haxe.macro.TypeTools;
+using Lambda;
 
 @:dox(hide)
 @:allow(com.qifun.jsonStream)
 class GeneratorUtilities
 {
+  private static function hasEmptyConstructor(classType:ClassType):Bool return
+  {
+    var constructor = classType.constructor;
+    if (constructor == null)
+    {
+      var superClass = classType.superClass;
+      if (superClass == null)
+      {
+        false;
+      }
+      else
+      {
+        hasEmptyConstructor(classType.superClass.t.get());
+      }
+    }
+    else
+    {
+      switch (Context.follow(constructor.get().type))
+      {
+        case TFun(args, _) if (args.foreach(function(arg)return arg.opt)):
+        {
+          true;
+        }
+        default:
+        {
+          false;
+        }
+      }
+    }
+  }
+
   private static function isAbstract(classType:ClassType):Bool return
   {
     classType.isInterface ||
     !classType.kind.match(KNormal) ||
-    classType.constructor == null ||
-    !Context.follow(classType.constructor.get().type).match(TFun([], _));
+    !hasEmptyConstructor(classType);
   }
 
   private static var _lowPriorityDynamicType:Type;

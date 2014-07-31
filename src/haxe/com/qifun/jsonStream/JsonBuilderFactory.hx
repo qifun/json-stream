@@ -59,6 +59,8 @@ class JsonBuilderFactory
   /**
     创建`IJsonBuilder`的工厂类。必须用在`@:build`中。
 
+    注意：如果`includeModules`中的某个类没有构造函数，或者构造函数不支持空参数，那么无法生成这个类对应的`IJsonBuilder`。
+
     @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义被创建的数据结构。
   **/
   @:noUsing
@@ -141,6 +143,7 @@ class JsonBuilderFactoryGenerator
     macro $modulePath.$className;
   }
 
+  @:noUsing
   public static function generatedBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:Expr, expectedType:Type):Expr return
   {
     switch (Context.follow(expectedType))
@@ -278,6 +281,7 @@ class JsonBuilderFactoryGenerator
     allBuilders.get(localClass.module + "." + localClass.name);
   }
 
+  @:noUsing
   public static function dynamicBuild(stream:ExprOf<AsynchronousJsonStream>, onComplete:ExprOf<Dynamic->Void>, expectedType:Type):Expr return
   {
     var expectedComplexType = TypeTools.toComplexType(Context.follow(expectedType));
@@ -422,14 +426,15 @@ class JsonBuilderFactoryGenerator
   private static function processName(sb:StringBuf, s:String):Void
   {
     var i = 0;
-    while (i != -1)
+    while (true)
     {
       var prev = i;
-      i = s.indexOf("_", prev);
-      if (i != -1)
+      var found = s.indexOf("_", prev);
+      if (found != -1)
       {
         sb.addSub(s, prev, i - prev);
         sb.add("__");
+        i = found + 1;
       }
       else
       {
@@ -846,7 +851,7 @@ class JsonBuilderFactoryGenerator
             type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
           }:
             hasUnknownFieldMap = true;
-          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
+          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
             var fieldName = field.name;
             var d = resolvedBuild(TypeTools.toComplexType(applyTypeParameters(field.type)), macro value, params);
             cases.push(

@@ -45,7 +45,7 @@ class Sample
 class JsonSerializer
 {
 
-  private static function iterateJsonObject(instance:Dynamic) return
+  private static function iterateJsonObject(instance:Dynamic):Generator<JsonStreamPair> return
   {
     new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStreamPair>):Void
     {
@@ -56,7 +56,7 @@ class JsonSerializer
     }));
   }
 
-  private static function iterateJsonArray(instance:Array<RawJson>) return
+  private static function iterateJsonArray(instance:Array<RawJson>):Generator<JsonStream> return
   {
     new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
     {
@@ -100,6 +100,8 @@ class JsonSerializer
   /**
     创建序列化的实现类。必须用在`@:build`中。
 
+    注意：如果`includeModules`中的某个类没有构造函数，或者构造函数不支持空参数，那么这个类不会被序列化。
+
     @param includeModules 类型为`Array<String>`，数组的每一项是一个模块名。在这些模块中应当定义要序列化的数据结构。
   **/
   @:noUsing
@@ -125,10 +127,13 @@ class JsonSerializer
       <li>如果`data`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([ ... ]))`创建。</li>
     </ul>
   **/
+  @:noUsing
   macro public static function serialize(data:Expr):ExprOf<JsonStream> return
   {
-    macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData(
+    var result = macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData(
       $data).pluginSerialize();
+    result.pos = Context.currentPos();
+    result;
   }
 
 }
@@ -326,14 +331,15 @@ class JsonSerializerGenerator
   private static function processName(sb:StringBuf, s:String):Void
   {
     var i = 0;
-    while (i != -1)
+    while (true)
     {
       var prev = i;
-      i = s.indexOf("_", prev);
-      if (i != -1)
+      var found = s.indexOf("_", prev);
+      if (found != -1)
       {
         sb.addSub(s, prev, i - prev);
         sb.add("__");
+        i = found + 1;
       }
       else
       {
@@ -576,7 +582,7 @@ class JsonSerializerGenerator
             type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
           }:
             blockExprs.push(macro com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap(data.unknownFieldMap, yield).async());
-          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), }:
+          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
             var fieldName = field.name;
             var s = resolvedSerialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro data.$fieldName, params);
             blockExprs.push(
@@ -677,6 +683,7 @@ class JsonSerializerGenerator
     }
   }
 
+  @:noUsing
   public static function dynamicSerialize(data:Expr, expectedComplexType:ComplexType):ExprOf<JsonStream> return
   {
     var localUsings = Context.getLocalUsing();
@@ -762,6 +769,7 @@ class JsonSerializerGenerator
     macro $modulePath.$className;
   }
 
+  @:noUsing
   public static function generatedSerialize(data:Expr, expectedType:Type):Expr return
   {
     var followedType = Context.follow(expectedType);
@@ -894,8 +902,11 @@ class JsonSerializerGenerator
     }
   }
 
-  // 类似serialize，但是能递归解决类型，以便能够在@:build宏返回以前就立即执行
-  private static function resolvedSerialize(expectedComplexType:ComplexType, data:Expr, ?params:Array<TypeParamDecl>):Expr return
+  /**
+    类似`serialize`，但是能递归解决类型，以便能够在`@:build`宏返回以前就立即执行。
+  **/
+  @:noUsing
+  public static function resolvedSerialize(expectedComplexType:ComplexType, data:Expr, ?params:Array<TypeParamDecl>):Expr return
   {
     var typedDataTypePath =
     {
@@ -955,12 +966,15 @@ class JsonSerializerGenerator
 class JsonSerializerRuntime
 {
 
+  @:noUsing
   public static inline function nullize<T>(t:T):Null<T> return t;
 
+  @:noUsing
   public static
   #if (!java) inline #end // Don't inline for Java targets, because of https://github.com/HaxeFoundation/haxe/issues/3094
   function isNotNull<T>(maybeNull:Null<T>):Bool return maybeNull != null;
 
+  @:noUsing
   public static function yieldUnknownFieldMap(
     unknownFieldMap:UnknownFieldMap,
     yield:YieldFunction<JsonStreamPair>, onComplete:Void->Void):Void
@@ -979,6 +993,7 @@ class JsonSerializerRuntime
       })(unknownFieldMap, yield, onComplete);
   }
 
+  @:noUsing
   public static function serializeUnknwonEnumValue(unknownEnumValue:UnknownEnumValue):JsonStream return
   {
     switch (unknownEnumValue)
@@ -997,6 +1012,7 @@ class JsonSerializerRuntime
     }
   }
 
+  @:noUsing
   public static function serializeUnknown(unknown:Dynamic):JsonStreamPair return
   {
     var unknownType = Std.instance(unknown, UnknownType);

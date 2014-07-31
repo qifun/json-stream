@@ -6,14 +6,14 @@ import com.qifun.jsonStream.JsonStream;
 @:final
 class RawSerializerPlugin
 {
-  
+
   /**
-    
+
   **/
   @:noDynamicSerialize
-  public static function pluginSerialize(data:JsonSerializerPluginData<RawJson>):JsonStream return
+  public static function pluginSerialize(self:JsonSerializerPluginData<RawJson>):JsonStream return
   {
-    JsonSerializer.serializeRaw(data.underlying);
+    JsonSerializer.serializeRaw(self.underlying);
   }
-  
+
 }

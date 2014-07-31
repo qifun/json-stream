@@ -23,12 +23,12 @@ class GeneratedDeserializerPlugin
 {
 
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize<T>(stream:ExprOf<JsonDeserializerPluginStream<T>>):ExprOf<T> return
+  macro public static function pluginDeserialize<T>(self:ExprOf<JsonDeserializerPluginStream<T>>):ExprOf<T> return
   {
-    switch (Context.follow(Context.typeof(stream)))
+    switch (Context.follow(Context.typeof(self)))
     {
       case TAbstract(_, [ expectedType ]):
-        JsonDeserializerGenerator.generatedDeserialize(expectedType, macro $stream.underlying);
+        JsonDeserializerGenerator.generatedDeserialize(expectedType, macro $self.underlying);
       case _:
         throw "Expected JsonDeserializerPluginStream";
     }

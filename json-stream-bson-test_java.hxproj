@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project version="2">
+  <!-- Output SWF options -->
+  <output>
+    <movie outputType="Application" />
+    <movie input="" />
+    <movie path="bin\json-stream-bson-test_java" />
+    <movie fps="30" />
+    <movie width="800" />
+    <movie height="600" />
+    <movie version="1" />
+    <movie minorVersion="0" />
+    <movie platform="Java" />
+    <movie background="#FFFFFF" />
+    <movie preferredSDK="Haxe 3.1.1;3.1.1;" />
+  </output>
+  <!-- Other classes to be compiled into your SWF -->
+  <classpaths>
+    <class path="src\haxe" />
+    <class path="src\test-haxe" />
+    <class path="..\haxe-scala-library\src\haxe" />
+    <class path="..\json-stream\src\haxe" />
+  </classpaths>
+  <!-- Build options -->
+  <build>
+    <option directives="no-inline&#xA;stateless_future&#xA;no-compilation" />
+    <option flashStrict="True" />
+    <option noInlineOnDebug="True" />
+    <option mainClass="Main" />
+    <option enabledebug="True" />
+    <option additional="-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
+  </build>
+  <!-- haxelib libraries -->
+  <haxelib>
+    <library name="continuation" />
+  </haxelib>
+  <!-- Class files to compile (other referenced classes will automatically be included) -->
+  <compileTargets>
+    <compile path="src\test-haxe\Main.hx" />
+  </compileTargets>
+  <!-- Paths to exclude from the Project Explorer tree -->
+  <hiddenPaths>
+    <hidden path="obj" />
+  </hiddenPaths>
+  <!-- Executed before build -->
+  <preBuildCommand />
+  <!-- Executed after build -->
+  <postBuildCommand alwaysRun="False" />
+  <!-- Other project options -->
+  <options>
+    <option showHiddenPaths="False" />
+    <option testMovie="Unknown" />
+    <option testMovieCommand="" />
+  </options>
+  <!-- Plugin storage -->
+  <storage />
+</project>
