@@ -89,6 +89,12 @@ class JsonBsonTest {
       typeTest.str = "这是一个中文字符串。"
       typeTest.seq = scala.collection.immutable.Seq(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3),Integer.valueOf(4))
       typeTest.set = scala.collection.immutable.Set(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3),Integer.valueOf(4))
+      typeTest.map = scala.collection.immutable.Map(
+        Integer.valueOf(1) -> Integer.valueOf(2),
+        Integer.valueOf(2) -> Integer.valueOf(3),
+        Integer.valueOf(4) -> Integer.valueOf(1),
+        Integer.valueOf(3) -> Integer.valueOf(3)
+      )
       
       val jsonStream = TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest(typeTest)
 
@@ -107,5 +113,9 @@ class JsonBsonTest {
         case num:Number => Integer.valueOf(num.intValue)
       })
       assertArrayEquals(typeTest.set.toArray, newSet.toArray)
+      
+      for(elem <- typeTest.map) {
+        assertEquals(elem._2 , obj.map.get(elem._1).get.asInstanceOf[java.lang.Double].intValue())
+      }
     }
 }

@@ -57,6 +57,10 @@ typedef SeqScalaSerializerPlugin = com.qifun.jsonStream.serializerPlugin.ScalaTy
 
 @:dox(hide)
 typedef SetScalaSerializerPlugin = com.qifun.jsonStream.serializerPlugin.ScalaTypeSerializerPlugins.SetScalaSerializerPlugin;
+
+@:dox(hide)
+typedef MapScalaSerializerPlugin = com.qifun.jsonStream.serializerPlugin.ScalaTypeSerializerPlugins.MapScalaSerializerPlugin;
+
 #end
 
 @:dox(hide)
@@ -108,6 +112,9 @@ typedef SeqScalaDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Sca
 
 @:dox(hide)
 typedef SetScalaDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.ScalaTypeDeserializerPlugins.SetScalaDeserializerPlugin;
+
+@:dox(hide)
+typedef MapScalaDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.ScalaTypeDeserializerPlugins.MapScalaDeserializerPlugin;
 #end
 
 @:dox(hide)

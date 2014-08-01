@@ -3,6 +3,7 @@ package com.qifun.jsonStream;
 #if java
 import scala.collection.immutable.Seq;
 import scala.collection.immutable.Set;
+import scala.collection.immutable.Map;
 #end
 
 @:final
@@ -16,5 +17,6 @@ class TypeTest
   #if (java && scala)
   public var seq:Seq<Int>;
   public var set:Set<Int>;
+  public var map:Map<Int, Int>;
   #end
 }
