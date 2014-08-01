@@ -1,7 +1,5 @@
 package com.qifun.jsonStream.io;
 
-#if java
-
 import com.dongxiguo.continuation.utils.Generator;
 import haxe.Constraints.Function;
 import haxe.Int64;
@@ -174,4 +172,3 @@ class BsonWriter
     }
   }
 }
-#end

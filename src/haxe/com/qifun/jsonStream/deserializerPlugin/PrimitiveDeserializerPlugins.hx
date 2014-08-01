@@ -9,7 +9,6 @@ import haxe.Int64;
 import haxe.io.Bytes;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
-import scala.collection.Seq;
 
 @:final
 class Int64DeserializerPlugin

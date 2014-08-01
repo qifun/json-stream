@@ -32,7 +32,8 @@ abstract BsonInput(ReadableBuffer)
 interface IBsonInput
 {
   public function readByte():Int;
-  public function readInt32():Int;
+  public function readInt():Int;
+  public function readLong():haxe.Int64;
   public function readDouble():Float;
   public function discard(n:Int):Void;
   public function index():Int;
@@ -43,7 +44,19 @@ interface IBsonInput
   public function readable():Int;
 }
 
-@:forward(readByte, readInt, readDouble, readString, readCString, discard, slice, size, index, readable)
-abstract BsonInput(IBsonInput) { }
+@:forward(readByte, readInt, readLong, readDouble, readString, readCString, discard, slice, size, index, readable)
+abstract BsonInput(IBsonInput)
+{
+  inline function new(underlying:IBsonInput)
+  {
+    this = underlying;
+  }
+
+  
+  public inline function slice(n:Int):BsonInput return
+  {
+    return new BsonInput(this.slice(n));
+  }
+}
 
 #end
