@@ -1,8 +1,10 @@
 package com.qifun.jsonStream.io;
 
-import reactivemongo.bson.buffer.ReadableBuffer;
 
 #if (java)
+
+import reactivemongo.bson.buffer.ReadableBuffer;
+
 @:forward(readInt, readLong, readDouble, readString, readCString, discard, size, index, readable)
 abstract BsonInput(ReadableBuffer) 
 {
