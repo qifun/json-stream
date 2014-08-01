@@ -1,12 +1,14 @@
 haxeJavaSettings
 
+haxeCSharpSettings
+
 haxeOptions ++= Seq("-lib", "continuation")
 
 libraryDependencies += ("org.scala-stm" %% "scala-stm" % "0.7")
 
 haxeOptions ++= Seq("-dce", "no")
 
-haxeOptions ++= Seq("-D", "stateless_future")
+haxeOptions in HaxeJava ++= Seq("-D", "stateless_future")
 
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 

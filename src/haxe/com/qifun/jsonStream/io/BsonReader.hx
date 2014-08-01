@@ -1,5 +1,5 @@
 package com.qifun.jsonStream.io;
-
+#if java
 import haxe.Constraints.Function;
 import haxe.Int64;
 import haxe.io.BytesBuffer;
@@ -193,3 +193,4 @@ class BsonReader
     });
   }
 }
+#end

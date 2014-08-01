@@ -1,7 +1,7 @@
 package com.qifun.jsonStream.io;
-import reactivemongo.bson.buffer.WritableBuffer;
 
 #if java
+import reactivemongo.bson.buffer.WritableBuffer;
 
 @:forward(writeByte, writeInt, writeLong, writeDouble, writeString, writeCString, index, setInt)
 abstract BsonOutput(WritableBuffer) { }
