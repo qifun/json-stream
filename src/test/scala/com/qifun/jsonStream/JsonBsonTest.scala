@@ -87,7 +87,9 @@ class JsonBsonTest {
       typeTest.f = 3.1415926
       typeTest.i = 42
       typeTest.str = "这是一个中文字符串。"
-      typeTest.seq = scala.collection.Seq(Integer.valueOf(1),Integer.valueOf(2))
+      typeTest.seq = scala.collection.immutable.Seq(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3),Integer.valueOf(4))
+      typeTest.set = scala.collection.immutable.Set(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3),Integer.valueOf(4))
+      
       val jsonStream = TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest(typeTest)
 
       val obj = TypeTestDeserializer.deserialize_com_qifun_jsonStream_TypeTest(jsonStream)
@@ -96,6 +98,14 @@ class JsonBsonTest {
       assertTrue(typeTest.f == obj.f) //assertEquals cann't compare double type
       assertEquals(typeTest.i, obj.i)
       assertEquals(typeTest.str, obj.str)
-      assertArrayEquals(typeTest.seq.toArray, obj.seq.toArray)
+      val newSeq: scala.collection.immutable.Seq[java.lang.Object] = obj.seq.map( _ match {
+        case num:Number => Integer.valueOf(num.intValue)
+      })
+      assertArrayEquals(typeTest.seq.toArray, newSeq.toArray)
+      
+      val newSet: scala.collection.immutable.Set[java.lang.Object] = obj.set.map( _ match {
+        case num:Number => Integer.valueOf(num.intValue)
+      })
+      assertArrayEquals(typeTest.set.toArray, newSet.toArray)
     }
 }
