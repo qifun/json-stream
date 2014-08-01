@@ -3,7 +3,6 @@ package com.qifun.jsonStream
 import reactivemongo.api._
 import reactivemongo.bson._
 import scala.concurrent.ExecutionContext
-import scala.concurrent.ExecutionContext.Implicits.global
 import java.util.concurrent.Future
 import reactivemongo.api.collections.GenericCollectionProducer
 import reactivemongo.api.collections.buffer.ChannelCollection
@@ -88,18 +87,25 @@ class JsonBsonTest {
       typeTest.f = 3.1415926
       typeTest.i = 42
       typeTest.str = "这是一个中文字符串。"
-      val bson = BSONDocument.read(TypeTestWriter.serialize(typeTest).toReadableBuffer)
-      for (i <- bson.stream.toList) {
-        println(i.get._1 + "->" + i.get._2)
-      }
+      typeTest.seq = scala.collection.immutable.Seq(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3),Integer.valueOf(4))
+      typeTest.set = scala.collection.immutable.Set(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3),Integer.valueOf(4))
+      
+      val jsonStream = TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest(typeTest)
 
-      val writeableBuffer = new ChannelBufferWritableBuffer
-      BSONDocument.write(bson, writeableBuffer)
-      val obj = TypeTestReader.deserialize(writeableBuffer.toReadableBuffer)
+      val obj = TypeTestDeserializer.deserialize_com_qifun_jsonStream_TypeTest(jsonStream)
 
       assertEquals(typeTest.bo, obj.bo)
       assertTrue(typeTest.f == obj.f) //assertEquals cann't compare double type
       assertEquals(typeTest.i, obj.i)
       assertEquals(typeTest.str, obj.str)
+      val newSeq: scala.collection.immutable.Seq[java.lang.Object] = obj.seq.map( _ match {
+        case num:Number => Integer.valueOf(num.intValue)
+      })
+      assertArrayEquals(typeTest.seq.toArray, newSeq.toArray)
+      
+      val newSet: scala.collection.immutable.Set[java.lang.Object] = obj.set.map( _ match {
+        case num:Number => Integer.valueOf(num.intValue)
+      })
+      assertArrayEquals(typeTest.set.toArray, newSet.toArray)
     }
 }

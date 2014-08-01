@@ -22,7 +22,7 @@
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="no-inline&#xA;stateless_future&#xA;no-compilation" />
+    <option directives="no-inline&#xA;stateless_future&#xA;no-compilation&#xA;scala" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
     <option mainClass="Main" />
