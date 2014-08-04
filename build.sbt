@@ -8,7 +8,7 @@ libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
 haxeOptions ++= Seq("-dce", "no")
 
-haxeOptions in HaxeJava ++= Seq("-D", "stateless_future")
+haxeOptions in Compile ++= Seq("-D", "stateless_future")
 
 haxeOptions ++= Seq("-D", "scala")
 
