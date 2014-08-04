@@ -1,5 +1,6 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
+
 #if (scala && (java || macro))
 
 import haxe.macro.Context;
@@ -12,7 +13,7 @@ import scala.collection.immutable.Seq;
 import scala.collection.immutable.Set;
 import scala.collection.immutable.Map;
 import scala.Tuple2;
-import scala.BuilderPlusEqualsOperator;
+import scala.collection.mutable.Builder;
 
 /**
   ```scala.collection.immutable.Seq```的反序列化插件。
@@ -34,14 +35,14 @@ class SeqScalaDeserializerPlugin
         {
           for (element in generator)
           {
-            scala.BuilderPlusEqualsOperator.plusEquals(seqBuilder,elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            seqBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         else
         {
           for (element in value)
           {
-            scala.BuilderPlusEqualsOperator.plusEquals(seqBuilder,elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            seqBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         seqBuilder.result();
@@ -83,14 +84,14 @@ class SetScalaDeserializerPlugin
         {
           for (element in generator)
           {
-            scala.BuilderPlusEqualsOperator.plusEquals(setBuilder,elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         else
         {
           for (element in value)
           {
-            scala.BuilderPlusEqualsOperator.plusEquals(setBuilder,elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           } 
         }
         setBuilder.result();
@@ -120,6 +121,7 @@ class SetScalaDeserializerPlugin
 class MapScalaDeserializerPlugin
 {
   #if java
+  
   @:dox(hide)
   public static function deserializeForElement<Key, Value>(
     self:JsonDeserializerPluginStream<scala.collection.immutable.Map<Key, Value>>, 
@@ -133,39 +135,76 @@ class MapScalaDeserializerPlugin
       {
         var mapBuilder = scala.collection.immutable.MapSingleton.getInstance().newBuilder();
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
-        while(iterator.hasNext())
+        if (generator == null)
         {
-          switch (iterator.next())
+          while(iterator.hasNext())
           {
-            case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
+            switch (iterator.next())
             {
-              if (pairIterator.hasNext())
+              case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
               {
-                var keyStream = pairIterator.next();
-                var key = keyDeserializeFunction(new JsonDeserializerPluginStream(keyStream));
                 if (pairIterator.hasNext())
                 {
-                  var valueStream = pairIterator.next();
-                  var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-                  scala.BuilderPlusEqualsOperator.plusEquals(mapBuilder, new Tuple2(key, value));
-                  /*
+                  var keyStream = pairIterator.next();
+                  var key = keyDeserializeFunction(new JsonDeserializerPluginStream(keyStream));
                   if (pairIterator.hasNext())
                   {
-                    throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
+                    var valueStream = pairIterator.next();
+                    var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
+                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    if (pairIterator.hasNext())
+                    {
+                      throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
+                    }
                   }
-                  */
+                  else
+                  {
+                    throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+                  }
                 }
                 else
                 {
-                  throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+                  throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
                 }
               }
-              else
-              {
-                throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
-              }
+              case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
             }
-            case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
+          }
+        }
+        else
+        {
+          while(generator.hasNext())
+          {
+            switch (generator.next())
+            {
+              case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
+              {
+                if (pairIterator.hasNext())
+                {
+                  var keyStream = pairIterator.next();
+                  var key = keyDeserializeFunction(new JsonDeserializerPluginStream(keyStream));
+                  if (pairIterator.hasNext())
+                  {
+                    var valueStream = pairIterator.next();
+                    var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
+                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    if (pairIterator.hasNext())
+                    {
+                      throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
+                    }
+                  }
+                  else
+                  {
+                    throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+                  }
+                }
+                else
+                {
+                  throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
+                }
+              }
+              case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
+            }
           }
         }
         mapBuilder.result();

@@ -106,8 +106,6 @@ class MapScalaSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var keys:Array<Key> = [];
-        var values:Array<Value> = [];
         var iterator = self.underlying.iterator();
         while (iterator.hasNext())
         {

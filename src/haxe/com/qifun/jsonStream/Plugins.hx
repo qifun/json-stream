@@ -63,6 +63,16 @@ typedef MapScalaSerializerPlugin = com.qifun.jsonStream.serializerPlugin.ScalaTy
 
 #end
 
+#if cs
+
+@:dox(hide)
+typedef ListCSSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpTypeSerializerPlugins.ListCSSerializerPlugin;
+
+@:dox(hide)
+typedef SortedDictionaryCSSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpTypeSerializerPlugins.SortedDictionaryCSSerializerPlugin;
+
+#end
+
 @:dox(hide)
 typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.serializerPlugin.LowPriorityDynamicSerializerPlugin;
 
@@ -115,6 +125,16 @@ typedef SetScalaDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Sca
 
 @:dox(hide)
 typedef MapScalaDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.ScalaTypeDeserializerPlugins.MapScalaDeserializerPlugin;
+#end
+
+#if cs
+
+@:dox(hide)
+typedef ListCSDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpTypeDeserializerPlugins.ListCSDeserializerPlugin;
+
+@:dox(hide)
+typedef SortedDictionaryCSDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpTypeDeserializerPlugins.SortedDictionaryCSDeserializerPlugin;
+
 #end
 
 @:dox(hide)
