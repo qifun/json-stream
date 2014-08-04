@@ -10,7 +10,9 @@ haxeOptions ++= Seq("-dce", "no")
 
 haxeOptions in Compile ++= Seq("-D", "stateless_future")
 
-haxeOptions ++= Seq("-D", "scala")
+haxeOptions in Compile ++= Seq("-D", "scala")
+
+haxeOptions in Test ++= Seq("-D", "scala")
 
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 
