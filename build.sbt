@@ -10,6 +10,8 @@ haxeOptions ++= Seq("-dce", "no")
 
 haxeOptions in Compile ++= Seq("-D", "stateless_future")
 
+haxeOptions in Test ++= Seq("-D", "stateless_future")
+
 haxeOptions in Compile ++= Seq("-D", "scala")
 
 haxeOptions in Test ++= Seq("-D", "scala")
