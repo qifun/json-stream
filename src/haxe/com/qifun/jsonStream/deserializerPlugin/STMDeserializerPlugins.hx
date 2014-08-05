@@ -1,83 +1,61 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
 
-#if (scala && (java || macro))
-
+#if (scala_stm && (java || macro))
+import scala.concurrent.stm.Ref;
+import scala.concurrent.stm.RefView;
+import scala.concurrent.stm.TSet;
+import scala.concurrent.stm.TMap;
+import scala.concurrent.stm.japi.STM;
+import scala.Tuple2;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
-import scala.collection.immutable.Seq;
-import scala.collection.immutable.Set;
-import scala.collection.immutable.Map;
-import scala.Tuple2;
-import scala.collection.mutable.Builder;
 
-/**
-  ```scala.collection.immutable.Seq```的反序列化插件。
-**/
 @:final
-class ScalaSeqDeserializerPlugin
+class STMRefDeserializerPlugin
 {
   #if java
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<scala.collection.immutable.Seq<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<scala.collection.immutable.Seq<Element>> return
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<scala.concurrent.stm.Ref<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<scala.concurrent.stm.Ref<Element>> return
   {
     switch (self.underlying)
     {
-      case com.qifun.jsonStream.JsonStream.ARRAY(value):
-      {
-        var seqBuilder = scala.collection.immutable.SeqSingleton.MODULE.newBuilder();
-        var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
-        if (generator != null)
-        {
-          for (element in generator)
-          {
-            seqBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
-          }
-        }
-        else
-        {
-          for (element in value)
-          {
-            seqBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
-          }
-        }
-        seqBuilder.result();
-      }
       case NULL:
+      {
         null;
-      case stream :
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" , "NULL" ]);
+      }
+      case stream:
+      {
+        var refView:RefView<Element> = STM.MODULE.newRef(elementDeserializeFunction(new JsonDeserializerPluginStream(self.underlying)));
+        refView.ref();
+      }
     }
   }
   #end
 
   #if (java || macro)
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.collection.immutable.Seq<Element>>>):ExprOf<Null<scala.collection.immutable.Seq<Element>>> return
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.Ref<Element>>>):ExprOf<Null<scala.concurrent.stm.Ref<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSeqDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMRefDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
   #end
 }
 
-
-/**
-  ```scala.collection.immutable.Set```的反序列化插件。
-**/
 @:final
-class ScalaSetDeserializerPlugin
+class STMTSetDeserializerPlugin
 {
   #if java
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<scala.collection.immutable.Set<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<scala.collection.immutable.Set<Element>> return
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<scala.concurrent.stm.TSet<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<scala.concurrent.stm.TSet<Element>> return
   {
     switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        var setBuilder = scala.collection.immutable.SetSingleton.MODULE.newBuilder();
+        var setBuilder = scala.concurrent.stm.TSetSingleton.MODULE.newBuilder();
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
@@ -104,35 +82,31 @@ class ScalaSetDeserializerPlugin
   #end
 
   #if (java || macro)
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.collection.immutable.Set<Element>>>):ExprOf<Null<scala.collection.immutable.Set<Element>>> return
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.TSet<Element>>>):ExprOf<Null<scala.concurrent.stm.TSet<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSetDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTSetDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
   #end
 }
 
 
-
-/**
-  ```scala.collection.immutable.Map```的反序列化插件。
-**/
 @:final
-class ScalaMapDeserializerPlugin
+class STMTMapDeserializerPlugin
 {
   #if java
   
   @:dox(hide)
   public static function deserializeForElement<Key, Value>(
-    self:JsonDeserializerPluginStream<scala.collection.immutable.Map<Key, Value>>, 
+    self:JsonDeserializerPluginStream<scala.concurrent.stm.TMap<Key, Value>>, 
     keyDeserializeFunction:JsonDeserializerPluginStream<Key>->Key, 
     valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
-    Null<scala.collection.immutable.Map<Key, Value>> return
+    Null<scala.concurrent.stm.TMap<Key, Value>> return
   {
     switch (self.underlying)
     {
       case ARRAY(iterator):
       {
-        var mapBuilder = scala.collection.immutable.MapSingleton.MODULE.newBuilder();
+        var mapBuilder = scala.concurrent.stm.TMapSingleton.MODULE.newBuilder();
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
         if (generator == null)
         {
@@ -217,9 +191,9 @@ class ScalaMapDeserializerPlugin
   #end
 
   #if (java || macro)
-  macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<scala.collection.immutable.Map<Key, Value>>>):ExprOf<Null<scala.collection.immutable.Map<Key, Value>>> return
+  macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.TMap<Key, Value>>>):ExprOf<Null<scala.concurrent.stm.TMap<Key, Value>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaMapDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTMapDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
   }
   #end
 }

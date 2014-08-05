@@ -5,19 +5,16 @@ import haxe.Int64;
 import java.StdTypes;
 import scala.reflect.OptManifest;
 
-extern interface Ref<A>
+extern interface Ref<A> extends scala.concurrent.stm.RefLike<A, scala.concurrent.stm.InTxn>
 {
+  public function single():scala.concurrent.stm.RefView<A>;
 }
+
 
 @:native("scala.concurrent.stm.Ref$")
 extern class RefSingleton_Single
 {
-
-	@:extern
-	public static inline function getInstance():RefSingleton_Single
-	{
-		return untyped __java__("scala.concurrent.stm.Ref$.MODULE$");
-	}
+  @:native("MODULE$") public static var MODULE(default, never):RefSingleton_Single;
 
   public function apply(initialValue:Single):Ref<Dynamic>;
 
@@ -27,11 +24,7 @@ extern class RefSingleton_Single
 extern class RefSingleton
 {
 
-	@:extern
-	public static inline function getInstance():RefSingleton
-	{
-		return untyped __java__("scala.concurrent.stm.Ref$.MODULE$");
-	}
+  @:native("MODULE$") public static var MODULE(default, never):RefSingleton;
 
   @:overload(function(initialValue:Int):Ref<Dynamic>{})
   @:overload(function(initialValue:Bool):Ref<Dynamic>{})

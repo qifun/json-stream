@@ -60,7 +60,6 @@ class BsonReader
         JsonStream.ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
         {
           var arrayBufferLength = buffer.readInt();
-          trace("arrayBufferLength", arrayBufferLength);
           var arrayBuffer = buffer.slice(arrayBufferLength - 4);
           buffer.discard(arrayBufferLength - 4);
           var lastLabel:Int = -1;
@@ -79,7 +78,6 @@ class BsonReader
       case 0x05: // BSONBinary 
       {
         var binaryLength = buffer.readInt();
-        trace("binaryLength", binaryLength);
         //1位type码
         var typeCode = buffer.readByte();
         if (typeCode != 0x00)
@@ -185,7 +183,6 @@ class BsonReader
         {
           var valueTypeCode = buffer.readByte();
           var key:String = buffer.readCString();
-          trace("type:", valueTypeCode);
           yield(new JsonStreamPair(key, readBsonValue(buffer, valueTypeCode))).async();
         }
       }));

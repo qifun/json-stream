@@ -14,3 +14,10 @@ class TypeTestSerializer { }
 
 @:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.TypeTest"]))
 class TypeTestDeserializer { }
+
+
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["com.qifun.jsonStream.STMTest"]))
+class STMTestSerializer { }
+
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.STMTest"]))
+class STMTestDeserializer { }

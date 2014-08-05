@@ -18,6 +18,10 @@ haxeOptions in Compile ++= Seq("-D", "scala")
 
 haxeOptions in Test ++= Seq("-D", "scala")
 
+haxeOptions in Compile ++= Seq("-D", "scala_stm")
+
+haxeOptions in Test ++= Seq("-D", "scala_stm")
+
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 
 doxPlatforms := Seq("java", "cs")

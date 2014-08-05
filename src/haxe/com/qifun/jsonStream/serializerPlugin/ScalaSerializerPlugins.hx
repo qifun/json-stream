@@ -50,7 +50,7 @@ class ScalaSeqSerializerPlugin
 
 
 /**
-  ```scala.collection.immutable.Seq```的序列化插件。
+  ```scala.collection.immutable.Set```的序列化插件。
 **/
 @:final
 class ScalaSetSerializerPlugin

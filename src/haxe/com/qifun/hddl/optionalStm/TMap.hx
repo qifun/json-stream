@@ -7,7 +7,7 @@ abstract TMap<A, B>(scala.concurrent.stm.TMap<A, B>)
 {
   public inline function new()
   {
-    this = scala.concurrent.stm.TMap.TMapSingleton.getInstance().empty();
+    this = scala.concurrent.stm.TMap.TMapSingleton.MODULE.empty();
   }
 }
 

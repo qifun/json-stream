@@ -75,6 +75,19 @@ typedef CSDictionarySerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSh
 typedef CSHashSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSHashSetSerializerPlugin;
 #end
 
+#if scala_stm
+
+@:dox(hide)
+typedef STMRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMRefSerializerPlugin;
+
+@:dox(hide)
+typedef STMTSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTSetSerializerPlugin;
+
+@:dox(hide)
+typedef STMTMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTMapSerializerPlugin;
+
+#end
+
 @:dox(hide)
 typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.serializerPlugin.LowPriorityDynamicSerializerPlugin;
 
@@ -140,6 +153,18 @@ typedef CSDictionaryDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin
 @:dox(hide)
 typedef CSHashSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSHashSetDeserializerPlugin;
 
+#end
+
+#if scala_stm
+
+@:dox(hide)
+typedef STMRefDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMRefDeserializerPlugin;
+
+@:dox(hide)
+typedef STMTSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTSetDeserializerPlugin;
+
+@:dox(hide)
+typedef STMTMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTMapDeserializerPlugin;
 #end
 
 @:dox(hide)

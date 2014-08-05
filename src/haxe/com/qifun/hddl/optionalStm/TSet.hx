@@ -7,7 +7,7 @@ abstract TSet<A>(scala.concurrent.stm.TSet<A>)
 {
   public inline function new()
   {
-    this = scala.concurrent.stm.TSet.TSetSingleton.getInstance().empty();
+    this = scala.concurrent.stm.TSet.TSetSingleton.MODULE.empty();
   }
 }
 

@@ -1,5 +1,6 @@
 package scala.concurrent.stm;
 
+#if (scala_stm && java)
 import scala.reflect.ClassTag;
 
 extern interface TArray<A>
@@ -13,3 +14,4 @@ extern class TArraySingleton
 
 	public function ofDim<A>(length: Int, arg0: ClassTag<A>):TArray<A>;
 }
+#end
