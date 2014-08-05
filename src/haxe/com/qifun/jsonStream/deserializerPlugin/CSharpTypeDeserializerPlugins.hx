@@ -1,6 +1,6 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
-#if cs
+#if (cs || macro)
 
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
@@ -10,22 +10,26 @@ import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
-import cs.system.collections.generic.List_1;
-import cs.system.collections.generic.SortedDictionary_2;
+#if cs
+import dotnet.system.collections.generic.List;
+import dotnet.system.collections.generic.Dictionary;
+import dotnet.system.collections.generic.HashSet;
+#end
 /**
   ```cs.System.Collection.Generic.List```的序列化插件。
 **/
 @:final
 class ListCSDeserializerPlugin
 {
+  #if cs
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<cs.system.collections.generic.List_1<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<cs.system.collections.generic.List_1<Element>> return
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<dotnet.system.collections.generic.List<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<dotnet.system.collections.generic.List<Element>> return
   {
     switch (self.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        var list = new cs.system.collections.generic.List_1<Element>();
+        var list = new dotnet.system.collections.generic.List<Element>();
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
@@ -49,8 +53,9 @@ class ListCSDeserializerPlugin
         throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" , "NULL" ]);
     }
   }
+  #end
 
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<cs.system.collections.generic.List_1<Element>>>):ExprOf<Null<cs.system.collections.generic.List_1<Element>>> return
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<dotnet.system.collections.generic.List<Element>>>):ExprOf<Null<dotnet.system.collections.generic.List<Element>>> return
   {
     macro com.qifun.jsonStream.deserializerPlugin.CSharpTypeDeserializerPlugins.ListCSDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
@@ -58,24 +63,24 @@ class ListCSDeserializerPlugin
 
 
 /**
-  ```cs.System.Collection.Generic.SortedDictionary```的序列化插件。
+  ```cs.System.Collection.Generic.Dictionary```的序列化插件。
 **/
 @:final
-class SortedDictionaryCSDeserializerPlugin
+class DictionaryCSDeserializerPlugin
 {
-  
+  #if cs
   @:dox(hide)
   public static function deserializeForElement<Key, Value>(
-    self:JsonDeserializerPluginStream<cs.system.collections.generic.SortedDictionary_2<Key, Value>>, 
+    self:JsonDeserializerPluginStream<dotnet.system.collections.generic.Dictionary<Key, Value>>, 
     keyDeserializeFunction:JsonDeserializerPluginStream<Key>->Key, 
     valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
-    Null<cs.system.collections.generic.SortedDictionary_2<Key, Value>> return
+    Null<dotnet.system.collections.generic.Dictionary<Key, Value>> return
   {
     switch (self.underlying)
     {
       case ARRAY(iterator):
       {
-        var dictionary = new cs.system.collections.generic.SortedDictionary_2<Key, Value>();
+        var dictionary = new dotnet.system.collections.generic.Dictionary<Key, Value>();
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
         if (generator == null)
         {
@@ -157,10 +162,59 @@ class SortedDictionaryCSDeserializerPlugin
         throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" , "NULL" ]);
     }
   }
+  #end
 
-  macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<cs.system.collections.generic.SortedDictionary_2<Key, Value>>>):ExprOf<Null<cs.system.collections.generic.SortedDictionary_2<Key, Value>>> return
+  macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<dotnet.system.collections.generic.Dictionary<Key, Value>>>):ExprOf<Null<dotnet.system.collections.generic.Dictionary<Key, Value>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.CsharpTypeDeserializerPlugins.SortedDictionaryCSDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.CSharpTypeDeserializerPlugins.DictionaryCSDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
   }
 }
+
+
+/**
+  ```cs.System.Collection.Generic.HashSet```的序列化插件。
+**/
+@:final
+class HashSetCSDeserializerPlugin
+{
+  #if cs
+  @:dox(hide)
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<dotnet.system.collections.generic.HashSet<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<dotnet.system.collections.generic.HashSet<Element>> return
+  {
+    switch (self.underlying)
+    {
+      case com.qifun.jsonStream.JsonStream.ARRAY(value):
+      {
+        var hashSet = new dotnet.system.collections.generic.HashSet<Element>();
+        var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          for (element in generator)
+          {
+            hashSet.Add(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+          }
+        }
+        else
+        {
+          for (element in value)
+          {
+            hashSet.Add(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+          }
+        }
+        hashSet;
+      }
+      case NULL:
+        null;
+      case stream :
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" , "NULL" ]);
+    }
+  }
+  #end
+
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<dotnet.system.collections.generic.HashSet<Element>>>):ExprOf<Null<dotnet.system.collections.generic.HashSet<Element>>> return
+  {
+    macro com.qifun.jsonStream.deserializerPlugin.CSharpTypeDeserializerPlugins.HashSetCSDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+  }
+}
+
 #end

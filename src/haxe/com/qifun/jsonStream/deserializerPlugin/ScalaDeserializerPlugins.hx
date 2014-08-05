@@ -19,7 +19,7 @@ import scala.collection.mutable.Builder;
   ```scala.collection.immutable.Seq```的反序列化插件。
 **/
 @:final
-class SeqScalaDeserializerPlugin
+class ScalaSeqDeserializerPlugin
 {
   #if java
   @:dox(hide)
@@ -29,7 +29,7 @@ class SeqScalaDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        var seqBuilder = scala.collection.immutable.SeqSingleton.getInstance().newBuilder();
+        var seqBuilder = scala.collection.immutable.SeqSingleton.MODULE.newBuilder();
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
@@ -58,7 +58,7 @@ class SeqScalaDeserializerPlugin
   #if (java || macro)
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.collection.immutable.Seq<Element>>>):ExprOf<Null<scala.collection.immutable.Seq<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.ScalaTypeDeserializerPlugins.SeqScalaDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSeqDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
   #end
 }
@@ -68,7 +68,7 @@ class SeqScalaDeserializerPlugin
   ```scala.collection.immutable.Set```的反序列化插件。
 **/
 @:final
-class SetScalaDeserializerPlugin
+class ScalaSetDeserializerPlugin
 {
   #if java
   @:dox(hide)
@@ -78,7 +78,7 @@ class SetScalaDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        var setBuilder = scala.collection.immutable.SetSingleton.getInstance().newBuilder();
+        var setBuilder = scala.collection.immutable.SetSingleton.MODULE.newBuilder();
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
@@ -107,7 +107,7 @@ class SetScalaDeserializerPlugin
   #if (java || macro)
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.collection.immutable.Set<Element>>>):ExprOf<Null<scala.collection.immutable.Set<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.ScalaTypeDeserializerPlugins.SetScalaDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSetDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
   #end
 }
@@ -118,7 +118,7 @@ class SetScalaDeserializerPlugin
   ```scala.collection.immutable.Map```的反序列化插件。
 **/
 @:final
-class MapScalaDeserializerPlugin
+class ScalaMapDeserializerPlugin
 {
   #if java
   
@@ -133,7 +133,7 @@ class MapScalaDeserializerPlugin
     {
       case ARRAY(iterator):
       {
-        var mapBuilder = scala.collection.immutable.MapSingleton.getInstance().newBuilder();
+        var mapBuilder = scala.collection.immutable.MapSingleton.MODULE.newBuilder();
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
         if (generator == null)
         {
@@ -220,7 +220,7 @@ class MapScalaDeserializerPlugin
   #if (java || macro)
   macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<scala.collection.immutable.Map<Key, Value>>>):ExprOf<Null<scala.collection.immutable.Map<Key, Value>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.ScalaTypeDeserializerPlugins.MapScalaDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaMapDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
   }
   #end
 }
