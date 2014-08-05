@@ -8,6 +8,8 @@ libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
 haxeOptions ++= Seq("-dce", "no")
 
+haxeOptions ++= Seq("-lib", "HUGS")
+
 haxeOptions in Compile ++= Seq("-D", "stateless_future")
 
 haxeOptions in Test ++= Seq("-D", "stateless_future")

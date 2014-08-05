@@ -17,7 +17,7 @@ import scala.collection.immutable.Map;
   ```scala.collection.immutable.Seq```的序列化插件。
 **/
 @:final
-class SeqScalaSerializerPlugin
+class ScalaSeqSerializerPlugin
 {
   #if java
   public static function serializeForElement<Element>(self:JsonSerializerPluginData<scala.collection.immutable.Seq<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
@@ -43,7 +43,7 @@ class SeqScalaSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.collection.immutable.Seq<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.ScalaTypeSerializerPlugins.SeqScalaSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSeqSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
   #end
 }
@@ -53,7 +53,7 @@ class SeqScalaSerializerPlugin
   ```scala.collection.immutable.Seq```的序列化插件。
 **/
 @:final
-class SetScalaSerializerPlugin
+class ScalaSetSerializerPlugin
 {
   #if java
   public static function serializeForElement<Element>(self:JsonSerializerPluginData<scala.collection.immutable.Set<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
@@ -79,7 +79,7 @@ class SetScalaSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.collection.immutable.Set<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.ScalaTypeSerializerPlugins.SetScalaSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSetSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
   #end
 }
@@ -90,7 +90,7 @@ class SetScalaSerializerPlugin
   ```scala.collection.immutable.Map```的序列化插件。
 **/
 @:final
-class MapScalaSerializerPlugin
+class ScalaMapSerializerPlugin
 {
   #if java
   public static function serializeForElement<Key, Value>(
@@ -125,7 +125,7 @@ class MapScalaSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<scala.collection.immutable.Map<Key, Value>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.ScalaTypeSerializerPlugins.MapScalaSerializerPlugin.serializeForElement($self, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaMapSerializerPlugin.serializeForElement($self, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
   }
   #end
 }
