@@ -19,7 +19,7 @@ import dotnet.system.collections.generic.HashSet;
   ```cs.System.Collection.Generic.List```的序列化插件。
 **/
 @:final
-class CSListSerializerPlugin
+class CSharpListSerializerPlugin
 {
   #if cs
   public static function serializeForElement<Element>(self:JsonSerializerPluginData<dotnet.system.collections.generic.List<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
@@ -44,7 +44,7 @@ class CSListSerializerPlugin
   
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<dotnet.system.collections.generic.List<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSListSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpListSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
 
 }
@@ -53,10 +53,8 @@ class CSListSerializerPlugin
 /**
   ```cs.System.Collection.Generic.Dictionary```的序列化插件。
 **/
-  
-
 @:final
-class CSDictionarySerializerPlugin
+class CSharpDictionarySerializerPlugin
 {
   #if cs
   public static function serializeForElement<Key, Value>(
@@ -89,7 +87,7 @@ class CSDictionarySerializerPlugin
 
   macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<dotnet.system.collections.generic.Dictionary<Key, Value>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSDictionarySerializerPlugin.serializeForElement($self, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpDictionarySerializerPlugin.serializeForElement($self, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
   }
 }
 
@@ -99,7 +97,7 @@ class CSDictionarySerializerPlugin
   ```cs.System.Collection.Generic.HashSet```的序列化插件。
 **/
 @:final
-class CSHashSetSerializerPlugin
+class CSharpHashSetSerializerPlugin
 {
   #if cs
   public static function serializeForElement<Element>(self:JsonSerializerPluginData<dotnet.system.collections.generic.HashSet<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
@@ -124,8 +122,7 @@ class CSHashSetSerializerPlugin
   
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<dotnet.system.collections.generic.HashSet<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSHashSetSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
-
 }
 #end 

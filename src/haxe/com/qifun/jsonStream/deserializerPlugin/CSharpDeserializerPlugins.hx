@@ -19,7 +19,7 @@ import dotnet.system.collections.generic.HashSet;
   ```cs.System.Collection.Generic.List```的序列化插件。
 **/
 @:final
-class CSListDeserializerPlugin
+class CSharpListDeserializerPlugin
 {
   #if cs
   @:dox(hide)
@@ -57,7 +57,7 @@ class CSListDeserializerPlugin
 
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<dotnet.system.collections.generic.List<Element>>>):ExprOf<Null<dotnet.system.collections.generic.List<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSListDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpListDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
 }
 
@@ -66,7 +66,7 @@ class CSListDeserializerPlugin
   ```cs.System.Collection.Generic.Dictionary```的序列化插件。
 **/
 @:final
-class CSDictionaryDeserializerPlugin
+class CSharpDictionaryDeserializerPlugin
 {
   #if cs
   @:dox(hide)
@@ -166,7 +166,7 @@ class CSDictionaryDeserializerPlugin
 
   macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<dotnet.system.collections.generic.Dictionary<Key, Value>>>):ExprOf<Null<dotnet.system.collections.generic.Dictionary<Key, Value>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSDictionaryDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpDictionaryDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
   }
 }
 
@@ -175,7 +175,7 @@ class CSDictionaryDeserializerPlugin
   ```cs.System.Collection.Generic.HashSet```的序列化插件。
 **/
 @:final
-class CSHashSetDeserializerPlugin
+class CSharpHashSetDeserializerPlugin
 {
   #if cs
   @:dox(hide)
@@ -213,7 +213,7 @@ class CSHashSetDeserializerPlugin
 
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<dotnet.system.collections.generic.HashSet<Element>>>):ExprOf<Null<dotnet.system.collections.generic.HashSet<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSHashSetDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpHashSetDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
 }
 

@@ -43,19 +43,23 @@ class JsonBsonTest {
     for (i <- 0 until byteArray.length) us.info.md5Code.set(i, byteArray(i))
     val writeableBuffer = UserClass2Writer.serialize(us)
     val bson = BSONDocument.read(writeableBuffer.toReadableBuffer);
-    for (i <- bson.stream.toList) {
-      assertEquals(i.get._1, "info")
-      assertEquals(i.get._2.code, 0x03)
-      println(i.get._1 + "->" + i.get._2)
-      val subBson = i.get._2.seeAsTry[BSONDocument].get
-      for (j <- subBson.stream toList) {
-        println("subBson :" + j.get._1 + "->" + j.get._2 + "code:" + j.get._2.code)
-        if (j.get._1 == "skills") {
-          for (k <- j.get._2.seeAsTry[BSONArray].get.stream.toList.map(_.get.seeAsTry[BSONInteger].get.value))
-            println("elem of Array skill:" + k)
-        }
-        if (j.get._1 == "md5Code") {
-          println(j.get._2.seeAsTry[BSONBinary].get.value.readable)
+    for (h <- bson.stream.toList) {
+      assertEquals(h.get._1, "Content")
+      assertEquals(h.get._2.code, 0x03)
+      for (i <- h.get._2.seeAsTry[BSONDocument].get.stream.toList) {
+        assertEquals(i.get._1, "info")
+        assertEquals(i.get._2.code, 0x03)
+        println(i.get._1 + "->" + i.get._2)
+        val subBson = i.get._2.seeAsTry[BSONDocument].get
+        for (j <- subBson.stream toList) {
+          println("subBson :" + j.get._1 + "->" + j.get._2 + "code:" + j.get._2.code)
+          if (j.get._1 == "skills") {
+            for (k <- j.get._2.seeAsTry[BSONArray].get.stream.toList.map(_.get.seeAsTry[BSONInteger].get.value))
+              println("elem of Array skill:" + k)
+          }
+          if (j.get._1 == "md5Code") {
+            println(j.get._2.seeAsTry[BSONBinary].get.value.readable)
+          }
         }
       }
     }

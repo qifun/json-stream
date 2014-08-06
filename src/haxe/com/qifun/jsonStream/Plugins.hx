@@ -66,13 +66,13 @@ typedef ScalaMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.ScalaSe
 #if cs
 
 @:dox(hide)
-typedef CSListSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSListSerializerPlugin;
+typedef CSharpListSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpListSerializerPlugin;
 
 @:dox(hide)
-typedef CSDictionarySerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSDictionarySerializerPlugin;
+typedef CSharpDictionarySerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpDictionarySerializerPlugin;
 
 @:dox(hide)
-typedef CSHashSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSHashSetSerializerPlugin;
+typedef CSharpHashSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin;
 #end
 
 #if scala_stm
@@ -145,13 +145,13 @@ typedef ScalaMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Sca
 #if cs
 
 @:dox(hide)
-typedef CSListDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSListDeserializerPlugin;
+typedef CSharpListDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpListDeserializerPlugin;
 
 @:dox(hide)
-typedef CSDictionaryDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSDictionaryDeserializerPlugin;
+typedef CSharpDictionaryDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpDictionaryDeserializerPlugin;
 
 @:dox(hide)
-typedef CSHashSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSHashSetDeserializerPlugin;
+typedef CSharpHashSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpHashSetDeserializerPlugin;
 
 #end
 
