@@ -1,11 +1,14 @@
 package com.qifun.jsonStream.deserializerPlugin;
 
 
+
 #if (scala_stm && (java || macro))
 import scala.concurrent.stm.Ref;
 import scala.concurrent.stm.RefView;
 import scala.concurrent.stm.TSet;
 import scala.concurrent.stm.TMap;
+import scala.concurrent.stm.TArray;
+import scala.concurrent.stm.TArrayView;
 import scala.concurrent.stm.japi.STM;
 import scala.Tuple2;
 import haxe.macro.Context;
@@ -89,6 +92,56 @@ class STMTSetDeserializerPlugin
   #end
 }
 
+@:final
+class STMTArrayDeserializerPlugin
+{
+  #if java
+  @:dox(hide)
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<scala.concurrent.stm.TArray<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<scala.concurrent.stm.TArray<Element>> return
+  {
+    switch (self.underlying)
+    {
+      case com.qifun.jsonStream.JsonStream.ARRAY(value):
+      {
+        var array:Array<Element> = [];
+        var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          for (element in generator)
+          {
+            array.push(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+          }
+        }
+        else
+        {
+          for (element in value)
+          {
+            array.push(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+          } 
+        }
+        var tarrayView:TArrayView<Element> = STM.MODULE.newTArray(array.length);
+        var i:Int = -1;
+        while (++i < array.length)
+        {
+          tarrayView.update(i, array[i]);
+        }
+        tarrayView.tarray();
+      }
+      case NULL:
+        null;
+      case stream:
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" , "NULL" ]);
+    }
+  }
+  #end
+
+  #if (java || macro)
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.TArray<Element>>>):ExprOf<Null<scala.concurrent.stm.TArray<Element>>> return
+  {
+    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTArrayDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+  }
+  #end
+}
 
 @:final
 class STMTMapDeserializerPlugin

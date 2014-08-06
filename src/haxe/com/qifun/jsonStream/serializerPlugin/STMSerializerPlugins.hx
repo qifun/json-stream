@@ -1,7 +1,6 @@
 package com.qifun.jsonStream.serializerPlugin;
 
 
-
 #if (scala_stm && (java || macro))
 import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
@@ -12,6 +11,7 @@ import haxe.macro.TypeTools;
 import scala.concurrent.stm.Ref;
 import scala.concurrent.stm.TSet;
 import scala.concurrent.stm.TMap;
+import scala.concurrent.stm.TArray;
 
 @:final
 class STMRefSerializerPlugin
@@ -71,6 +71,37 @@ class STMTSetSerializerPlugin
   #end
 }
 
+@:final
+class STMTArraySerializerPlugin
+{
+  #if java
+  public static function serializeForElement<Element>(self:JsonSerializerPluginData<scala.concurrent.stm.TArray<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  {
+    if (self.underlying == null)
+    {
+      NULL;
+    }
+    else
+    {
+      ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+      {
+        var iterator = self.underlying.single().iterator();
+        while (iterator.hasNext())
+        {
+          yield(elementSerializeFunction(new JsonSerializerPluginData(iterator.next()))).async();
+        }
+      })));
+    }
+  }
+  #end
+
+  #if (java || macro)
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.concurrent.stm.TArray<Element>>>):ExprOf<JsonStream> return
+  {
+    macro com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTArraySerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+  }
+  #end
+}
 
 class STMTMapSerializerPlugin
 {

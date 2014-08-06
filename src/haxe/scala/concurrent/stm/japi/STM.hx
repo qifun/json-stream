@@ -10,5 +10,6 @@ extern class STM
   
   public function newRef<A>(_:A):scala.concurrent.stm.RefView<A>;
 
+  public function newTArray<A>(_:Int):scala.concurrent.stm.TArrayView<A>;
 }
 #end

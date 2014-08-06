@@ -86,6 +86,9 @@ typedef STMTSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSeria
 @:dox(hide)
 typedef STMTMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTMapSerializerPlugin;
 
+@:dox(hide)
+typedef STMTArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTArraySerializerPlugin;
+
 #end
 
 @:dox(hide)
@@ -165,6 +168,9 @@ typedef STMTSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMD
 
 @:dox(hide)
 typedef STMTMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTMapDeserializerPlugin;
+
+@:dox(hide)
+typedef STMTArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTArrayDeserializerPlugin;
 #end
 
 @:dox(hide)

@@ -21,6 +21,7 @@ import com.qifun.jsonStream.bsonStream._
 import scala.concurrent.stm.japi.STM
 import scala.concurrent.stm.TSet
 import scala.concurrent.stm.TMap
+import scala.concurrent.stm.TArray
 class JsonBsonTest {
 
   implicit object UserClass2Writer extends HaxeClassWriter[UserTest](UserTestSerializer.serialize_com_qifun_jsonStream_UserTest)
@@ -129,6 +130,7 @@ class JsonBsonTest {
     val stmTest = new STMTest();
     stmTest.ref = STM.newRef[Object](Integer.valueOf(5)).ref;
     stmTest.tset = TSet(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(4));
+    stmTest.tarray = TArray(Array(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(4)))
     stmTest.tmap = TMap(
       Integer.valueOf(1) -> Integer.valueOf(2),
       Integer.valueOf(2) -> Integer.valueOf(3),
@@ -141,5 +143,6 @@ class JsonBsonTest {
     for (elem <- stmTest.tmap.single) {
       assertEquals(elem._2, stmTest2.tmap.single.get(elem._1).get.asInstanceOf[java.lang.Number].intValue())
     }
+     assertArrayEquals(stmTest.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()), stmTest2.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()))
   }
 }
