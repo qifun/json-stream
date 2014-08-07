@@ -2,6 +2,7 @@ import haxe.unit.TestRunner;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonDeserializer;
 import CSharpTest;
+import CrossPlatformTypeTest;
 
 using CSharpTestMacro;
 using com.qifun.jsonStream.Plugins;
@@ -28,6 +29,7 @@ class Main
 
   public static function main()
   {
+    CrossPlatformTypeTest.test();
     // 使用Timer以绕开在main中遇到异常时FlashDevelop调试器无法退出的Bug
     #if flash9
       haxe.Timer.delay(testAll, 0);
