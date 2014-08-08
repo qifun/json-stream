@@ -1,5 +1,6 @@
 
-class CSharpTest
+@:final
+class CSharpSimple
 {
 
   public function new() { }
