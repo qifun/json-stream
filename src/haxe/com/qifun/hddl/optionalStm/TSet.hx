@@ -1,7 +1,7 @@
 package com.qifun.hddl.optionalStm;
 
 
-#if java
+#if (java && scala_stm)
 
 abstract TSet<A>(scala.concurrent.stm.TSet<A>)
 {

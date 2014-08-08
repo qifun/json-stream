@@ -2,7 +2,7 @@ package com.qifun.hddl.optionalStm;
 
 import haxe.Int64;
 
-#if java
+#if (java && scala_stm)
 import scala.reflect.ClassTag;
 
 @:multiType(A)
