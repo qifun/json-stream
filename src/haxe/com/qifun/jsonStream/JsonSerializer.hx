@@ -888,15 +888,8 @@ class JsonSerializerGenerator
               kind: FFun(contextBuilder.newAbstractSerializeFunction(abstractType)),
             });
         }
-        if (abstractType.impl.get().meta.has(":final"))
-        {
-          var buildingClassExpr = contextBuilder.buildingClassExpr;
-          macro untyped($buildingClassExpr).$methodName($data);
-        }
-        else
-        {
-          dynamicSerialize(data, TypeTools.toComplexType(expectedType));
-        }
+        var buildingClassExpr = contextBuilder.buildingClassExpr;
+        macro untyped($buildingClassExpr).$methodName($data);
       case t:
         dynamicSerialize(data, TypeTools.toComplexType(expectedType));
     }
@@ -1015,7 +1008,7 @@ class JsonSerializerRuntime
   @:noUsing
   public static function serializeUnknown(unknown:Dynamic):JsonStreamPair return
   {
-    var unknownType = Std.instance(unknown, UnknownType);
+    var unknownType = Std.instance((unknown:{}), UnknownType);
     if (unknownType != null)
     {
       new JsonStreamPair(
@@ -1025,7 +1018,7 @@ class JsonSerializerRuntime
     else
     {
       var property = Reflect.getProperty(unknown, "unknownType");
-      var unknownType = Std.instance(property, UnknownType);
+      var unknownType = Std.instance((property:{}), UnknownType);
       if (unknownType != null)
       {
         new JsonStreamPair(

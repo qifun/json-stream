@@ -261,15 +261,8 @@ class JsonBuilderFactoryGenerator
               kind: FFun(contextBuilder.newAbstractBuildFunction(abstractType)),
             });
         }
-        if (abstractType.impl.get().meta.has(":final"))
-        {
-          var buildingClassExpr = contextBuilder.buildingClassExpr;
-          macro untyped($buildingClassExpr).$methodName($stream, $onComplete);
-        }
-        else
-        {
-          dynamicBuild(stream, onComplete, expectedType);
-        }
+        var buildingClassExpr = contextBuilder.buildingClassExpr;
+        macro untyped($buildingClassExpr).$methodName($stream, $onComplete);
       case t:
         dynamicBuild(stream, onComplete, expectedType);
     }

@@ -1015,15 +1015,8 @@ class JsonDeserializerGenerator
               kind: FFun(contextBuilder.newAbstractDeserializeFunction(abstractType)),
             });
         }
-        if (abstractType.impl.get().meta.has(":final"))
-        {
-          var buildingClassExpr = contextBuilder.buildingClassExpr;
-          macro untyped($buildingClassExpr).$methodName($stream);
-        }
-        else
-        {
-          dynamicDeserialize(stream, expectedType);
-        }
+        var buildingClassExpr = contextBuilder.buildingClassExpr;
+        macro untyped($buildingClassExpr).$methodName($stream);
       case t:
         dynamicDeserialize(stream, expectedType);
     }
