@@ -1,15 +1,15 @@
 package com.qifun.jsonStream;
 
-
+@:final
 class AbstructTypeTest
 {
 
   public function new() { }
   
-  var set:com.qifun.jsonStream.crossPlatformTypes.Set<Int>;
+  public var set:com.qifun.jsonStream.crossPlatformTypes.Set<Int>;
   
-  var list:com.qifun.jsonStream.crossPlatformTypes.ArrayList<Int>;
+  public var list:com.qifun.jsonStream.crossPlatformTypes.ArrayList<Int>;
   
-  var map:com.qifun.jsonStream.crossPlatformTypes.Map<Int, Int>;
+  public var map:com.qifun.jsonStream.crossPlatformTypes.Map<Int, Int>;
   
 }

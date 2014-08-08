@@ -1,4 +1,4 @@
-package ;
+package com.qifun.jsonStream;
 import haxe.ds.Vector;
 
 interface IHasArray<A>

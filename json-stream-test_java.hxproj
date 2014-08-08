@@ -25,9 +25,9 @@
     <option directives="no-inline&#xA;stateless_future&#xA;no-compilation&#xA;scala" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
-    <option mainClass="Main" />
+    <option mainClass="com.qifun.jsonStream.Main" />
     <option enabledebug="True" />
-    <option additional="-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
+    <option additional="-java-lib %USERPROFILE%\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.11.1.jar&#xA;-java-lib %USERPROFILE%\.ivy2\cache\org.scala-stm\scala-stm_2.11\jars\scala-stm_2.11-0.7.jar&#xA;-java-lib ..\stateless-future\target\scala-2.11\classes&#xA;-java-lib ..\stateless-future-util\target\scala-2.11\classes" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>
@@ -36,6 +36,7 @@
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
     <compile path="src\test-haxe\Main.hx" />
+    <compile path="src\test-haxe\com\qifun\jsonStream\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
