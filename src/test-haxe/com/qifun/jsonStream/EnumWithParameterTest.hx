@@ -1,6 +1,7 @@
+package com.qifun.jsonStream;
 using com.qifun.jsonStream.Plugins;
-using SimpleBuildMacro;
-import SimpleEntities;
+using com.qifun.jsonStream.SimpleBuildMacro;
+import com.qifun.jsonStream.SimpleEntities;
 
 class EnumWithParameterTest extends JsonTestCase
 {

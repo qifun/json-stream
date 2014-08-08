@@ -1,9 +1,9 @@
-package ;
+package com.qifun.jsonStream;
 using com.qifun.jsonStream.Plugins;
-using GenericClassBuildMacro;
+using com.qifun.jsonStream.GenericClassBuildMacro;
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonSerializer;
-import GenericClasses;
+import com.qifun.jsonStream.GenericClasses;
 
 class GenericClassTest extends JsonTestCase
 {

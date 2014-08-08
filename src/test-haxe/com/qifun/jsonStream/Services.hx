@@ -1,4 +1,4 @@
-package ;
+package com.qifun.jsonStream;
 
 import com.qifun.jsonStream.rpc.Future;
 

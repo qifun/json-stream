@@ -1,4 +1,4 @@
-
+package com.qifun.jsonStream;
 @:final
 class CSharpSimple
 {

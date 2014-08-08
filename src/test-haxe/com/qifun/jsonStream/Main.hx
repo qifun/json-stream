@@ -1,7 +1,8 @@
+package com.qifun.jsonStream;
 import haxe.unit.TestRunner;
-
-import CSharpPluginsTest;
-import CrossPlatformTypeTest;
+import com.qifun.jsonStream.*;
+import com.qifun.jsonStream.CSharpPluginsTest;
+import Rpc2Test;
 
 
 
@@ -19,6 +20,7 @@ class Main
     runner.add(new GenericClassTest());
     runner.add(new TextTest());
     runner.add(new CSharpPluginsTest());
+    runner.add(new AbstructTypePluginTest());
     var isSuccess = runner.run();
     if (!isSuccess)
     {

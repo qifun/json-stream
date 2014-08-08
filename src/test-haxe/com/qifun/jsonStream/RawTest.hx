@@ -1,4 +1,4 @@
-package ;
+package com.qifun.jsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.RawJson;
