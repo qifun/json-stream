@@ -68,7 +68,6 @@ class JsonEquality
       #end
       case [ TClass(_), TClass(_) ]:
       {
-        trace(Type.typeof(left) + " " +Type.typeof(right));
         var leftFields = Reflect.fields(left);
         var rightFields = Reflect.fields(right);
         if (leftFields.length != rightFields.length)
