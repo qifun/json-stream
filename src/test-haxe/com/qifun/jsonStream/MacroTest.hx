@@ -21,3 +21,10 @@ class STMTestSerializer { }
 
 @:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.STMTest"]))
 class STMTestDeserializer { }
+
+
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["com.qifun.jsonStream.AbstructTypeTest"]))
+class AbstructTypeTesttSerializer { }
+
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.AbstructTypeTest"]))
+class AbstructTypeTestDeserializer { }

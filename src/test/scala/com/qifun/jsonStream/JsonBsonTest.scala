@@ -145,4 +145,18 @@ class JsonBsonTest {
     }
      assertArrayEquals(stmTest.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()), stmTest2.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()))
   }
+  
+  @Test
+  def `AbstructTypePluginsTest`(): Unit = {
+    val a = new AbstructTypeTest();
+    a.set = scala.concurrent.stm.TSet(
+      Integer.valueOf(30), Integer.valueOf(82), Integer.valueOf(255), Integer.valueOf(4099), Integer.valueOf(96354))
+    a.list = scala.concurrent.stm.TArray(
+      Array(Integer.valueOf(1), Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(5)))
+    a.map = scala.concurrent.stm.TMap(
+      Integer.valueOf(42) -> Integer.valueOf(1764), Integer.valueOf(14) -> Integer.valueOf(196),
+      Integer.valueOf(25) -> Integer.valueOf(625), Integer.valueOf(256) -> Integer.valueOf(65536))
+    val jsonStream = AbstructTypeTesttSerializer.serialize_com_qifun_jsonStream_AbstructTypeTest(a);
+    val b = AbstructTypeTestDeserializer.deserialize_com_qifun_jsonStream_AbstructTypeTest(jsonStream);
+  }
 }
