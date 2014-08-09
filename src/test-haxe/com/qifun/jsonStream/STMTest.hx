@@ -1,7 +1,7 @@
 package com.qifun.jsonStream;
 
 
-class STMTest
+class StmTest
 {
 
   public function new() { }

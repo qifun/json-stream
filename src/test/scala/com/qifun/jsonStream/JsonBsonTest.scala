@@ -126,8 +126,8 @@ class JsonBsonTest {
   }
 
   @Test
-  def `RefPluginsTest`(): Unit = {
-    val stmTest = new STMTest();
+  def `StmPluginsTest`(): Unit = {
+    val stmTest = new StmTest();
     stmTest.ref = STM.newRef[Object](Integer.valueOf(5)).ref;
     stmTest.tset = TSet(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(4));
     stmTest.tarray = TArray(Array(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(4)))
@@ -136,8 +136,8 @@ class JsonBsonTest {
       Integer.valueOf(2) -> Integer.valueOf(3),
       Integer.valueOf(4) -> Integer.valueOf(1),
       Integer.valueOf(3) -> Integer.valueOf(3))
-    val jsonStream = STMTestSerializer.serialize_com_qifun_jsonStream_STMTest(stmTest)
-    val stmTest2 = STMTestDeserializer.deserialize_com_qifun_jsonStream_STMTest(jsonStream)
+    val jsonStream = StmTestSerializer.serialize_com_qifun_jsonStream_StmTest(stmTest)
+    val stmTest2 = StmTestDeserializer.deserialize_com_qifun_jsonStream_StmTest(jsonStream)
     assertEquals(stmTest.ref.single.get, stmTest2.ref.single.get.asInstanceOf[java.lang.Number].intValue());
     assertArrayEquals(stmTest.tset.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()), stmTest2.tset.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()))
     for (elem <- stmTest.tmap.single) {
@@ -147,8 +147,8 @@ class JsonBsonTest {
   }
   
   @Test
-  def `AbstructTypePluginsTest`(): Unit = {
-    val a = new AbstructTypeTest();
+  def `AbstractTypePluginsTest`(): Unit = {
+    val a = new AbstractTypeTest();
     a.set = scala.concurrent.stm.TSet(
       Integer.valueOf(30), Integer.valueOf(82), Integer.valueOf(255), Integer.valueOf(4099), Integer.valueOf(96354))
     a.list = scala.concurrent.stm.TArray(
@@ -156,7 +156,7 @@ class JsonBsonTest {
     a.map = scala.concurrent.stm.TMap(
       Integer.valueOf(42) -> Integer.valueOf(1764), Integer.valueOf(14) -> Integer.valueOf(196),
       Integer.valueOf(25) -> Integer.valueOf(625), Integer.valueOf(256) -> Integer.valueOf(65536))
-    val jsonStream = AbstructTypeTesttSerializer.serialize_com_qifun_jsonStream_AbstructTypeTest(a);
-    val b = AbstructTypeTestDeserializer.deserialize_com_qifun_jsonStream_AbstructTypeTest(jsonStream);
+    val jsonStream = AbstractTypeTesttSerializer.serialize_com_qifun_jsonStream_AbstractTypeTest(a);
+    val b = AbstractTypeTestDeserializer.deserialize_com_qifun_jsonStream_AbstractTypeTest(jsonStream);
   }
 }

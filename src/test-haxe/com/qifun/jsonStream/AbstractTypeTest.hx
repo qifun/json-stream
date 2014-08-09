@@ -1,7 +1,7 @@
 package com.qifun.jsonStream;
 
 @:final
-class AbstructTypeTest
+class AbstractTypeTest
 {
 
   public function new() { }

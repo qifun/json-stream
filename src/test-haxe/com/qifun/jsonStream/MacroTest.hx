@@ -16,15 +16,15 @@ class TypeTestSerializer { }
 class TypeTestDeserializer { }
 
 
-@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["com.qifun.jsonStream.STMTest"]))
-class STMTestSerializer { }
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["com.qifun.jsonStream.StmTest"]))
+class StmTestSerializer { }
 
-@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.STMTest"]))
-class STMTestDeserializer { }
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.StmTest"]))
+class StmTestDeserializer { }
 
 
-@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["com.qifun.jsonStream.AbstructTypeTest"]))
-class AbstructTypeTesttSerializer { }
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer(["com.qifun.jsonStream.AbstractTypeTest"]))
+class AbstractTypeTesttSerializer { }
 
-@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.AbstructTypeTest"]))
-class AbstructTypeTestDeserializer { }
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer(["com.qifun.jsonStream.AbstractTypeTest"]))
+class AbstractTypeTestDeserializer { }

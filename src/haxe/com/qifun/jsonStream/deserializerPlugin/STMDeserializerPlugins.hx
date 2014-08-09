@@ -18,7 +18,7 @@ import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 
 @:final
-class STMRefDeserializerPlugin
+class StmRefDeserializerPlugin
 {
   #if java
   @:dox(hide)
@@ -42,13 +42,13 @@ class STMRefDeserializerPlugin
   #if (java || macro)
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.Ref<Element>>>):ExprOf<Null<scala.concurrent.stm.Ref<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMRefDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
   #end
 }
 
 @:final
-class STMTSetDeserializerPlugin
+class StmTSetDeserializerPlugin
 {
   #if java
   @:dox(hide)
@@ -87,13 +87,13 @@ class STMTSetDeserializerPlugin
   #if (java || macro)
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.TSet<Element>>>):ExprOf<Null<scala.concurrent.stm.TSet<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTSetDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTSetDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
   #end
 }
 
 @:final
-class STMTArrayDeserializerPlugin
+class StmTArrayDeserializerPlugin
 {
   #if java
   @:dox(hide)
@@ -138,13 +138,13 @@ class STMTArrayDeserializerPlugin
   #if (java || macro)
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.TArray<Element>>>):ExprOf<Null<scala.concurrent.stm.TArray<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTArrayDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTArrayDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
   }
   #end
 }
 
 @:final
-class STMTMapDeserializerPlugin
+class StmTMapDeserializerPlugin
 {
   #if java
   
@@ -246,7 +246,7 @@ class STMTMapDeserializerPlugin
   #if (java || macro)
   macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<scala.concurrent.stm.TMap<Key, Value>>>):ExprOf<Null<scala.concurrent.stm.TMap<Key, Value>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTMapDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTMapDeserializerPlugin.deserializeForElement($self, function(substream1) return substream1.pluginDeserialize(), function(substream2) return substream2.pluginDeserialize());
   }
   #end
 }

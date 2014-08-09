@@ -78,16 +78,16 @@ typedef CSharpHashSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CS
 #if scala_stm
 
 @:dox(hide)
-typedef STMRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMRefSerializerPlugin;
+typedef StmRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin;
 
 @:dox(hide)
-typedef STMTSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTSetSerializerPlugin;
+typedef StmTSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTSetSerializerPlugin;
 
 @:dox(hide)
-typedef STMTMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTMapSerializerPlugin;
+typedef StmTMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTMapSerializerPlugin;
 
 @:dox(hide)
-typedef STMTArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.STMSerializerPlugins.STMTArraySerializerPlugin;
+typedef StmTArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTArraySerializerPlugin;
 
 #end
 
@@ -161,16 +161,16 @@ typedef CSharpHashSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugi
 #if scala_stm
 
 @:dox(hide)
-typedef STMRefDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMRefDeserializerPlugin;
+typedef StmRefDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin;
 
 @:dox(hide)
-typedef STMTSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTSetDeserializerPlugin;
+typedef StmTSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTSetDeserializerPlugin;
 
 @:dox(hide)
-typedef STMTMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTMapDeserializerPlugin;
+typedef StmTMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTMapDeserializerPlugin;
 
 @:dox(hide)
-typedef STMTArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.STMDeserializerPlugins.STMTArrayDeserializerPlugin;
+typedef StmTArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTArrayDeserializerPlugin;
 #end
 
 @:dox(hide)

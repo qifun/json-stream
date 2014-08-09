@@ -20,7 +20,7 @@ class Main
     runner.add(new GenericClassTest());
     runner.add(new TextTest());
     runner.add(new CSharpPluginsTest());
-    runner.add(new AbstructTypePluginTest());
+    runner.add(new AbstractTypePluginTest());
     var isSuccess = runner.run();
     if (!isSuccess)
     {

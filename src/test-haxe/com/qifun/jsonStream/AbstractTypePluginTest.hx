@@ -10,11 +10,11 @@ import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 
-class AbstructTypePluginTest extends JsonTestCase
+class AbstractTypePluginTest extends JsonTestCase
 {
-  function testAbstructTypeSerializerPlugins()
+  function testAbstractTypeSerializerPlugins()
   {
-    var o = new AbstructTypeTest();
+    var o = new AbstractTypeTest();
     #if (java && scala_stm)
       var setBuilder:scala.collection.mutable.Builder<Int, scala.concurrent.stm.TSet<Int>> = scala.concurrent.stm.TSet.TSetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
@@ -39,7 +39,7 @@ class AbstructTypePluginTest extends JsonTestCase
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
       o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
     #elseif cs
-      var set = new dotnet.system.collections.generic.HashSet;
+      var set = new dotnet.system.collections.generic.HashSet();
       set.Add(30);
       set.Add(82);
       set.Add(255);
@@ -47,7 +47,7 @@ class AbstructTypePluginTest extends JsonTestCase
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(set);
       
-      var list = new dotnet.system.collections.generic.List;
+      var list = new dotnet.system.collections.generic.List();
       list.Add(1);
       list.Add(1);
       list.Add(2);
@@ -55,12 +55,12 @@ class AbstructTypePluginTest extends JsonTestCase
       list.Add(5);
       o.list = new com.qifun.jsonStream.crossPlatformTypes.ArrayList(list);
       
-      var map = new dotnet.system.collections.generic.Dictionary;
+      var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
       map.Add(14, 169);
       map.Add(25, 625);
       map.Add(256, 65536);
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.ArrayList(map);
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(map);
       
     #elseif (java && scala && !scala_stm)
       var setBuilder:scala.collection.mutable.Builder<Int, Dynamic> = scala.collection.immutable.Set.SetSingleton.MODULE.newBuilder();
@@ -89,15 +89,15 @@ class AbstructTypePluginTest extends JsonTestCase
     
     var jsonStream = JsonSerializer.serialize(o);
     assertDeepEquals( 
-    {list:[ { Int:1 }, { Int:1 }, { Int:2 }, { Int:3 }, { Int:5 } ],
+    new RawJson({ list:[ { Int:1 }, { Int:1 }, { Int:2 }, { Int:3 }, { Int:5 } ],
      map:[[ { Int:14 }, { Int:169 } ], [ { Int:25 }, { Int:625 } ], [ { Int:42 }, { Int:1764 } ], 
-     [ { Int:256 }, { Int:65536 } ]], set : [ { Int : 30 }, { Int : 82 }, { Int : 255 }, { Int : 4099 }, { Int : 96354 } ] }
+     [ { Int:256 }, { Int:65536 } ]], set : [ { Int : 30 }, { Int : 82 }, { Int : 255 }, { Int : 4099 }, { Int : 96354 } ] })
     , JsonDeserializer.deserializeRaw(jsonStream));
   }
   
-  function testAbstructTypeDeseralizerPlugins()
+  function testAbstractTypeDeseralizerPlugins()
   {
-    var o = new AbstructTypeTest();
+    var o = new AbstractTypeTest();
     #if (java && scala_stm)
       var setBuilder:scala.collection.mutable.Builder<Int, scala.concurrent.stm.TSet<Int>> = scala.concurrent.stm.TSet.TSetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
@@ -122,7 +122,7 @@ class AbstructTypePluginTest extends JsonTestCase
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
       o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
     #elseif cs
-      var set = new dotnet.system.collections.generic.HashSet;
+      var set = new dotnet.system.collections.generic.HashSet();
       set.Add(30);
       set.Add(82);
       set.Add(255);
@@ -130,7 +130,7 @@ class AbstructTypePluginTest extends JsonTestCase
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(set);
       
-      var list = new dotnet.system.collections.generic.List;
+      var list = new dotnet.system.collections.generic.List();
       list.Add(1);
       list.Add(1);
       list.Add(2);
@@ -138,12 +138,12 @@ class AbstructTypePluginTest extends JsonTestCase
       list.Add(5);
       o.list = new com.qifun.jsonStream.crossPlatformTypes.ArrayList(list);
       
-      var map = new dotnet.system.collections.generic.Dictionary;
+      var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
       map.Add(14, 169);
       map.Add(25, 625);
       map.Add(256, 65536);
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.ArrayList(map);
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(map);
       
      #elseif (java && scala && !scala_stm)
       var setBuilder:scala.collection.mutable.Builder<Int, Dynamic> = scala.collection.immutable.Set.SetSingleton.MODULE.newBuilder();
@@ -173,7 +173,7 @@ class AbstructTypePluginTest extends JsonTestCase
     var jsonStream = JsonSerializer.serializeRaw(new RawJson({list:[ { Int:1 }, { Int:1 }, { Int:2 }, { Int:3 }, { Int:5 } ],
      map:[[ { Int:14 }, { Int:169 } ], [ { Int:25 }, { Int:625 } ], [ { Int:42 }, { Int:1764 } ], 
      [ { Int:256 }, { Int:65536 } ]], set : [ { Int : 30 }, { Int : 82 }, { Int : 255 }, { Int : 4099 }, { Int : 96354 } ] }));
-    var o2:AbstructTypeTest = JsonDeserializer.deserialize(jsonStream);
+    var o2:AbstractTypeTest = JsonDeserializer.deserialize(jsonStream);
     assertDeepEquals(o, o2);
   }
 }
