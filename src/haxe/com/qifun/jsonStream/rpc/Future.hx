@@ -92,18 +92,21 @@ extends AbstractFunction2<Function1<AwaitResult, BoxedUnit>, PartialFunction<Thr
 typedef NativeFuture<AwaitResult> = com.qifun.statelessFuture.Awaitable<AwaitResult, BoxedUnit>;
 #else
 
-private interface ICompleteHandler<AwaitResult>
+@:dox(hide)
+interface ICompleteHandler<AwaitResult>
 {
   function onSuccess(awaitResult:AwaitResult):Void;
   function onFailure(error:Dynamic):Void;
 }
 
-private interface ICatcher
+@:dox(hide)
+interface ICatcher
 {
   function apply(error:Dynamic):Void;
 }
 
-private interface IFuture<AwaitResult>
+@:dox(hide)
+interface IFuture<AwaitResult>
 {
   function start(handler:ICompleteHandler<AwaitResult>):Void;
 }
