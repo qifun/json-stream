@@ -94,9 +94,9 @@ typedef NativeFuture<AwaitResult> = com.qifun.statelessFuture.Awaitable<AwaitRes
 
 #elseif cs
 
-typedef DotNetCatcher = dotnet.system.Action1<Dynamic>
+typedef DotNetCatcher = cs.system.Action_1<Dynamic>
 
-typedef DotNetCompleteHandler<AwaitResult> = dotnet.system.Action1<AwaitResult>
+typedef DotNetCompleteHandler<AwaitResult> = cs.system.Action_1<AwaitResult>
 
 typedef NativeFuture<AwaitResult> = dotnet.system.Action2<DotNetCompleteHandler<AwaitResult>, DotNetCatcher>
 
@@ -106,38 +106,16 @@ private class FunctionFuture<AwaitResult>
 
   var startFunction:(AwaitResult->Void)->Catcher->Void;
 
-  public inline function new(startFunction:(AwaitResult->Void)->Catcher->Void)
+  public function new(startFunction:(AwaitResult->Void)->Catcher->Void)
   {
     this.startFunction = startFunction;
   }
 
   public inline function start(handler:DotNetCompleteHandler<AwaitResult>, catcher:DotNetCatcher):Void
   {
-    startFunction(handler.Invoke.bind(), catcher.Invoke.bind());
-  }
-
-}
-
-@:final
-private class FunctionCompleteHandler<AwaitResult>
-{
-
-  var onSuccessFunction:AwaitResult->Void;
-  public function onSuccess(awaitResult:AwaitResult):Void
-  {
-    onSuccessFunction(awaitResult);
-  }
-
-  var onFailureFunction:Catcher;
-  public function onFailure(error:Dynamic):Void
-  {
-    onFailureFunction(error);
-  }
-
-  public inline function new(onSuccessFunction:AwaitResult->Void, onFailureFunction:Catcher)
-  {
-    this.onSuccessFunction = onSuccessFunction;
-    this.onFailureFunction = onFailureFunction;
+    startFunction(
+      function (r:AwaitResult) handler.Invoke(r),
+      function (e:Dynamic) catcher.Invoke(e));
   }
 
 }
@@ -220,14 +198,14 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
         function(tupleHandler:AwaitResult->Void, catcher:Dynamic->Void):Void
           startFunction(tupleHandler, catcher)));
     #elseif cs
-    var wrapper = new FunctionFuture(startFunction);
+    var wrapper = new FunctionFuture<AwaitResult>(startFunction);
     this = untyped __cs__("wrapper.start");
     #else
     this = new FunctionFuture(startFunction);
     #end
   }
 
-  public #if (!cs) inline #end function start(
+  public inline function start(
     completeHandler:AwaitResult->Void,
     errorHandler:Catcher):Void
   {
@@ -237,12 +215,9 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
       untyped new com.qifun.jsonStream.rpc.Future.HaxeToScalaOnCompleteFunction(completeHandler),
       new com.qifun.jsonStream.rpc.Future.HaxeToScalaCatcher(errorHandler));
     #elseif cs
-    var wrapper = new FunctionCompleteHandler(completeHandler, errorHandler);
-    this.Invoke(
-      untyped __cs__("wrapper.onSuccess"),
-      untyped __cs__("wrapper.onFailure"));
+    this.Invoke(cs.system.Action_1.FromHaxeFunction(function(r:AwaitResult)completeHandler(r)), cs.system.Action_1.FromHaxeFunction(function(e:Dynamic)errorHandler(e)));
     #else
-    this.start(new FunctionCompleteHandler(completeHandler, errorHandler));
+    this.start(new FunctionCompleteHandler<AwaitResult>(completeHandler, errorHandler));
     #end
   }
 
