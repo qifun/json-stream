@@ -31,11 +31,10 @@
   <!-- haxelib libraries -->
   <haxelib>
     <library name="continuation" />
-    <library name="hugs" />
+    <library name="HUGS" />
   </haxelib>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="src\test-haxe\Main.hx" />
     <compile path="src\test-haxe\com\qifun\jsonStream\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
