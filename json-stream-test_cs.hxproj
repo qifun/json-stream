@@ -24,7 +24,7 @@
     <option directives="no-inline&#xA;real-position" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
-    <option mainClass="Main" />
+    <option mainClass="com.qifun.jsonStream.Main" />
     <option enabledebug="True" />
     <option additional="" />
   </build>
@@ -36,6 +36,7 @@
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
     <compile path="src\test-haxe\Main.hx" />
+    <compile path="src\test-haxe\com\qifun\jsonStream\Main.hx" />
   </compileTargets>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
