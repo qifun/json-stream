@@ -106,12 +106,12 @@ private class FunctionFuture<AwaitResult>
 
   var startFunction:(AwaitResult->Void)->Catcher->Void;
 
-  public inline function new(startFunction:(AwaitResult->Void)->Catcher->Void)
+  public function new(startFunction:(AwaitResult->Void)->Catcher->Void)
   {
     this.startFunction = startFunction;
   }
 
-  public inline function start(handler:DotNetCompleteHandler<AwaitResult>, catcher:DotNetCatcher):Void
+  public function start(handler:DotNetCompleteHandler<AwaitResult>, catcher:DotNetCatcher):Void
   {
     startFunction(handler.Invoke.bind(), catcher.Invoke.bind());
   }
@@ -134,7 +134,7 @@ private class FunctionCompleteHandler<AwaitResult>
     onFailureFunction(error);
   }
 
-  public inline function new(onSuccessFunction:AwaitResult->Void, onFailureFunction:Catcher)
+  public function new(onSuccessFunction:AwaitResult->Void, onFailureFunction:Catcher)
   {
     this.onSuccessFunction = onSuccessFunction;
     this.onFailureFunction = onFailureFunction;
@@ -145,6 +145,7 @@ private class FunctionCompleteHandler<AwaitResult>
 #else
 
 @:dox(hide)
+@:nativeGen
 interface ICompleteHandler<AwaitResult>
 {
   function onSuccess(awaitResult:AwaitResult):Void;
@@ -152,12 +153,14 @@ interface ICompleteHandler<AwaitResult>
 }
 
 @:dox(hide)
+@:nativeGen
 interface ICatcher
 {
   function apply(error:Dynamic):Void;
 }
 
 @:dox(hide)
+@:nativeGen
 interface IFuture<AwaitResult>
 {
   function start(handler:ICompleteHandler<AwaitResult>):Void;
