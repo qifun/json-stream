@@ -123,6 +123,7 @@ private class FunctionFuture<AwaitResult>
 #else
 
 @:dox(hide)
+@:nativeGen
 interface ICompleteHandler<AwaitResult>
 {
   function onSuccess(awaitResult:AwaitResult):Void;
@@ -130,12 +131,14 @@ interface ICompleteHandler<AwaitResult>
 }
 
 @:dox(hide)
+@:nativeGen
 interface ICatcher
 {
   function apply(error:Dynamic):Void;
 }
 
 @:dox(hide)
+@:nativeGen
 interface IFuture<AwaitResult>
 {
   function start(handler:ICompleteHandler<AwaitResult>):Void;
