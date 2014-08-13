@@ -212,7 +212,7 @@ class OutgoingProxyFactory
               }
             ];
             var methodBody =
-              macro return new com.qifun.jsonStream.rpc.Future(
+              macro return new com.qifun.jsonStream.rpc.Future<$complexResponseType>(
                 function(responseHandler:$complexResponseType->Void, catcher:Dynamic->Void):Void
                 {
                   this.outgoingRpc.apply(

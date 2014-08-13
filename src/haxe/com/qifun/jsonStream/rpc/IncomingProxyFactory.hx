@@ -117,7 +117,7 @@ class IncomingProxyFactory
                 [
                   {
                     name: "response",
-                    type: null,
+                    type: complexResponseType,
                   }
                 ],
                 ret: null,
