@@ -4,7 +4,7 @@ import haxe.unit.TestCase;
 
 class CrossPlatformTypeTest extends TestCase
 {
- 
+
   function testType()
   {
     #if (java && scala && !scala_stm)
@@ -21,5 +21,5 @@ class CrossPlatformTypeTest extends TestCase
       var map = new com.qifun.jsonStream.crossPlatformTypes.Map<Dynamic, Dynamic>(scala.concurrent.stm.japi.STM.MODULE.newTMap().tmap());
     #end
   }
-  
+
 }
