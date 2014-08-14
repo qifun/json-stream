@@ -22,10 +22,11 @@ import dotnet.system.collections.generic.HashSet;
 class CSharpListDeserializerPlugin
 {
   #if cs
+  @:noUsing
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<dotnet.system.collections.generic.List<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<dotnet.system.collections.generic.List<Element>> return
+  public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<dotnet.system.collections.generic.List<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<dotnet.system.collections.generic.List<Element>> return
   {
-    switch (self.underlying)
+    switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
@@ -69,14 +70,15 @@ class CSharpListDeserializerPlugin
 class CSharpDictionaryDeserializerPlugin
 {
   #if cs
+  @:noUsing
   @:dox(hide)
   public static function deserializeForElement<Key, Value>(
-    self:JsonDeserializerPluginStream<dotnet.system.collections.generic.Dictionary<Key, Value>>, 
-    keyDeserializeFunction:JsonDeserializerPluginStream<Key>->Key, 
+    stream:JsonDeserializerPluginStream<dotnet.system.collections.generic.Dictionary<Key, Value>>,
+    keyDeserializeFunction:JsonDeserializerPluginStream<Key>->Key,
     valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
     Null<dotnet.system.collections.generic.Dictionary<Key, Value>> return
   {
-    switch (self.underlying)
+    switch (stream.underlying)
     {
       case ARRAY(iterator):
       {
@@ -178,10 +180,11 @@ class CSharpDictionaryDeserializerPlugin
 class CSharpHashSetDeserializerPlugin
 {
   #if cs
+  @:noUsing
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<dotnet.system.collections.generic.HashSet<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<dotnet.system.collections.generic.HashSet<Element>> return
+  public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<dotnet.system.collections.generic.HashSet<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<dotnet.system.collections.generic.HashSet<Element>> return
   {
-    switch (self.underlying)
+    switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {

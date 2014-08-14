@@ -12,7 +12,7 @@ import haxe.io.Bytes;
 @:final
 class Int64SerializerPlugin
 {
-  
+
   private static function toInt64(d:Dynamic):Int64 return
   {
     #if java
@@ -93,7 +93,7 @@ class BoolSerializerPlugin
 }
 
 @:final
-class BinarySerializerPlugin 
+class BinarySerializerPlugin
 {
   public static function pluginSerialize(self:JsonSerializerPluginData<Bytes>):JsonStream return
   {
@@ -114,9 +114,9 @@ class StringSerializerPlugin
 class ArraySerializerPlugin
 {
 
-  public static function serializeForElement<Element>(self:JsonSerializerPluginData<Array<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  public static function serializeForElement<Element>(data:Array<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -124,7 +124,7 @@ class ArraySerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        for (element in self.underlying)
+        for (element in data)
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(element))).async();
         }
@@ -134,7 +134,7 @@ class ArraySerializerPlugin
 
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<Array<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
   }
 }
 
@@ -142,9 +142,9 @@ class ArraySerializerPlugin
 class VectorSerializerPlugin
 {
 
-  public static function serializeForElement<Element>(self:JsonSerializerPluginData<Vector<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  public static function serializeForElement<Element>(data:Vector<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -152,9 +152,11 @@ class VectorSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        for (i in 0...self.underlying.length)
+        var i = 0;
+        while (i < data.length)
         {
-          var element = self.underlying[i];
+          var element = data[i];
+          i += i;
           yield(elementSerializeFunction(new JsonSerializerPluginData(element))).async();
         }
       })));
@@ -163,7 +165,7 @@ class VectorSerializerPlugin
 
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<Vector<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
   }
 }
 

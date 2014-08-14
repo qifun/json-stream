@@ -21,6 +21,7 @@ import com.qifun.jsonStream.JsonDeserializer;
 class StmRefDeserializerPlugin
 {
   #if java
+  @:noUsing
   @:dox(hide)
   public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<scala.concurrent.stm.Ref<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<scala.concurrent.stm.Ref<Element>> return
   {
@@ -72,7 +73,7 @@ class StmTSetDeserializerPlugin
           for (element in value)
           {
             setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
-          } 
+          }
         }
         setBuilder.result();
       }
@@ -117,7 +118,7 @@ class StmTArrayDeserializerPlugin
           for (element in value)
           {
             array.push(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
-          } 
+          }
         }
         var tarrayView:TArrayView<Element> = STM.MODULE.newTArray(array.length);
         var i:Int = -1;
@@ -147,11 +148,11 @@ class StmTArrayDeserializerPlugin
 class StmTMapDeserializerPlugin
 {
   #if java
-  
+
   @:dox(hide)
   public static function deserializeForElement<Key, Value>(
-    self:JsonDeserializerPluginStream<scala.concurrent.stm.TMap<Key, Value>>, 
-    keyDeserializeFunction:JsonDeserializerPluginStream<Key>->Key, 
+    self:JsonDeserializerPluginStream<scala.concurrent.stm.TMap<Key, Value>>,
+    keyDeserializeFunction:JsonDeserializerPluginStream<Key>->Key,
     valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
     Null<scala.concurrent.stm.TMap<Key, Value>> return
   {

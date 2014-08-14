@@ -22,9 +22,10 @@ import dotnet.system.collections.generic.HashSet;
 class CSharpListSerializerPlugin
 {
   #if cs
-  public static function serializeForElement<Element>(self:JsonSerializerPluginData<dotnet.system.collections.generic.List<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  @:noUsing
+  public static function serializeForElement<Element>(data:dotnet.system.collections.generic.List<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -32,7 +33,7 @@ class CSharpListSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var enumerator:IEnumerator<Element> = self.underlying.GetEnumerator();
+        var enumerator:IEnumerator<Element> = data.GetEnumerator();
         while(enumerator.MoveNext())
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(enumerator.Current))).async();
@@ -41,10 +42,10 @@ class CSharpListSerializerPlugin
     }
   }
   #end
-  
+
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<dotnet.system.collections.generic.List<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpListSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpListSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
   }
 
 }
@@ -58,11 +59,11 @@ class CSharpDictionarySerializerPlugin
 {
   #if cs
   public static function serializeForElement<Key, Value>(
-    self:JsonSerializerPluginData<dotnet.system.collections.generic.Dictionary<Key, Value>>, 
-    KeySerializeFunction:JsonSerializerPluginData<Key>->JsonStream, 
+    data:dotnet.system.collections.generic.Dictionary<Key, Value>,
+    KeySerializeFunction:JsonSerializerPluginData<Key>->JsonStream,
     ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -70,7 +71,7 @@ class CSharpDictionarySerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var enumerator:IEnumerator<dotnet.system.collections.generic.KeyValuePair<Key, Value>> = self.underlying.GetEnumerator();
+        var enumerator:IEnumerator<dotnet.system.collections.generic.KeyValuePair<Key, Value>> = data.GetEnumerator();
         while (enumerator.MoveNext())
         {
           yield(ARRAY(
@@ -87,7 +88,7 @@ class CSharpDictionarySerializerPlugin
 
   macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<dotnet.system.collections.generic.Dictionary<Key, Value>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpDictionarySerializerPlugin.serializeForElement($self, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpDictionarySerializerPlugin.serializeForElement($self.underlying, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
   }
 }
 
@@ -100,9 +101,10 @@ class CSharpDictionarySerializerPlugin
 class CSharpHashSetSerializerPlugin
 {
   #if cs
-  public static function serializeForElement<Element>(self:JsonSerializerPluginData<dotnet.system.collections.generic.HashSet<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  @:noUsing
+  public static function serializeForElement<Element>(data:dotnet.system.collections.generic.HashSet<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -110,7 +112,7 @@ class CSharpHashSetSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var enumerator:IEnumerator<Element> = self.underlying.GetEnumerator();
+        var enumerator:IEnumerator<Element> = data.GetEnumerator();
         while(enumerator.MoveNext())
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(enumerator.Current))).async();
@@ -119,10 +121,10 @@ class CSharpHashSetSerializerPlugin
     }
   }
   #end
-  
+
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<dotnet.system.collections.generic.HashSet<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
   }
 }
-#end 
+#end
