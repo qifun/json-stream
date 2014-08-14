@@ -156,7 +156,7 @@ class VectorSerializerPlugin
         while (i < data.length)
         {
           var element = data[i];
-          i += i;
+          i += 1;
           yield(elementSerializeFunction(new JsonSerializerPluginData(element))).async();
         }
       })));
