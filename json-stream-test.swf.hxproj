@@ -21,10 +21,10 @@
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="no-inline" />
+    <option directives="no-inline&#xA;no-opt" />
     <option flashStrict="True" />
     <option noInlineOnDebug="True" />
-    <option mainClass="Main" />
+    <option mainClass="com.qifun.jsonStream.Main" />
     <option enabledebug="True" />
     <option additional="" />
   </build>
@@ -34,15 +34,7 @@
   </haxelib>
   <!-- Class files to compile (other referenced classes will automatically be included) -->
   <compileTargets>
-    <compile path="src\Main.hx" />
-    <compile path="haxelib-release\com\qifun\structuralizaion\Structuralization.hx" />
-    <compile path="tests\Main2.hx" />
-    <compile path="tests\HaxeJavaCrash.hx" />
-    <compile path="tests\Bug.hx" />
-    <compile path="tests\Int64ValueType.hx" />
-    <compile path="tests\Int64Enum.hx" />
-    <compile path="tests\Main.hx.backup" />
-    <compile path="tests\Main.hx" />
+    <compile path="src\test-haxe\com\qifun\jsonStream\Main.hx" />
   </compileTargets>
   <!-- Assets to embed into the output SWF -->
   <library>
