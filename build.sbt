@@ -16,13 +16,29 @@ haxeOptions in Compile ++= Seq("-D", "stateless_future")
 
 haxeOptions in Test ++= Seq("-D", "stateless_future")
 
-haxeOptions in Compile ++= Seq("-D", "scala")
-
-haxeOptions in Test ++= Seq("-D", "scala")
-
 haxeOptions in Compile ++= Seq("-D", "scala_stm")
 
 haxeOptions in Test ++= Seq("-D", "scala_stm")
+
+haxeOptions in Compile ++= Seq("-D", "scala")
+
+haxeOptions ++= Seq("-lib", "hxparse")
+
+haxeOptions ++= Seq("-lib", "haxeparser")
+
+haxeOptions in Test ++= Seq("-D", "scala")
+
+haxeOptions ++= Seq("--macro", "com.qifun.util.ClassList.save('classes-of-project-json-stream.list')")
+
+haxeOptions in Compile ++= Seq("java.io.NativeInput", "java.io.NativeOutput", "haxe.zip.Huffman")
+
+haxeOptions in CSharp ++= Seq("cs.io.NativeInput", "cs.io.NativeInput")
+
+val commonInclude = Seq("sys.io.FileInput", "sys.io.FileOutput", "haxeparser.HaxeParser")
+
+haxeOptions in CSharp ++= commonInclude
+
+haxeOptions in Compile ++= commonInclude
 
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 

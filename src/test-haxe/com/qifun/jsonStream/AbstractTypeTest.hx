@@ -8,7 +8,7 @@ class AbstractTypeTest
 
   public var set:com.qifun.jsonStream.crossPlatformTypes.Set<Int>;
 
-  public var list:com.qifun.jsonStream.crossPlatformTypes.Vector<Int>;
+  public var list:com.qifun.jsonStream.crossPlatformTypes.Vector<String>;
 
   public var map:com.qifun.jsonStream.crossPlatformTypes.Map<Int, Int>;
 
