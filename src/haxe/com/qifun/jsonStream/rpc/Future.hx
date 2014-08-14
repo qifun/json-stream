@@ -100,26 +100,6 @@ typedef DotNetCompleteHandler<AwaitResult> = cs.system.Action_1<AwaitResult>
 
 typedef NativeFuture<AwaitResult> = dotnet.system.Action2<DotNetCompleteHandler<AwaitResult>, DotNetCatcher>
 
-@:final
-private class FunctionFuture<AwaitResult>
-{
-
-  var startFunction:(AwaitResult->Void)->Catcher->Void;
-
-  public function new(startFunction:(AwaitResult->Void)->Catcher->Void)
-  {
-    this.startFunction = startFunction;
-  }
-
-  public inline function start(handler:DotNetCompleteHandler<AwaitResult>, catcher:DotNetCatcher):Void
-  {
-    startFunction(
-      function (r:AwaitResult) handler.Invoke(r),
-      function (e:Dynamic) catcher.Invoke(e));
-  }
-
-}
-
 #else
 
 @:dox(hide)
@@ -192,7 +172,7 @@ typedef NativeFuture<AwaitResult> = IFuture<AwaitResult>;
 abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
 {
 
-  public #if (!cs) inline #end function new(startFunction:(AwaitResult->Void)->Catcher->Void)
+  public inline function new(startFunction:(AwaitResult->Void)->Catcher->Void)
   {
     #if (stateless_future && java)
     // 此处由于Haxe bugs，所以必须加上untyped
@@ -201,8 +181,11 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
         function(tupleHandler:AwaitResult->Void, catcher:Dynamic->Void):Void
           startFunction(tupleHandler, catcher)));
     #elseif cs
-    var wrapper = new FunctionFuture<AwaitResult>(startFunction);
-    this = untyped __cs__("wrapper.start");
+      this = cast untyped __delegate__(
+        function(handler:cs.system.Action_1<AwaitResult>, catcher:cs.system.Action_1<Dynamic>):Void
+          startFunction(
+            function (r:AwaitResult) handler.Invoke(r),
+            function (e:Dynamic) catcher.Invoke(e)));
     #else
     this = new FunctionFuture(startFunction);
     #end
