@@ -20,9 +20,9 @@ import scala.collection.immutable.Map;
 class ScalaSeqSerializerPlugin
 {
   #if java
-  public static function serializeForElement<Element>(self:JsonSerializerPluginData<scala.collection.immutable.Seq<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  public static function serializeForElement<Element>(data:scala.collection.immutable.Seq<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -30,7 +30,7 @@ class ScalaSeqSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var iterator = self.underlying.iterator();
+        var iterator = data.iterator();
         while (iterator.hasNext())
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(iterator.next()))).async();
@@ -43,7 +43,7 @@ class ScalaSeqSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.collection.immutable.Seq<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSeqSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSeqSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
   }
   #end
 }
@@ -56,9 +56,9 @@ class ScalaSeqSerializerPlugin
 class ScalaSetSerializerPlugin
 {
   #if java
-  public static function serializeForElement<Element>(self:JsonSerializerPluginData<scala.collection.immutable.Set<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  public static function serializeForElement<Element>(data:scala.collection.immutable.Set<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -66,7 +66,7 @@ class ScalaSetSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var iterator = self.underlying.iterator();
+        var iterator = data.iterator();
         while (iterator.hasNext())
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(iterator.next()))).async();
@@ -79,7 +79,7 @@ class ScalaSetSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.collection.immutable.Set<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSetSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSetSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
   }
   #end
 }
@@ -94,11 +94,11 @@ class ScalaMapSerializerPlugin
 {
   #if java
   public static function serializeForElement<Key, Value>(
-    self:JsonSerializerPluginData<scala.collection.immutable.Map<Key, Value>>, 
-    KeySerializeFunction:JsonSerializerPluginData<Key>->JsonStream, 
+    data:scala.collection.immutable.Map<Key, Value>,
+    KeySerializeFunction:JsonSerializerPluginData<Key>->JsonStream,
     ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
   {
-    if (self.underlying == null)
+    if (data == null)
     {
       NULL;
     }
@@ -106,7 +106,7 @@ class ScalaMapSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var iterator = self.underlying.iterator();
+        var iterator = data.iterator();
         while (iterator.hasNext())
         {
           yield(ARRAY(
@@ -125,7 +125,7 @@ class ScalaMapSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<scala.collection.immutable.Map<Key, Value>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaMapSerializerPlugin.serializeForElement($self, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaMapSerializerPlugin.serializeForElement($self.underlying, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
   }
   #end
 }

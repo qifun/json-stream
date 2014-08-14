@@ -51,6 +51,15 @@ typedef ArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveS
 @:dox(hide)
 typedef VectorSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin;
 
+@:dox(hide)
+typedef CrossPlatformSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformSetSerializerPlugin;
+
+@:dox(hide)
+typedef CrossPlatformVectorSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformVectorSerializerPlugin;
+
+@:dox(hide)
+typedef CrossPlatformMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformMapSerializerPlugin;
+
 #if (java && scala)
 @:dox(hide)
 typedef ScalaSeqSerializerPlugin = com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSeqSerializerPlugin;
@@ -134,6 +143,15 @@ typedef ArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Primit
 @:dox(hide)
 typedef VectorDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin;
 
+@:dox(hide)
+typedef CrossPlatformVectorDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin;
+
+@:dox(hide)
+typedef CrossPlatformMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin;
+
+@:dox(hide)
+typedef CrossPlatformSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformSetDeserializerPlugin;
+
 #if (java && scala)
 @:dox(hide)
 typedef ScalaSeqDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSeqDeserializerPlugin;
@@ -205,7 +223,7 @@ typedef FloatBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilder
 @:dox(hide)
 typedef BoolBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.BoolBuilderPlugin;
 
-//TODO Binary builder plugin 
+//TODO Binary builder plugin
 
 @:dox(hide)
 typedef StringBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.StringBuilderPlugin;

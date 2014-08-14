@@ -194,10 +194,10 @@ class BinaryDeserializerPlugin
 {
   public static function pluginDeserialize(self:JsonDeserializerPluginStream<Bytes>):Null<Bytes> return
   {
-    
+
     switch (self.underlying)
     {
-      case BINARY(value): 
+      case BINARY(value):
       {
         value;
       }
@@ -234,10 +234,11 @@ class StringDeserializerPlugin
 class ArrayDeserializerPlugin
 {
 
+  @:noUsing
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Array<Element>> return
+  public static function deserializeForElement<Element>(stream:JsonDeserializerPluginStream<Array<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Array<Element>> return
   {
-    switch (self.underlying)
+    switch (stream.underlying)
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
@@ -276,6 +277,7 @@ class ArrayDeserializerPlugin
 class VectorDeserializerPlugin
 {
 
+  @:noUsing
   @:dox(hide)
   public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Vector<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Vector<Element>> return
   {
