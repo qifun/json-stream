@@ -10,7 +10,8 @@ import com.qifun.jsonStream.JsonSerializer;
 class CrossPlatformVectorSerializerPlugin
 {
 
-  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>> return
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>>):ExprOf<JsonStream> return
   {
     if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
     {
@@ -29,7 +30,8 @@ class CrossPlatformVectorSerializerPlugin
 class CrossPlatformSetSerializerPlugin
 {
 
-  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>> return
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>>):ExprOf<JsonStream> return
   {
     if (Context.defined("java") && Context.defined("scala"))
     {
@@ -59,7 +61,8 @@ class CrossPlatformSetSerializerPlugin
 class CrossPlatformMapSerializerPlugin
 {
 
-  macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>> return
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>>):ExprOf<JsonStream> return
   {
     if (Context.defined("java") && Context.defined("scala"))
     {
@@ -78,6 +81,7 @@ class CrossPlatformMapSerializerPlugin
     }
     else
     {
+      throw "";
       Context.error("Unsupported platform", Context.currentPos());
     }
   }
