@@ -25,7 +25,6 @@ class CrossPlatformSetDeserializerPlugin
     #end
   }
 
-  #if (java || macro)
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>> return
   {
     if (Context.defined("java") && Context.defined("scala"))
@@ -72,7 +71,7 @@ class CrossPlatformSetDeserializerPlugin
       Context.error("Unsupported platform", Context.currentPos());
     }
   }
-  #end
+
 }
 
 
@@ -94,7 +93,6 @@ class CrossPlatformMapDeserializerPlugin
     #end
   }
 
-  #if (java || macro)
   macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>> return
   {
     if (Context.defined("java") && Context.defined("scala"))
@@ -132,7 +130,7 @@ class CrossPlatformMapDeserializerPlugin
       Context.error("Unsupported platform", Context.currentPos());
     }
   }
-  #end
+
 }
 
 
@@ -150,7 +148,6 @@ class CrossPlatformVectorDeserializerPlugin
     #end
   }
 
-  #if (java || macro)
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>> return
   {
     if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
@@ -172,5 +169,5 @@ class CrossPlatformVectorDeserializerPlugin
       }
     }
   }
-  #end
+
 }
