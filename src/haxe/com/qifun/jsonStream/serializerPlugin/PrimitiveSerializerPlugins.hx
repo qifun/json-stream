@@ -114,7 +114,12 @@ class StringSerializerPlugin
 class ArraySerializerPlugin
 {
 
-  public static function serializeForElement<Element>(data:Array<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  // 注意：data不能使用Array<Element>类型。
+  // 如果用了Array<Element>类型，typer在执行pluginSerialize时，会展开pluginSerialize参数中的abstract，
+  // 从而导致生成dynamicSerialize函数时，插件类型推断错误。
+  @:dox(hide)
+  @:noUsing
+  public static function serializeForElement<Element>(data:JsonSerializerPluginData<Array<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
     if (data == null)
     {
@@ -124,7 +129,7 @@ class ArraySerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        for (element in data)
+        for (element in data.underlying)
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(element))).async();
         }
@@ -134,7 +139,7 @@ class ArraySerializerPlugin
 
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<Array<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.ArraySerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
 }
 
@@ -142,7 +147,9 @@ class ArraySerializerPlugin
 class VectorSerializerPlugin
 {
 
-  public static function serializeForElement<Element>(data:Vector<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  @:dox(hide)
+  @:noUsing
+  public static function serializeForElement<Element>(data:JsonSerializerPluginData<Vector<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
     if (data == null)
     {
@@ -153,9 +160,9 @@ class VectorSerializerPlugin
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
         var i = 0;
-        while (i < data.length)
+        while (i < data.underlying.length)
         {
-          var element = data[i];
+          var element = data.underlying[i];
           i += 1;
           yield(elementSerializeFunction(new JsonSerializerPluginData(element))).async();
         }
@@ -165,7 +172,7 @@ class VectorSerializerPlugin
 
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<Vector<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
 }
 

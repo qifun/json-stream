@@ -17,7 +17,9 @@ import scala.concurrent.stm.TArray;
 class StmRefSerializerPlugin
 {
   #if java
-  public static function serializeForElement<Element>(data:scala.concurrent.stm.Ref<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  @:dox(hide)
+  @:noUsing
+  public static function serializeForElement<Element>(data:JsonSerializerPluginData<scala.concurrent.stm.Ref<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
     if (data == null)
     {
@@ -25,7 +27,7 @@ class StmRefSerializerPlugin
     }
     else
     {
-      var i = data.single().get();
+      var i = data.underlying.single().get();
       elementSerializeFunction(new JsonSerializerPluginData(i));
     }
   }
@@ -34,7 +36,7 @@ class StmRefSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.concurrent.stm.Ref<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
   #end
 }
@@ -43,7 +45,9 @@ class StmRefSerializerPlugin
 class StmTSetSerializerPlugin
 {
   #if java
-  public static function serializeForElement<Element>(data:scala.concurrent.stm.TSet<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  @:dox(hide)
+  @:noUsing
+  public static function serializeForElement<Element>(data:JsonSerializerPluginData<scala.concurrent.stm.TSet<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
     if (data == null)
     {
@@ -53,7 +57,7 @@ class StmTSetSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var iterator = data.single().iterator();
+        var iterator = data.underlying.single().iterator();
         while (iterator.hasNext())
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(iterator.next()))).async();
@@ -66,7 +70,7 @@ class StmTSetSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.concurrent.stm.TSet<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTSetSerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTSetSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
   #end
 }
@@ -75,7 +79,9 @@ class StmTSetSerializerPlugin
 class StmTArraySerializerPlugin
 {
   #if java
-  public static function serializeForElement<Element>(data:scala.concurrent.stm.TArray<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  @:dox(hide)
+  @:noUsing
+  public static function serializeForElement<Element>(data:JsonSerializerPluginData<scala.concurrent.stm.TArray<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
     if (data == null)
     {
@@ -85,7 +91,7 @@ class StmTArraySerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var iterator = data.single().iterator();
+        var iterator = data.underlying.single().iterator();
         while (iterator.hasNext())
         {
           yield(elementSerializeFunction(new JsonSerializerPluginData(iterator.next()))).async();
@@ -98,7 +104,7 @@ class StmTArraySerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<scala.concurrent.stm.TArray<Element>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTArraySerializerPlugin.serializeForElement($self.underlying, function(subdata) return subdata.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTArraySerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
   #end
 }
@@ -106,8 +112,10 @@ class StmTArraySerializerPlugin
 class StmTMapSerializerPlugin
 {
   #if java
+  @:dox(hide)
+  @:noUsing
   public static function serializeForElement<Key, Value>(
-    data:scala.concurrent.stm.TMap<Key, Value>,
+    data:JsonSerializerPluginData<scala.concurrent.stm.TMap<Key, Value>>,
     KeySerializeFunction:JsonSerializerPluginData<Key>->JsonStream,
     ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
   {
@@ -119,7 +127,7 @@ class StmTMapSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-        var iterator = data.single().iterator();
+        var iterator = data.underlying.single().iterator();
         while (iterator.hasNext())
         {
           yield(ARRAY(
@@ -138,7 +146,7 @@ class StmTMapSerializerPlugin
   #if (java || macro)
   macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<scala.concurrent.stm.TMap<Key, Value>>>):ExprOf<JsonStream> return
   {
-    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTMapSerializerPlugin.serializeForElement($self.underlying, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
+    macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTMapSerializerPlugin.serializeForElement($self, function(subdata1) return subdata1.pluginSerialize(), function(subdata2) return subdata2.pluginSerialize());
   }
   #end
 }
