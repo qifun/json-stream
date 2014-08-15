@@ -52,6 +52,9 @@ typedef ArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveS
 typedef VectorSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin;
 
 @:dox(hide)
+typedef CrossPlatformRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformRefSerializerPlugin;
+
+@:dox(hide)
 typedef CrossPlatformSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformSetSerializerPlugin;
 
 @:dox(hide)
@@ -142,6 +145,9 @@ typedef ArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Primit
 
 @:dox(hide)
 typedef VectorDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin;
+
+@:dox(hide)
+typedef CrossPlatformRefDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin;
 
 @:dox(hide)
 typedef CrossPlatformVectorDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin;

@@ -7,6 +7,25 @@ import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonSerializer;
 
 @:final
+class CrossPlatformRefSerializerPlugin
+{
+  
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying).pluginSerialize();
+    }
+  }
+
+}
+
+@:final
 class CrossPlatformVectorSerializerPlugin
 {
 

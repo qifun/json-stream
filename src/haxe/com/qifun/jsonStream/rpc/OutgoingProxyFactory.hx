@@ -25,14 +25,12 @@ class OutgoingProxyRuntime
     if (iterator.hasNext())
     {
       var element = iterator.next();
+      var result = handler(element);
       if (iterator.hasNext())
       {
         throw JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS(iterator, 1);
       }
-      else
-      {
-        handler(element);
-      }
+      result;
     }
     else
     {

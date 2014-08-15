@@ -2,7 +2,7 @@ package com.qifun.jsonStream;
 import haxe.io.Bytes;
 
 @:final
-class UserInfoTest
+class UserInfoEntities
 {
   public function new() {}
   public var hp:haxe.Int64;

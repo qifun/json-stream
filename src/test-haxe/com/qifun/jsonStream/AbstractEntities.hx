@@ -1,10 +1,12 @@
 package com.qifun.jsonStream;
 
 @:final
-class AbstractTypeTest
+class AbstractEntities
 {
 
   public function new() { }
+
+  public var ref:com.qifun.jsonStream.crossPlatformTypes.Ref<Int>;
 
   public var set:com.qifun.jsonStream.crossPlatformTypes.Set<Int>;
 

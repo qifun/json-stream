@@ -1,4 +1,4 @@
-package com.qifun.jsonStream;
+package com.qifun.jsonStream.testUtil;
 #if macro
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
@@ -9,7 +9,7 @@ import haxe.macro.MacroStringTools;
 import haxe.unit.TestCase;
 import haxe.PosInfos;
 
-@:autoBuild(com.qifun.jsonStream.JsonTestCase.build())
+@:autoBuild(com.qifun.jsonStream.testUtil.JsonTestCase.build())
 class JsonTestCase extends TestCase
 {
 

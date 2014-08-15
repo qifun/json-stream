@@ -1,8 +1,8 @@
 package ;
 using com.qifun.jsonStream.rpc.Future;
 import com.qifun.jsonStream.rpc.OutgoingProxyFactory;
-import com.qifun.jsonStream.JsonTestCase;
 using com.qifun.jsonStream.Plugins;
+import com.qifun.jsonStream.testUtil.JsonTestCase;
 
 class Rpc2Test extends JsonTestCase
 {

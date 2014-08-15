@@ -4,6 +4,7 @@ import com.qifun.jsonStream.io.PrettyTextPrinter;
 import com.qifun.jsonStream.io.TextParser;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.RawJson;
+import com.qifun.jsonStream.testUtil.JsonTestCase;
 import haxe.io.BytesOutput;
 import haxe.Json;
 import haxe.io.StringInput;

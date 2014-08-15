@@ -4,10 +4,10 @@ import com.qifun.jsonStream.JsonBuilderFactory;
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.RawJson;
-import haxe.unit.TestCase;
+import com.qifun.jsonStream.testUtil.JsonTestCase;
 import com.qifun.jsonStream.SimpleEntities;
 using com.qifun.jsonStream.Plugins;
-using com.qifun.jsonStream.SimpleBuildMacro;
+using com.qifun.jsonStream.SimpleIo;
 
 class SimpleTest extends JsonTestCase
 {

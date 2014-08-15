@@ -137,13 +137,19 @@ class IncomingProxyFactory
               var complexRequestType = TypeTools.toComplexType(requestType);
               var requestName = "request" + argumentIndex;
               var next = parseRestRequest(readArray, argumentIndex + 1);
-              macro com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRuntime.optimizedExtract1(
-                $readArray,
-                  function(elementStream):Void
-                  {
-                    var $requestName:$complexRequestType = new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$complexRequestType>(elementStream).pluginDeserialize();
-                    $next;
-                  });
+              macro
+              {
+                if ($readArray.hasNext())
+                {
+                  var elementStream = $readArray.next();
+                  var $requestName:$complexRequestType = new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$complexRequestType>(elementStream).pluginDeserialize();
+                  $next;
+                }
+                else
+                {
+                  throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.NOT_ENOUGH_FIELDS($readArray, $v{numRequestArguments}, $v{argumentIndex});
+                }
+              }
             }
             else
             {
@@ -157,18 +163,39 @@ class IncomingProxyFactory
               ];
               macro
               {
-                serviceImplementation.$methodName($a{parameters}).start(
-                  $declareResponseHandler,
-                  function(errorResponse:Dynamic):Void
-                  {
-                    responseHandler.onFailure(com.qifun.jsonStream.JsonSerializer.serialize(errorResponse));
-                  });
+                if ($readArray.hasNext())
+                {
+                  throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS($readArray, $v{numRequestArguments});
+                }
+                else
+                {
+                  serviceImplementation.$methodName($a{parameters}).start(
+                    $declareResponseHandler,
+                    function(errorResponse:Dynamic):Void
+                    {
+                      responseHandler.onFailure(com.qifun.jsonStream.JsonSerializer.serialize(errorResponse));
+                    });
+                }
               }
             }
           }
+
+          var readIteratorExpr = parseRestRequest(macro readRequest, 0);
+          var readGeneratorExpr = parseRestRequest(macro readRequestGenerator, 0);
           var parseRequestExpr =
             withDefaultTypeParameters(
-              parseRestRequest(macro readRequest, 0),
+              macro
+              {
+                var readRequestGenerator = Std.instance(readRequest, (com.dongxiguo.continuation.utils.Generator:Class<com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream>>));
+                if (readRequestGenerator != null)
+                {
+                  $readGeneratorExpr;
+                }
+                else
+                {
+                  $readIteratorExpr;
+                }
+              },
               field.params);
           cases.push(
             {
@@ -189,6 +216,10 @@ class IncomingProxyFactory
         case _: throw "Expect method!";
       }
     }
+    //trace(ExprTools.toString({
+      //expr: ESwitch(rpcMethodName, cases, null),
+      //pos: Context.currentPos(),
+    //}));
     return
     {
       expr: ESwitch(rpcMethodName, cases, null),
@@ -234,7 +265,7 @@ class IncomingProxyFactory
             {
               com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRuntime.optimizedExtract1(
                 pairs,
-                function(pair):Void
+                function(pair:com.qifun.jsonStream.JsonStream.JsonStreamPair):Void
                 {
                   var rpcMethodName = pair.key;
                   var parameters = pair.value;
@@ -308,18 +339,15 @@ class IncomingProxyRuntime
 
   @:extern
   @:noUsing
-  private static inline function extract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  private static inline function extract1<Element>(iterator:Iterator<Element>, handler:Element->Void):Void
   {
     if (iterator.hasNext())
     {
       var element = iterator.next();
+      handler(element);
       if (iterator.hasNext())
       {
         throw JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS(iterator, 1);
-      }
-      else
-      {
-        handler(element);
       }
     }
     else
@@ -330,9 +358,9 @@ class IncomingProxyRuntime
 
   @:extern
   @:noUsing
-  public static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
+  public static inline function optimizedExtract1<Element>(iterator:Iterator<Element>, handler:Element->Void):Void
   {
-    var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
+    var generator:Generator<Element> = Std.instance(iterator, (Generator:Class<Generator<Element>>));
     if (generator == null)
     {
       extract1(iterator, handler);
