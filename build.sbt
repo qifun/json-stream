@@ -16,13 +16,13 @@ haxeOptions in Compile ++= Seq("-D", "stateless_future")
 
 haxeOptions in Test ++= Seq("-D", "stateless_future")
 
-haxeOptions in Compile ++= Seq("-D", "scala")
-
-haxeOptions in Test ++= Seq("-D", "scala")
-
 haxeOptions in Compile ++= Seq("-D", "scala_stm")
 
 haxeOptions in Test ++= Seq("-D", "scala_stm")
+
+haxeOptions in Compile ++= Seq("-D", "scala")
+
+haxeOptions in Test ++= Seq("-D", "scala")
 
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 

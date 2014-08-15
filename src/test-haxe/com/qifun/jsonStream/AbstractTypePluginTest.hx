@@ -46,7 +46,6 @@ class AbstractTypePluginTest extends JsonTestCase
       set.Add(4099);
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(set);
-
       o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(haxe.ds.Vector.fromArrayCopy([1, 1, 2, 3, 5]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
@@ -55,7 +54,6 @@ class AbstractTypePluginTest extends JsonTestCase
       map.Add(25, 625);
       map.Add(256, 65536);
       o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(map);
-
     #elseif (java && scala && !scala_stm)
       var setBuilder:scala.collection.mutable.Builder<Int, Dynamic> = scala.collection.immutable.Set.SetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
@@ -80,12 +78,13 @@ class AbstractTypePluginTest extends JsonTestCase
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
       o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
     #end
-
+    
     var jsonStream = JsonSerializer.serialize(o);
+    trace(jsonStream);
     assertDeepEquals(
-    new RawJson({ list:[ { Int:1 }, { Int:1 }, { Int:2 }, { Int:3 }, { Int:5 } ],
-     map:[[ { Int:14 }, { Int:169 } ], [ { Int:25 }, { Int:625 } ], [ { Int:42 }, { Int:1764 } ],
-     [ { Int:256 }, { Int:65536 } ]], set : [ { Int : 30 }, { Int : 82 }, { Int : 255 }, { Int : 4099 }, { Int : 96354 } ] })
+    new RawJson({list:[1, 1, 2, 3, 5],
+     map:[[14, 169], [25, 625], [42, 1764],
+     [256,65536]], set :[30,82,255,4099,96354] })
     , JsonDeserializer.deserializeRaw(jsonStream));
   }
 
@@ -158,9 +157,9 @@ class AbstractTypePluginTest extends JsonTestCase
       o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
     #end
 
-    var jsonStream = JsonSerializer.serializeRaw(new RawJson({list:[ { Int:1 }, { Int:1 }, { Int:2 }, { Int:3 }, { Int:5 } ],
-     map:[[ { Int:14 }, { Int:169 } ], [ { Int:25 }, { Int:625 } ], [ { Int:42 }, { Int:1764 } ],
-     [ { Int:256 }, { Int:65536 } ]], set : [ { Int : 30 }, { Int : 82 }, { Int : 255 }, { Int : 4099 }, { Int : 96354 } ] }));
+    var jsonStream = JsonSerializer.serializeRaw(new RawJson({list:[1, 1, 2, 3, 5],
+     map:[[14, 169], [25, 625], [42, 1764],
+     [256,65536]], set :[30,82,255,4099,96354] })); 
     var o2:AbstractTypeTest = JsonDeserializer.deserialize(jsonStream);
     assertDeepEquals(o, o2);
   }
