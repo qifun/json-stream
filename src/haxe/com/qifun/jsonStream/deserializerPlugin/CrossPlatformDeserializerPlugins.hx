@@ -8,6 +8,63 @@ import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 
 @:final
+class CrossPlatformRefDeserializerPlugin
+{
+
+  @:dox(hide)
+  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>) return
+  {
+    #if (java && scala && scala_stm)
+      new JsonDeserializerPluginStream<scala.concurrent.stm.Ref<Element>>(stream.underlying);
+    #else
+      new JsonDeserializerPluginStream<Element>(stream.underlying);
+    #end
+  }
+
+  @:noUsing
+  @:dox(hide)
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Element>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Element> return
+  {
+    switch (self.underlying)
+    {
+      case NULL:
+      {
+        null;
+      }
+      case stream:
+      {
+        elementDeserializeFunction(new JsonDeserializerPluginStream(self.underlying));
+      }
+    }
+  }
+  
+  @:noDynamicDeserialize
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>> return
+  {
+    if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
+    {
+      macro
+      {
+        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.toNativeStream($self);
+        var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
+        new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
+      }
+    }
+    else
+    {
+      macro
+      {
+        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin.toNativeStream($self);
+        var nativeResult = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformDeserializerPlugins.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
+        new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
+      }
+    }
+  }
+
+}
+
+
+@:final
 class CrossPlatformSetDeserializerPlugin
 {
 

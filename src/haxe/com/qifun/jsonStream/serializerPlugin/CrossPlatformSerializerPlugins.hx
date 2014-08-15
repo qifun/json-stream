@@ -7,6 +7,37 @@ import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonSerializer;
 
 @:final
+class CrossPlatformRefSerializerPlugin
+{
+  @:dox(hide)
+  public static function serializeForElement<Element>(data:JsonSerializerPluginData<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
+  {
+    if (data == null)
+    {
+      NULL;
+    }
+    else
+    {
+      elementSerializeFunction(new JsonSerializerPluginData(data.underlying));
+    }
+  }
+  
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      macro com.qifun.jsonStream.serializerPlugin.CrossPlatformRefSerializerPlugin.serializeForElement.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+  }
+
+}
+
+@:final
 class CrossPlatformVectorSerializerPlugin
 {
 
