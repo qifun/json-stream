@@ -1,6 +1,6 @@
 package com.qifun.jsonStream;
 using com.qifun.jsonStream.Plugins;
-using com.qifun.jsonStream.GenericClassBuildMacro;
+using com.qifun.jsonStream.GenericClassIo;
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.GenericClasses;
