@@ -37,7 +37,7 @@ class CrossPlatformRefDeserializerPlugin
       }
     }
   }
-  
+
   @:noDynamicDeserialize
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>> return
   {
