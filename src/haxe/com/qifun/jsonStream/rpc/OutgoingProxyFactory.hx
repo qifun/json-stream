@@ -18,41 +18,6 @@ import com.qifun.jsonStream.JsonSerializer;
 class OutgoingProxyRuntime
 {
 
-  @:extern
-  @:noUsing
-  private static inline function extract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
-  {
-    if (iterator.hasNext())
-    {
-      var element = iterator.next();
-      var result = handler(element);
-      if (iterator.hasNext())
-      {
-        throw JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS(iterator, 1);
-      }
-      result;
-    }
-    else
-    {
-      throw JsonDeserializer.JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 1, 0);
-    }
-  }
-
-  @:extern
-  @:noUsing
-  public static inline function optimizedExtract1<Element, Result>(iterator:Iterator<Element>, handler:Element->Result):Result return
-  {
-    var generator = Std.instance(iterator, (Generator:Class<Generator<Element>>));
-    if (generator == null)
-    {
-      extract1(iterator, handler);
-    }
-    else
-    {
-      extract1(generator, handler);
-    }
-  }
-
   @:noUsing
   public static function object1(key1:String, value1:JsonStream):JsonStream return
   {
