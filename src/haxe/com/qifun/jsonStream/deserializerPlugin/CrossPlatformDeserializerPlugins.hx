@@ -10,7 +10,7 @@ import com.qifun.jsonStream.JsonDeserializer;
 @:final
 class CrossPlatformRefDeserializerPlugin
 {
-
+  @:noUsing
   @:dox(hide)
   public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>) return
   {
@@ -21,22 +21,6 @@ class CrossPlatformRefDeserializerPlugin
     #end
   }
 
-  @:noUsing
-  @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Element>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Element> return
-  {
-    switch (self.underlying)
-    {
-      case NULL:
-      {
-        null;
-      }
-      case stream:
-      {
-        elementDeserializeFunction(new JsonDeserializerPluginStream(self.underlying));
-      }
-    }
-  }
 
   @:noDynamicDeserialize
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>> return
@@ -55,7 +39,7 @@ class CrossPlatformRefDeserializerPlugin
       macro
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.toNativeStream($self);
-        var nativeResult = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
+        var nativeResult = nativeStream.pluginDeserialize();
         new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
       }
     }
@@ -67,7 +51,7 @@ class CrossPlatformRefDeserializerPlugin
 @:final
 class CrossPlatformSetDeserializerPlugin
 {
-
+  @:noUsing
   @:dox(hide)
   public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>) return
   {
@@ -136,7 +120,7 @@ class CrossPlatformSetDeserializerPlugin
 @:final
 class CrossPlatformMapDeserializerPlugin
 {
-
+  @:noUsing
   @:dox(hide)
   public static inline function toNativeStream<Key, Value>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>) return
   {
@@ -196,7 +180,7 @@ class CrossPlatformMapDeserializerPlugin
 @:final
 class CrossPlatformVectorDeserializerPlugin
 {
-
+  @:noUsing
   @:dox(hide)
   public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>) return
   {

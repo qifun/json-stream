@@ -9,18 +9,6 @@ import com.qifun.jsonStream.JsonSerializer;
 @:final
 class CrossPlatformRefSerializerPlugin
 {
-  @:dox(hide)
-  public static function serializeForElement<Element>(data:JsonSerializerPluginData<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
-  {
-    if (data == null)
-    {
-      NULL;
-    }
-    else
-    {
-      elementSerializeFunction(new JsonSerializerPluginData(data.underlying));
-    }
-  }
   
   @:noDynamicSerialize
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<JsonStream> return
@@ -31,7 +19,7 @@ class CrossPlatformRefSerializerPlugin
     }
     else
     {
-      macro com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformRefSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+      macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying).pluginSerialize();
     }
   }
 

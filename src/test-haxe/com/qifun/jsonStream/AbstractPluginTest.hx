@@ -3,7 +3,7 @@ package com.qifun.jsonStream;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 using com.qifun.jsonStream.Plugins;
-using com.qifun.jsonStream.TestsBuildMacro;
+using com.qifun.jsonStream.TestIo;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.testUtil.JsonTestCase;
 import com.qifun.jsonStream.JsonStream;
