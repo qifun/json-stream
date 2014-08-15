@@ -54,8 +54,8 @@ class CrossPlatformRefDeserializerPlugin
     {
       macro
       {
-        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin.toNativeStream($self);
-        var nativeResult = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformDeserializerPlugins.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
+        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.toNativeStream($self);
+        var nativeResult = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
         new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
       }
     }

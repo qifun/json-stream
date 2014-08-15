@@ -31,7 +31,7 @@ class CrossPlatformRefSerializerPlugin
     }
     else
     {
-      macro com.qifun.jsonStream.serializerPlugin.CrossPlatformRefSerializerPlugin.serializeForElement.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+      macro com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformRefSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
     }
   }
 
