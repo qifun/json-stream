@@ -24,15 +24,15 @@ import scala.concurrent.stm.TMap
 import scala.concurrent.stm.TArray
 class JsonBsonTest {
 
-  implicit object UserClass2Writer extends HaxeClassWriter[UserTest](UserTestSerializer.serialize_com_qifun_jsonStream_UserTest)
-  implicit object UserClass2Reader extends HaxeClassReader[UserTest](UserTestDeserializer.deserialize_com_qifun_jsonStream_UserTest)
+  implicit object UserClass2Writer extends HaxeClassWriter[UserEntities](UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserEntities)
+  implicit object UserClass2Reader extends HaxeClassReader[UserEntities](UserEntitiesDeserializer.deserialize_com_qifun_jsonStream_UserEntities)
 
-  implicit object UserInfoClass2Writer extends HaxeClassWriter[UserInfoTest](UserTestSerializer.serialize_com_qifun_jsonStream_UserInfoTest)
-  implicit object UserInfoClass2Reader extends HaxeClassReader[UserInfoTest](UserTestDeserializer.deserialize_com_qifun_jsonStream_UserInfoTest)
+  implicit object UserInfoClass2Writer extends HaxeClassWriter[UserInfoEntities](UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserInfoEntities)
+  implicit object UserInfoClass2Reader extends HaxeClassReader[UserInfoEntities](UserEntitiesDeserializer.deserialize_com_qifun_jsonStream_UserInfoEntities)
 
   @Test
   def `array and sub object in Haxe objecte test`(): Unit = {
-    val us = new UserTest()
+    val us = new UserEntities()
     us.info.hp = Long.MaxValue
     us.info.mp = 200
     us.info.skills.push(Integer.valueOf(9527))
@@ -67,7 +67,7 @@ class JsonBsonTest {
     val bson2 = BSONDocument("info" -> BSONDocument(
       "hp" -> Long.MaxValue, "mp" -> 200, "skills" -> Array(9527, 8888),
       "md5Code" -> BSONBinary(byteArray, Subtype(0x00))))
-    println(PrettyTextPrinter.toString(UserTestSerializer.serialize_com_qifun_jsonStream_UserTest(us)))
+    println(PrettyTextPrinter.toString(UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserEntities(us)))
     writeableBuffer.buffer.clear()
     BSONDocument.write(bson, writeableBuffer)
     val rbuffer = writeableBuffer.toReadableBuffer()
@@ -87,9 +87,9 @@ class JsonBsonTest {
 
   @Test
   def `primitiveTypeTest`(): Unit = {
-    implicit object TypeTestWriter extends HaxeClassWriter[TypeTest](TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest)
-    implicit object TypeTestReader extends HaxeClassReader[TypeTest](TypeTestDeserializer.deserialize_com_qifun_jsonStream_TypeTest)
-    val typeTest = new TypeTest
+    implicit object TypeTestWriter extends HaxeClassWriter[TypeEntities](TypeEntitiesSerializer.serialize_com_qifun_jsonStream_TypeEntities)
+    implicit object TypeTestReader extends HaxeClassReader[TypeEntities](TypeEntitiesDeserializer.deserialize_com_qifun_jsonStream_TypeEntities)
+    val typeTest = new TypeEntities
     typeTest.bo = true
     typeTest.f = 3.1415926
     typeTest.i = 42
@@ -102,9 +102,9 @@ class JsonBsonTest {
       Integer.valueOf(4) -> Integer.valueOf(1),
       Integer.valueOf(3) -> Integer.valueOf(3))
 
-    val jsonStream = TypeTestSerializer.serialize_com_qifun_jsonStream_TypeTest(typeTest)
+    val jsonStream = TypeEntitiesSerializer.serialize_com_qifun_jsonStream_TypeEntities(typeTest)
 
-    val obj = TypeTestDeserializer.deserialize_com_qifun_jsonStream_TypeTest(jsonStream)
+    val obj = TypeEntitiesDeserializer.deserialize_com_qifun_jsonStream_TypeEntities(jsonStream)
 
     assertEquals(typeTest.bo, obj.bo)
     assertTrue(typeTest.f == obj.f) //assertEquals cann't compare double type
@@ -127,7 +127,7 @@ class JsonBsonTest {
 
   @Test
   def `StmPluginsTest`(): Unit = {
-    val stmTest = new StmTest();
+    val stmTest = new StmEntity;
     stmTest.ref = STM.newRef[Object](Integer.valueOf(5)).ref;
     stmTest.tset = TSet(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(4));
     stmTest.tarray = TArray(Array(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(4)))
@@ -136,8 +136,8 @@ class JsonBsonTest {
       Integer.valueOf(2) -> Integer.valueOf(3),
       Integer.valueOf(4) -> Integer.valueOf(1),
       Integer.valueOf(3) -> Integer.valueOf(3))
-    val jsonStream = StmTestSerializer.serialize_com_qifun_jsonStream_StmTest(stmTest)
-    val stmTest2 = StmTestDeserializer.deserialize_com_qifun_jsonStream_StmTest(jsonStream)
+    val jsonStream = StmEntitySerializer.serialize_com_qifun_jsonStream_StmEntity(stmTest)
+    val stmTest2 = StmEntityDeserializer.deserialize_com_qifun_jsonStream_StmEntity(jsonStream)
     assertEquals(stmTest.ref.single.get, stmTest2.ref.single.get.asInstanceOf[java.lang.Number].intValue());
     assertArrayEquals(stmTest.tset.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()), stmTest2.tset.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()))
     for (elem <- stmTest.tmap.single) {
@@ -146,17 +146,5 @@ class JsonBsonTest {
      assertArrayEquals(stmTest.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()), stmTest2.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()))
   }
   
-  @Test
-  def `AbstractTypePluginsTest`(): Unit = {
-    val a = new AbstractTypeTest();
-    a.set = scala.concurrent.stm.TSet(
-      Integer.valueOf(30), Integer.valueOf(82), Integer.valueOf(255), Integer.valueOf(4099), Integer.valueOf(96354))
-    a.list = scala.concurrent.stm.TArray(
-      Array(Integer.valueOf(1), Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(5)))
-    a.map = scala.concurrent.stm.TMap(
-      Integer.valueOf(42) -> Integer.valueOf(1764), Integer.valueOf(14) -> Integer.valueOf(196),
-      Integer.valueOf(25) -> Integer.valueOf(625), Integer.valueOf(256) -> Integer.valueOf(65536))
-    val jsonStream = AbstractTypeTesttSerializer.serialize_com_qifun_jsonStream_AbstractTypeTest(a);
-    val b = AbstractTypeTestDeserializer.deserialize_com_qifun_jsonStream_AbstractTypeTest(jsonStream);
-  }
+
 }

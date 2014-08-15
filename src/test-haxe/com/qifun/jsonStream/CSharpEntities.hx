@@ -1,6 +1,6 @@
 package com.qifun.jsonStream;
 @:final
-class CSharpSimple
+class CSharpEntities
 {
 
   public function new() { }

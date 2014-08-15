@@ -4,6 +4,7 @@ using com.qifun.jsonStream.GenericClassBuildMacro;
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.GenericClasses;
+import com.qifun.jsonStream.testUtil.JsonTestCase;
 
 class GenericClassTest extends JsonTestCase
 {

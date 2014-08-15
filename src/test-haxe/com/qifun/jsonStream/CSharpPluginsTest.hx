@@ -3,6 +3,7 @@ import haxe.unit.TestCase;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
+import com.qifun.jsonStream.testUtil.JsonTestCase;
 using com.qifun.jsonStream.CSharpTestMacro;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;

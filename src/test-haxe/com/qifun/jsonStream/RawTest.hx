@@ -4,6 +4,7 @@ import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.RawJson;
 import haxe.ds.Option;
 import haxe.Json;
+import com.qifun.jsonStream.testUtil.JsonTestCase;
 import haxe.unit.TestCase;
 
 

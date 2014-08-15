@@ -7,7 +7,7 @@ import scala.collection.immutable.Map;
 #end
 
 @:final
-class TypeTest
+class TypeEntities
 {
   public function new() {}
   public var i:Int;

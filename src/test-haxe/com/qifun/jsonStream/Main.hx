@@ -1,6 +1,6 @@
 package com.qifun.jsonStream;
 import haxe.unit.TestRunner;
-import com.qifun.jsonStream.*;
+import com.qifun.jsonStream.testUtil.JsonTestCase;
 import com.qifun.jsonStream.CSharpPluginsTest;
 import Rpc2Test;
 
@@ -20,7 +20,7 @@ class Main
     runner.add(new GenericClassTest());
     runner.add(new TextTest());
     runner.add(new CSharpPluginsTest());
-    runner.add(new AbstractTypePluginTest());
+    runner.add(new AbstractPluginTest());
     var isSuccess = runner.run();
     if (!isSuccess)
     {

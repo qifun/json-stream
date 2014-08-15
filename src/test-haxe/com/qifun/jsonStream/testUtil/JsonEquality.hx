@@ -1,4 +1,4 @@
-package com.qifun.jsonStream;
+package com.qifun.jsonStream.testUtil;
 import haxe.PosInfos;
 class JsonEquality
 {
