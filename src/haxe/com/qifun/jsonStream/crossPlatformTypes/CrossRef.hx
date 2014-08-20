@@ -12,7 +12,7 @@ typedef NativeRef<A> = A;
 typedef NativeRef<A> = A;
 #end
 
-abstract Ref<A>(NativeRef<A>)
+abstract CrossRef<A>(NativeRef<A>)
 {
 
   public var underlying(get, never):NativeRef<A>;

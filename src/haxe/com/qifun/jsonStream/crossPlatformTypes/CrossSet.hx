@@ -13,7 +13,7 @@ import Map in StdMap;
 typedef NativeSet<A> = StdMap<A, Bool>;
 #end
 
-abstract Set<A>(NativeSet<A>)
+abstract CrossSet<A>(NativeSet<A>)
 {
 
   public var underlying(get, never):NativeSet<A>;

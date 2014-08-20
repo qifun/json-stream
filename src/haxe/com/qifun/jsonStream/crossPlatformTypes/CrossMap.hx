@@ -13,7 +13,7 @@ import Map in StdMap;
 typedef NativeMap<A, B> = StdMap<A, B>;
 #end
 
-abstract Map<A, B>(NativeMap<A, B>)
+abstract CrossMap<A, B>(NativeMap<A, B>)
 {
 
   public var underlying(get, never):NativeMap<A, B>;
