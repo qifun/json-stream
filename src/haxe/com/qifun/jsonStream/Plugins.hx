@@ -87,7 +87,7 @@ typedef CSharpDictionarySerializerPlugin = com.qifun.jsonStream.serializerPlugin
 typedef CSharpHashSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin;
 #end
 
-#if scala_stm
+#if (scala_stm && java && scala)
 
 @:dox(hide)
 typedef StmRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin;
@@ -182,7 +182,7 @@ typedef CSharpHashSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugi
 
 #end
 
-#if scala_stm
+#if (scala_stm && java && scala)
 
 @:dox(hide)
 typedef StmRefDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin;
