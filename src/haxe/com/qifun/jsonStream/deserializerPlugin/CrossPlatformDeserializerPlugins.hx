@@ -80,7 +80,7 @@ class CrossPlatformSetDeserializerPlugin
             com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTSetDeserializerPlugin.deserializeForElement(
               nativeStream,
               function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Set(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossSet(nativeResult);
         }
       }
       else
@@ -92,7 +92,7 @@ class CrossPlatformSetDeserializerPlugin
             com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSetDeserializerPlugin.deserializeForElement(
               nativeStream,
               function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Set(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossSet(nativeResult);
         }
       }
     }
@@ -146,7 +146,7 @@ class CrossPlatformMapDeserializerPlugin
         {
           var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
           var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTMapDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Map(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossMap(nativeResult);
         }
       }
       else
@@ -155,7 +155,7 @@ class CrossPlatformMapDeserializerPlugin
         {
           var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
           var nativeResult = com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaMapDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Map(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossMap(nativeResult);
         }
       }
     }
@@ -200,7 +200,7 @@ class CrossPlatformVectorDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTArrayDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Vector(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossVector(nativeResult);
       }
     }
     else
@@ -209,7 +209,7 @@ class CrossPlatformVectorDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Vector(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossVector(nativeResult);
       }
     }
   }
