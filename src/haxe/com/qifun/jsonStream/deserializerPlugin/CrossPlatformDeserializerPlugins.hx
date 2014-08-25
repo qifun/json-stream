@@ -31,7 +31,7 @@ class CrossPlatformRefDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossRef(nativeResult);
       }
     }
     else
@@ -40,7 +40,7 @@ class CrossPlatformRefDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.toNativeStream($self);
         var nativeResult = nativeStream.pluginDeserialize();
-        new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossRef(nativeResult);
       }
     }
   }
