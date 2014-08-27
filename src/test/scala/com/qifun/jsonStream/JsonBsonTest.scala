@@ -1,5 +1,5 @@
 package com.qifun.jsonStream
-/*
+
 import reactivemongo.api._
 import reactivemongo.bson._
 import scala.concurrent.ExecutionContext
@@ -143,9 +143,27 @@ class JsonBsonTest {
     for (elem <- stmTest.tmap.single) {
       assertEquals(elem._2, stmTest2.tmap.single.get(elem._1).get.asInstanceOf[java.lang.Number].intValue())
     }
-     assertArrayEquals(stmTest.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()), stmTest2.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()))
+    assertArrayEquals(stmTest.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()), stmTest2.tarray.single.toArray.map(_.asInstanceOf[java.lang.Number].intValue()))
   }
-  
+
+  @Test
+  def `ReactiveMongoReaderWriterTest`(): Unit = {
+    val entity = new UserInfoEntities
+    entity.hp = 500
+    entity.mp = 600
+    entity.skills.push(Integer.valueOf(1))
+    entity.skills.push(Integer.valueOf(2))
+    entity.skills.push(Integer.valueOf(3))
+    entity.md5Code = haxe.io.Bytes.alloc(0);
+
+    val bson = BSONDocument.read(UserInfoClass2Writer.serialize(entity).toReadableBuffer)
+    println(BSONDocument.pretty(bson))
+    val writeableBuffer = new ChannelBufferWritableBuffer
+    BSONDocument.write(bson, writeableBuffer)
+    val entity2 = UserInfoClass2Reader.deserialize(writeableBuffer.toReadableBuffer)
+    assertEquals(entity.hp, entity2.hp)
+    assertEquals(entity.mp, entity2.mp)
+    //assertEquals(entity.skills, entity2.skills)  Array<Object> and Array<Integer>
+  }
 
 }
-*/

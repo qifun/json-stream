@@ -16,14 +16,6 @@ class HaxeClassWriter[T <: haxe.lang.HxObject](
     writeableBuffer.writeByte(0x03);
     writeableBuffer.writeCString("Content");
     BsonWriter.writeBsonObject(writeableBuffer, jsonStream.params.__get(0))
-//    haxe.root.Type.enumIndex(jsonStream) match {
-//      case 5 => BsonWriter.writeBsonObject(
-//        writeableBuffer, jsonStream.params.__get(0)) //type of index '5' is Jsonstream(OBJECT)
-//      case enumIndex: Int => throw (new IllegalArgumentException() {
-//        val jsonStreamElemIndex = enumIndex
-//        val except = 5
-//      })
-//    }
     writeableBuffer.setInt(0, writeableBuffer.index + 1)
     writeableBuffer.writeByte(0)
     writeableBuffer
