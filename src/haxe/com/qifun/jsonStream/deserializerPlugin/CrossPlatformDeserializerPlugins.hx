@@ -12,7 +12,7 @@ class CrossPlatformRefDeserializerPlugin
 {
   @:noUsing
   @:dox(hide)
-  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>) return
+  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossRef<Element>>) return
   {
     #if (java && scala && scala_stm)
       new JsonDeserializerPluginStream<scala.concurrent.stm.Ref<Element>>(stream.underlying);
@@ -23,7 +23,7 @@ class CrossPlatformRefDeserializerPlugin
 
 
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>> return
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossRef<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.CrossRef<Element>>> return
   {
     if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
     {
@@ -31,7 +31,7 @@ class CrossPlatformRefDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossRef(nativeResult);
       }
     }
     else
@@ -40,7 +40,7 @@ class CrossPlatformRefDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformRefDeserializerPlugin.toNativeStream($self);
         var nativeResult = nativeStream.pluginDeserialize();
-        new com.qifun.jsonStream.crossPlatformTypes.Ref(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossRef(nativeResult);
       }
     }
   }
@@ -53,7 +53,7 @@ class CrossPlatformSetDeserializerPlugin
 {
   @:noUsing
   @:dox(hide)
-  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>) return
+  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossSet<Element>>) return
   {
     #if (java && scala)
       #if scala_stm
@@ -67,7 +67,7 @@ class CrossPlatformSetDeserializerPlugin
   }
 
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>> return
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossSet<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.CrossSet<Element>>> return
   {
     if (Context.defined("java") && Context.defined("scala"))
     {
@@ -80,7 +80,7 @@ class CrossPlatformSetDeserializerPlugin
             com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTSetDeserializerPlugin.deserializeForElement(
               nativeStream,
               function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Set(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossSet(nativeResult);
         }
       }
       else
@@ -92,7 +92,7 @@ class CrossPlatformSetDeserializerPlugin
             com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSetDeserializerPlugin.deserializeForElement(
               nativeStream,
               function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Set(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossSet(nativeResult);
         }
       }
     }
@@ -122,7 +122,7 @@ class CrossPlatformMapDeserializerPlugin
 {
   @:noUsing
   @:dox(hide)
-  public static inline function toNativeStream<Key, Value>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>) return
+  public static inline function toNativeStream<Key, Value>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossMap<Key, Value>>) return
   {
     #if (java && scala)
       #if scala_stm
@@ -136,7 +136,7 @@ class CrossPlatformMapDeserializerPlugin
   }
 
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>> return
+  macro public static function pluginDeserialize<Key, Value>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossMap<Key, Value>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.CrossMap<Key, Value>>> return
   {
     if (Context.defined("java") && Context.defined("scala"))
     {
@@ -146,7 +146,7 @@ class CrossPlatformMapDeserializerPlugin
         {
           var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
           var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTMapDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Map(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossMap(nativeResult);
         }
       }
       else
@@ -155,7 +155,7 @@ class CrossPlatformMapDeserializerPlugin
         {
           var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
           var nativeResult = com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaMapDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.Map(nativeResult);
+          new com.qifun.jsonStream.crossPlatformTypes.CrossMap(nativeResult);
         }
       }
     }
@@ -165,7 +165,7 @@ class CrossPlatformMapDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpDictionaryDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Map(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossMap(nativeResult);
       }
     }
     else
@@ -182,7 +182,7 @@ class CrossPlatformVectorDeserializerPlugin
 {
   @:noUsing
   @:dox(hide)
-  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>) return
+  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossVector<Element>>) return
   {
     #if (java && scala && scala_stm)
       new JsonDeserializerPluginStream<scala.concurrent.stm.TArray<Element>>(stream.underlying);
@@ -192,7 +192,7 @@ class CrossPlatformVectorDeserializerPlugin
   }
 
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>> return
+  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.CrossVector<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.CrossVector<Element>>> return
   {
     if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
     {
@@ -200,7 +200,7 @@ class CrossPlatformVectorDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTArrayDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Vector(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossVector(nativeResult);
       }
     }
     else
@@ -209,7 +209,7 @@ class CrossPlatformVectorDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Vector(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossVector(nativeResult);
       }
     }
   }

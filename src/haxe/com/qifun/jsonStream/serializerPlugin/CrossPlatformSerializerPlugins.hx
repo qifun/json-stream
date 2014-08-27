@@ -11,7 +11,7 @@ class CrossPlatformRefSerializerPlugin
 {
   
   @:noDynamicSerialize
-  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Ref<Element>>>):ExprOf<JsonStream> return
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.CrossRef<Element>>>):ExprOf<JsonStream> return
   {
     if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
     {
@@ -30,7 +30,7 @@ class CrossPlatformVectorSerializerPlugin
 {
 
   @:noDynamicSerialize
-  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Vector<Element>>>):ExprOf<JsonStream> return
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.CrossVector<Element>>>):ExprOf<JsonStream> return
   {
     if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
     {
@@ -50,7 +50,7 @@ class CrossPlatformSetSerializerPlugin
 {
 
   @:noDynamicSerialize
-  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Set<Element>>>):ExprOf<JsonStream> return
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.CrossSet<Element>>>):ExprOf<JsonStream> return
   {
     if (Context.defined("java") && Context.defined("scala"))
     {
@@ -81,7 +81,7 @@ class CrossPlatformMapSerializerPlugin
 {
 
   @:noDynamicSerialize
-  macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.Map<Key, Value>>>):ExprOf<JsonStream> return
+  macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.CrossMap<Key, Value>>>):ExprOf<JsonStream> return
   {
     if (Context.defined("java") && Context.defined("scala"))
     {

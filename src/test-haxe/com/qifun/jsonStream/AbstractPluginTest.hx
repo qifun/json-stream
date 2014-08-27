@@ -16,14 +16,14 @@ class AbstractPluginTest extends JsonTestCase
     var o = new AbstractEntities();
     #if (java && scala_stm)
       var refView:scala.concurrent.stm.RefView<Int> = scala.concurrent.stm.japi.STM.MODULE.newRef(5);
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.Ref(refView.ref());
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(refView.ref());
       var setBuilder:scala.collection.mutable.Builder<Int, scala.concurrent.stm.TSet<Int>> = scala.concurrent.stm.TSet.TSetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
       setBuilder.plusEquals(82);
       setBuilder.plusEquals(255);
       setBuilder.plusEquals(4099);
       setBuilder.plusEquals(96354);
-      o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(setBuilder.result());
+      o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
       var tarrayView:scala.concurrent.stm.TArrayView<String> = scala.concurrent.stm.japi.STM.MODULE.newTArray(5);
       tarrayView.update(0, "1");
@@ -31,49 +31,49 @@ class AbstractPluginTest extends JsonTestCase
       tarrayView.update(2, "2");
       tarrayView.update(3, "3");
       tarrayView.update(4, "5");
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(tarrayView.tarray());
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(tarrayView.tarray());
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, scala.concurrent.stm.TMap<Int, Int>> = scala.concurrent.stm.TMap.TMapSingleton.MODULE.newBuilder();
       mapBuilder.plusEquals(new scala.Tuple2(42, 1764));
       mapBuilder.plusEquals(new scala.Tuple2(14, 169));
       mapBuilder.plusEquals(new scala.Tuple2(25, 625));
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
     #elseif cs
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.Ref(5);
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(5);
       var set = new dotnet.system.collections.generic.HashSet();
       set.Add(30);
       set.Add(82);
       set.Add(255);
       set.Add(4099);
       set.Add(96354);
-      o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(set);
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
       map.Add(14, 169);
       map.Add(25, 625);
       map.Add(256, 65536);
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(map);
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(map);
     #elseif (java && scala && !scala_stm)
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.Ref(5);
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(5);
       var setBuilder:scala.collection.mutable.Builder<Int, Dynamic> = scala.collection.immutable.Set.SetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
       setBuilder.plusEquals(82);
       setBuilder.plusEquals(255);
       setBuilder.plusEquals(4099);
       setBuilder.plusEquals(96354);
-      o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(setBuilder.result());
+      o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, Dynamic> = scala.collection.immutable.Map.MapSingleton.MODULE.newBuilder();
       mapBuilder.plusEquals(new scala.Tuple2(42, 1764));
       mapBuilder.plusEquals(new scala.Tuple2(14, 169));
       mapBuilder.plusEquals(new scala.Tuple2(25, 625));
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
     #end
     
     var jsonStream = JsonSerializer.serialize(o);
@@ -86,14 +86,14 @@ class AbstractPluginTest extends JsonTestCase
     var o = new AbstractEntities();
     #if (java && scala_stm)
       var refView:scala.concurrent.stm.RefView<Int> = scala.concurrent.stm.japi.STM.MODULE.newRef(5);
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.Ref(refView.ref());
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(refView.ref());
       var setBuilder:scala.collection.mutable.Builder<Int, scala.concurrent.stm.TSet<Int>> = scala.concurrent.stm.TSet.TSetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
       setBuilder.plusEquals(82);
       setBuilder.plusEquals(255);
       setBuilder.plusEquals(4099);
       setBuilder.plusEquals(96354);
-      o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(setBuilder.result());
+      o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
       var tarrayView:scala.concurrent.stm.TArrayView<String> = scala.concurrent.stm.japi.STM.MODULE.newTArray(5);
       tarrayView.update(0, "1");
@@ -101,23 +101,23 @@ class AbstractPluginTest extends JsonTestCase
       tarrayView.update(2, "2");
       tarrayView.update(3, "3");
       tarrayView.update(4, "5");
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(tarrayView.tarray());
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(tarrayView.tarray());
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, scala.concurrent.stm.TMap<Int, Int>> = scala.concurrent.stm.TMap.TMapSingleton.MODULE.newBuilder();
       mapBuilder.plusEquals(new scala.Tuple2(42, 1764));
       mapBuilder.plusEquals(new scala.Tuple2(14, 169));
       mapBuilder.plusEquals(new scala.Tuple2(25, 625));
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
     #elseif cs
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.Ref(5);
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(5);
       var set = new dotnet.system.collections.generic.HashSet();
       set.Add(30);
       set.Add(82);
       set.Add(255);
       set.Add(4099);
       set.Add(96354);
-      o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(set);
+      o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
 
       o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
@@ -126,26 +126,26 @@ class AbstractPluginTest extends JsonTestCase
       map.Add(14, 169);
       map.Add(25, 625);
       map.Add(256, 65536);
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(map);
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(map);
 
      #elseif (java && scala && !scala_stm)
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.Ref(5);
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(5);
       var setBuilder:scala.collection.mutable.Builder<Int, Dynamic> = scala.collection.immutable.Set.SetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
       setBuilder.plusEquals(82);
       setBuilder.plusEquals(255);
       setBuilder.plusEquals(4099);
       setBuilder.plusEquals(96354);
-      o.set = new com.qifun.jsonStream.crossPlatformTypes.Set(setBuilder.result());
+      o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, Dynamic> = scala.collection.immutable.Map.MapSingleton.MODULE.newBuilder();
       mapBuilder.plusEquals(new scala.Tuple2(42, 1764));
       mapBuilder.plusEquals(new scala.Tuple2(14, 169));
       mapBuilder.plusEquals(new scala.Tuple2(25, 625));
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
-      o.map = new com.qifun.jsonStream.crossPlatformTypes.Map(mapBuilder.result());
+      o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
     #end
     var jsonStream = JsonSerializer.serializeRaw(new RawJson({ref: 5,
      list:["1", "1", "2", "3", "5"],
