@@ -165,7 +165,7 @@ class CrossPlatformMapDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpDictionaryDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Map(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossMap(nativeResult);
       }
     }
     else
