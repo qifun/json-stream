@@ -24,11 +24,11 @@ import scala.concurrent.stm.TMap
 import scala.concurrent.stm.TArray
 class JsonBsonTest {
 
-  implicit object UserClass2Writer extends HaxeClassWriter[UserEntities](UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserEntities)
-  implicit object UserClass2Reader extends HaxeClassReader[UserEntities](UserEntitiesDeserializer.deserialize_com_qifun_jsonStream_UserEntities)
+  implicit object UserClass2Writer extends BsonStreamSerializer[UserEntities](UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserEntities)
+  implicit object UserClass2Reader extends BsonStreamDeserializer[UserEntities](UserEntitiesDeserializer.deserialize_com_qifun_jsonStream_UserEntities)
 
-  implicit object UserInfoClass2Writer extends HaxeClassWriter[UserInfoEntities](UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserInfoEntities)
-  implicit object UserInfoClass2Reader extends HaxeClassReader[UserInfoEntities](UserEntitiesDeserializer.deserialize_com_qifun_jsonStream_UserInfoEntities)
+  implicit object UserInfoClass2Writer extends BsonStreamSerializer[UserInfoEntities](UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserInfoEntities)
+  implicit object UserInfoClass2Reader extends BsonStreamDeserializer[UserInfoEntities](UserEntitiesDeserializer.deserialize_com_qifun_jsonStream_UserInfoEntities)
 
   @Test
   def `array and sub object in Haxe objecte test`(): Unit = {
@@ -87,8 +87,8 @@ class JsonBsonTest {
 
   @Test
   def `primitiveTypeTest`(): Unit = {
-    implicit object TypeTestWriter extends HaxeClassWriter[TypeEntities](TypeEntitiesSerializer.serialize_com_qifun_jsonStream_TypeEntities)
-    implicit object TypeTestReader extends HaxeClassReader[TypeEntities](TypeEntitiesDeserializer.deserialize_com_qifun_jsonStream_TypeEntities)
+    implicit object TypeTestWriter extends BsonStreamSerializer[TypeEntities](TypeEntitiesSerializer.serialize_com_qifun_jsonStream_TypeEntities)
+    implicit object TypeTestReader extends BsonStreamDeserializer[TypeEntities](TypeEntitiesDeserializer.deserialize_com_qifun_jsonStream_TypeEntities)
     val typeTest = new TypeEntities
     typeTest.bo = true
     typeTest.f = 3.1415926

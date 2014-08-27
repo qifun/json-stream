@@ -8,7 +8,7 @@ import reactivemongo.bson.BSONDocument
 import com.qifun.jsonStream.io.BsonReader
 import reactivemongo.bson.buffer.DefaultBufferHandler
 
-class HaxeClassReader[T <: haxe.lang.HxObject](
+class BsonStreamDeserializer[T](
   haxeDeserializeFunction: JsonStream => T) extends RawBSONDocumentDeserializer[T] {
   def deserialize(buffer: ReadableBuffer): T = {
     val toJsonStreamBuffer = new ChannelBufferWritableBuffer

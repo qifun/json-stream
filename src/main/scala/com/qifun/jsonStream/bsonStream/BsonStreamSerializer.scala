@@ -7,7 +7,7 @@ import reactivemongo.bson.BSONDocument
 import com.qifun.jsonStream.io.BsonWriter
 import scala.util.control.Exception
 
-class HaxeClassWriter[T <: haxe.lang.HxObject](
+class BsonStreamSerializer[T](
   haxeSerializeFunction: T => JsonStream) extends RawBSONDocumentSerializer[T] {
   def serialize(obj: T) = {
     val writeableBuffer = new ChannelBufferWritableBuffer
