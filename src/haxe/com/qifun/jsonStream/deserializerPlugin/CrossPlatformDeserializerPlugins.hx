@@ -105,7 +105,7 @@ class CrossPlatformSetDeserializerPlugin
           com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpHashSetDeserializerPlugin.deserializeForElement(
             nativeStream,
             function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.Set(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.CrossSet(nativeResult);
       }
     }
     else
