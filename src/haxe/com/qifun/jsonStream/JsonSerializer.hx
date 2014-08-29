@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <95850845@qq.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -600,8 +600,11 @@ class JsonSerializerGenerator
             kind: FVar(AccNormal | AccNo | AccCall, _),
             type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
           }:
+          {
             blockExprs.push(macro com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap(data.unknownFieldMap, yield).async());
+          }
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
+          {
             var fieldName = field.name;
             var s = resolvedSerialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro data.$fieldName, params);
             blockExprs.push(
@@ -609,8 +612,11 @@ class JsonSerializerGenerator
               {
                 yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fieldName}, $s)).async();
               });
+          }
           case _:
+          {
             continue;
+          }
         }
       }
       var superClass = classType.superClass;
