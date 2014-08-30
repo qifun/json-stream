@@ -19,7 +19,7 @@
 
 package scala.concurrent.stm;
 
-#if (java && scala_stm)
+#if (java && scala)
 
 @:native("scala.concurrent.stm.Ref$View")
 extern interface RefView<A> extends scala.concurrent.stm.SourceView<A> extends scala.concurrent.stm.SinkView<A>

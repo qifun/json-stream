@@ -19,7 +19,7 @@
 
 package scala.concurrent.stm;
 
-#if (java && scala_stm)
+#if (java && scala)
 
 extern interface SourceLike<A, Context>
 {

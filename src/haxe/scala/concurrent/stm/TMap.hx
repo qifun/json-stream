@@ -19,7 +19,7 @@
 
 package scala.concurrent.stm;
 
-#if (scala_stm && java)
+#if (scala && java)
 
 extern interface TMap<A, B>
 {

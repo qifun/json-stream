@@ -19,7 +19,7 @@
 
 package scala.concurrent.stm;
 
-#if (java && scala_stm)
+#if (java && scala)
 
 @:native("scala.concurrent.stm.TSet$View")
 extern interface TSetView<A> extends

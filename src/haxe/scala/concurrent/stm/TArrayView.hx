@@ -19,7 +19,7 @@
 
 package scala.concurrent.stm;
 
-#if (scala_stm && java)
+#if (scala && java)
 
 @:native("scala.concurrent.stm.TArray$View")
 extern interface TArrayView<A> extends scala.collection.mutable.IndexedSeq<A>

@@ -19,7 +19,7 @@
 
 package scala.concurrent.stm.japi;
 
-#if (java && scala_stm)
+#if (java && scala)
 
 
 @:native("scala.concurrent.stm.japi.STM$")

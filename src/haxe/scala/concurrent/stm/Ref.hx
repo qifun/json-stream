@@ -19,7 +19,7 @@
 
 package scala.concurrent.stm;
 
-#if (java && scala_stm)
+#if (java && scala)
 import haxe.Int64;
 import java.StdTypes;
 import scala.reflect.OptManifest;
