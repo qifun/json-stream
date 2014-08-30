@@ -20,28 +20,28 @@
 package com.qifun.jsonStream.crossPlatformTypes;
 
 #if (scala && java)
-typedef NativeMap<A, B> = scala.concurrent.stm.TMap<A, B>;
+typedef StmNativeMap<A, B> = scala.concurrent.stm.TMap<A, B>;
 #elseif cs
-typedef NativeMap<A, B> = dotnet.system.collections.generic.Dictionary<A, B>;
+typedef StmNativeMap<A, B> = dotnet.system.collections.generic.Dictionary<A, B>;
 #else
 import Map in StdMap;
-typedef NativeMap<A, B> = StdMap<A, B>;
+typedef StmNativeMap<A, B> = StdMap<A, B>;
 #end
 
-abstract StmMap<A, B>(NativeMap<A, B>)
+abstract StmMap<A, B>(StmNativeMap<A, B>)
 {
 
-    public var underlying(get, never):NativeMap<A, B>;
+  public var underlying(get, never):StmNativeMap<A, B>;
 
-    @:extern
-    inline function get_underlying():NativeMap<A, B> return
-        {
-        this;
-        }
+  @:extern
+  inline function get_underlying():StmNativeMap<A, B> return
+  {
+    this;
+  }
 
-    inline public function new(map:NativeMap<A, B>)
-    {
-        this = map;
-    }
+  inline public function new(map:StmNativeMap<A, B>)
+  {
+    this = map;
+  }
 
 }

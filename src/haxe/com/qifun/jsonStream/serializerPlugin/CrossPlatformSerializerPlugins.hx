@@ -41,7 +41,24 @@ class CrossPlatformRefSerializerPlugin
       macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying).pluginSerialize();
     }
   }
+}
 
+@:final
+class StmTRefSerializerPlugin
+{
+  
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.StmRef<Element>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      macro new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying).pluginSerialize();
+    }
+  }
 }
 
 @:final
@@ -60,7 +77,24 @@ class CrossPlatformVectorSerializerPlugin
       macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
     }
   }
+}
 
+@:final
+class StmVectorSerializerPlugin
+{
+
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.StmVector<Element>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTArraySerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+  }
 }
 
 
@@ -94,6 +128,51 @@ class CrossPlatformSetSerializerPlugin
 
 }
 
+@:final
+class ImmutableSetSerializerPlugin
+{
+
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.ImmutableSet<Element>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaSetSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else if (Context.defined("cs"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      Context.error("Unsupported platform", Context.currentPos());
+    }
+  }
+
+}
+
+@:final
+class StmSetSerializerPlugin
+{
+
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.StmSet<Element>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTSetSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else if (Context.defined("cs"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      Context.error("Unsupported platform", Context.currentPos());
+    }
+  }
+
+}
 
 @:final
 class CrossPlatformMapSerializerPlugin
@@ -112,6 +191,53 @@ class CrossPlatformMapSerializerPlugin
       {
         macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaMapSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize(), function(substream) return substream.pluginSerialize());
       }
+    }
+    else if (Context.defined("cs"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpDictionarySerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize(), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      throw "";
+      Context.error("Unsupported platform", Context.currentPos());
+    }
+  }
+
+}
+
+@:final
+class StmMapSerializerPlugin
+{
+
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.StmMap<Key, Value>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTMapSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize(), function(substream) return substream.pluginSerialize());
+    }
+    else if (Context.defined("cs"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpDictionarySerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize(), function(substream) return substream.pluginSerialize());
+    }
+    else
+    {
+      throw "";
+      Context.error("Unsupported platform", Context.currentPos());
+    }
+  }
+}
+
+@:final
+class ImmutableMapSerializerPlugin
+{
+
+  @:noDynamicSerialize
+  macro public static function pluginSerialize<Key, Value>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.ImmutableMap<Key, Value>>>):ExprOf<JsonStream> return
+  {
+    if (Context.defined("java") && Context.defined("scala"))
+    {
+      macro com.qifun.jsonStream.serializerPlugin.ScalaSerializerPlugins.ScalaMapSerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize(), function(substream) return substream.pluginSerialize());
     }
     else if (Context.defined("cs"))
     {

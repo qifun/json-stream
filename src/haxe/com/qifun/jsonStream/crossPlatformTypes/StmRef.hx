@@ -20,24 +20,24 @@
 package com.qifun.jsonStream.crossPlatformTypes;
 
 #if (scala && java)
-typedef NativeRef<A> = scala.concurrent.stm.Ref<A>;
+typedef StmNativeRef<A> = scala.concurrent.stm.Ref<A>;
 #elseif cs
-typedef NativeRef<A> = A;
+typedef StmNativeRef<A> = A;
 #else
-typedef NativeRef<A> = A;
+typedef StmNativeRef<A> = A;
 #end
 
-abstract StmRef<A>(NativeRef<A>)
+abstract StmRef<A>(StmNativeRef<A>)
 {
-  public var underlying(get, never):NativeRef<A>;
+  public var underlying(get, never):StmNativeRef<A>;
 
   @:extern
-  inline function get_underlying():NativeRef<A> return
+  inline function get_underlying():StmNativeRef<A> return
   {
     this;
   }
 
-  inline public function new(ref:NativeRef<A>)
+  inline public function new(ref:StmNativeRef<A>)
   {
     this = ref;
   }

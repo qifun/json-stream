@@ -20,27 +20,27 @@
 package com.qifun.jsonStream.crossPlatformTypes;
 
 #if (scala && java)
-typedef NativeSet<A> = scala.collection.immutable.Set<A>;
+typedef ImmutableNativeSet<A> = scala.collection.immutable.Set<A>;
 #elseif cs
-typedef NativeSet<A> = dotnet.system.collections.generic.HashSet<A>;
+typedef ImmutableNativeSet<A> = dotnet.system.collections.generic.HashSet<A>;
 #else
 import Map in StdMap;
-typedef NativeSet<A> = StdMap<A, Bool>;
+typedef ImmutableNativeSet<A> = StdMap<A, Bool>;
 #end
 
-abstract ImmutableSet<A>(NativeSet<A>)
+abstract ImmutableSet<A>(ImmutableNativeSet<A>)
 {
 
-    public var underlying(get, never):NativeSet<A>;
+  public var underlying(get, never):ImmutableNativeSet<A>;
 
-    @:extern
-    inline function get_underlying():NativeSet<A> return
-        {
-        this;
-        }
+  @:extern
+  inline function get_underlying():ImmutableNativeSet<A> return
+  {
+    this;
+  }
 
-    inline public function new(set:NativeSet<A>)
-    {
-        this = set;
-    }
+  inline public function new(set:ImmutableNativeSet<A>)
+  {
+    this = set;
+  }
 }
