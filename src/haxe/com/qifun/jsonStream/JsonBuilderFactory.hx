@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,8 @@ import haxe.macro.Type;
 import haxe.macro.TypeTools;
 using StringTools;
 #end
+
+using Lambda;
 
 /**
   提供创建`JsonBuilder`的静态函数。
@@ -826,6 +828,26 @@ class JsonBuilderFactoryGenerator
       params: params,
     }
   }
+  private static function findConstructor(classType:ClassType):Null<ClassField> return
+  {
+    var constructor = classType.constructor;
+    if (constructor == null)
+    {
+      var superClass = classType.superClass;
+      if (superClass == null)
+      {
+        null;
+      }
+      else
+      {
+        findConstructor(classType.superClass.t.get());
+      }
+    }
+    else
+    {
+      constructor.get();
+    }
+  }
 
   private function newClassBuildFunction(classType:ClassType):Function return
   {
@@ -893,10 +915,29 @@ class JsonBuilderFactoryGenerator
       sub: classType.name,
       params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
     };
-    var newInstance =
+    var constructor = findConstructor(classType);
+    var newInstance = switch (Context.follow(constructor.type))
     {
-      pos: Context.currentPos(),
-      expr: ENew(expectedTypePath, []),
+      case TFun(args, _):
+      {
+        if (args.foreach(function(arg) return arg.opt))
+        {
+          pos: Context.currentPos(),
+          expr: ENew(expectedTypePath, []),
+        }
+        else
+        {
+          var classParts = classModule.split(".");
+          classParts.push(classType.name);
+          var classExpr = MacroStringTools.toFieldExpr(classParts);
+          var expectedComplexType = TPath(expectedTypePath);
+          macro (Type.createEmptyInstance($classExpr):$expectedComplexType);
+        }
+      }
+      default:
+      {
+        throw "Expected TFun";
+      }
     }
     var switchKey =
     {
