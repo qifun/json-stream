@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,42 +31,10 @@ using Lambda;
 @:allow(com.qifun.jsonStream)
 class GeneratorUtilities
 {
-  private static function hasEmptyConstructor(classType:ClassType):Bool return
-  {
-    var constructor = classType.constructor;
-    if (constructor == null)
-    {
-      var superClass = classType.superClass;
-      if (superClass == null)
-      {
-        false;
-      }
-      else
-      {
-        hasEmptyConstructor(classType.superClass.t.get());
-      }
-    }
-    else
-    {
-      switch (Context.follow(constructor.get().type))
-      {
-        case TFun(args, _) if (args.foreach(function(arg)return arg.opt)):
-        {
-          true;
-        }
-        default:
-        {
-          false;
-        }
-      }
-    }
-  }
 
   private static function isAbstract(classType:ClassType):Bool return
   {
-    classType.isInterface ||
-    !classType.kind.match(KNormal) ||
-    !hasEmptyConstructor(classType);
+    classType.isInterface || !classType.kind.match(KNormal);
   }
 
   private static var _lowPriorityDynamicType:Type;
