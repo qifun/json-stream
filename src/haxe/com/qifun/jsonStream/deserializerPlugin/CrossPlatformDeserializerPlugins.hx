@@ -384,11 +384,7 @@ class ImmutableMapDeserializerPlugin
   public static inline function toNativeStream<Key, Value>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.ImmutableMap<Key, Value>>) return
   {
     #if (java && scala)
-      #if scala_stm
-        new JsonDeserializerPluginStream<scala.concurrent.stm.TMap<Key, Value>>(stream.underlying);
-      #else
-        new JsonDeserializerPluginStream<scala.collection.immutable.Map<Key, Value>>(stream.underlying);
-      #end
+      new JsonDeserializerPluginStream<scala.collection.immutable.Map<Key, Value>>(stream.underlying);
     #elseif cs
       new JsonDeserializerPluginStream<dotnet.system.collections.generic.Dictionary<Key, Value>>(stream.underlying);
     #end
@@ -399,23 +395,11 @@ class ImmutableMapDeserializerPlugin
   {
     if (Context.defined("java") && Context.defined("scala"))
     {
-      if (Context.defined("scala_stm"))
+      macro
       {
-        macro
-        {
-          var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableMapDeserializerPlugin.toNativeStream($self);
-          var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTMapDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.ImmutableMap(nativeResult);
-        }
-      }
-      else
-      {
-        macro
-        {
-          var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableMapDeserializerPlugin.toNativeStream($self);
-          var nativeResult = com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaMapDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-          new com.qifun.jsonStream.crossPlatformTypes.ImmutableMap(nativeResult);
-        }
+        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableMapDeserializerPlugin.toNativeStream($self);
+        var nativeResult = com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaMapDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
+        new com.qifun.jsonStream.crossPlatformTypes.ImmutableMap(nativeResult);
       }
     }
     else if (Context.defined("cs"))
@@ -481,7 +465,7 @@ class StmVectorDeserializerPlugin
   @:dox(hide)
   public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.StmVector<Element>>) return
   {
-    #if (java && scala && scala_stm)
+    #if (java && scala)
       new JsonDeserializerPluginStream<scala.concurrent.stm.TArray<Element>>(stream.underlying);
     #else
       new JsonDeserializerPluginStream<haxe.ds.Vector<Element>>(stream.underlying);

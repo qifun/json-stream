@@ -16,10 +16,6 @@ haxeOptions in Compile ++= Seq("-D", "stateless_future")
 
 haxeOptions in Test ++= Seq("-D", "stateless_future")
 
-haxeOptions in Compile ++= Seq("-D", "scala_stm")
-
-haxeOptions in Test ++= Seq("-D", "scala_stm")
-
 haxeOptions in Compile ++= Seq("--macro", "com.qifun.util.Patcher.noExternalDoc()")
 
 haxeOptions in Compile ++= Seq("-D", "scala")

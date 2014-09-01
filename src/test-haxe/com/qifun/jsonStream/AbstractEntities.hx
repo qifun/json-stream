@@ -25,7 +25,7 @@ class AbstractEntities
 
   public function new() { }
 
-  public var ref:com.qifun.jsonStream.crossPlatformTypes.CrossRef<Int>;
+  public var ref:com.qifun.jsonStream.crossPlatformTypes.StmRef<Int>;
 
   public var set:com.qifun.jsonStream.crossPlatformTypes.CrossSet<Int>;
 
