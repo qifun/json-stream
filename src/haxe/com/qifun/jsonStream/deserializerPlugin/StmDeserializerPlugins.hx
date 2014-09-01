@@ -21,7 +21,7 @@ package com.qifun.jsonStream.deserializerPlugin;
 
 
 
-#if (scala_stm && (java || macro))
+#if (java || macro)
 import scala.concurrent.stm.Ref;
 import scala.concurrent.stm.RefView;
 import scala.concurrent.stm.TSet;

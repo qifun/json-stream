@@ -35,7 +35,7 @@ class AbstractPluginTest extends JsonTestCase
     var o = new AbstractEntities();
     #if (java && scala_stm)
       var refView:scala.concurrent.stm.RefView<Int> = scala.concurrent.stm.japi.STM.MODULE.newRef(5);
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(refView.ref());
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.StmRef(refView.ref());
       var setBuilder:scala.collection.mutable.Builder<Int, scala.concurrent.stm.TSet<Int>> = scala.concurrent.stm.TSet.TSetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
       setBuilder.plusEquals(82);
@@ -105,7 +105,7 @@ class AbstractPluginTest extends JsonTestCase
     var o = new AbstractEntities();
     #if (java && scala_stm)
       var refView:scala.concurrent.stm.RefView<Int> = scala.concurrent.stm.japi.STM.MODULE.newRef(5);
-      o.ref = new com.qifun.jsonStream.crossPlatformTypes.CrossRef(refView.ref());
+      o.ref = new com.qifun.jsonStream.crossPlatformTypes.StmRef(refView.ref());
       var setBuilder:scala.collection.mutable.Builder<Int, scala.concurrent.stm.TSet<Int>> = scala.concurrent.stm.TSet.TSetSingleton.MODULE.newBuilder();
       setBuilder.plusEquals(30);
       setBuilder.plusEquals(82);

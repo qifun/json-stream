@@ -20,7 +20,7 @@
 package com.qifun.jsonStream.serializerPlugin;
 
 
-#if (scala_stm && (java || macro))
+#if (java || macro)
 import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonSerializer;

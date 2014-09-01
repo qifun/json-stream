@@ -86,7 +86,7 @@ class StmVectorSerializerPlugin
   @:noDynamicSerialize
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<com.qifun.jsonStream.crossPlatformTypes.StmVector<Element>>>):ExprOf<JsonStream> return
   {
-    if (Context.defined("java") && Context.defined("scala") && Context.defined("scala_stm"))
+    if (Context.defined("java") && Context.defined("scala") )
     {
       macro com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmTArraySerializerPlugin.serializeForElement(new com.qifun.jsonStream.JsonSerializer.JsonSerializerPluginData($self.underlying.underlying), function(substream) return substream.pluginSerialize());
     }

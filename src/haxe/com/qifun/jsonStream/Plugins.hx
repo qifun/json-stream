@@ -106,7 +106,19 @@ typedef CSharpDictionarySerializerPlugin = com.qifun.jsonStream.serializerPlugin
 typedef CSharpHashSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CSharpSerializerPlugins.CSharpHashSetSerializerPlugin;
 #end
 
-#if (scala_stm && java && scala)
+@:dox(hide)
+typedef StmTRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.StmTRefSerializerPlugin;
+
+@:dox(hide)
+typedef StmSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.StmSetSerializerPlugin;
+
+@:dox(hide)
+typedef StmMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.StmMapSerializerPlugin;
+
+@:dox(hide)
+typedef StmVectorSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.StmVectorSerializerPlugin;
+
+#if (java && scala)
 
 @:dox(hide)
 typedef StmRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.StmSerializerPlugins.StmRefSerializerPlugin;
@@ -177,6 +189,19 @@ typedef CrossPlatformMapDeserializerPlugin = com.qifun.jsonStream.deserializerPl
 @:dox(hide)
 typedef CrossPlatformSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformSetDeserializerPlugin;
 
+@:dox(hide)
+typedef StmTRefDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmTRefDeserializerPlugin;
+
+@:dox(hide)
+typedef StmSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmSetDeserializerPlugin;
+
+@:dox(hide)
+typedef StmMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmMapDeserializerPlugin;
+
+@:dox(hide)
+typedef StmVectorDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmVectorDeserializerPlugin;
+
+
 #if (java && scala)
 @:dox(hide)
 typedef ScalaSeqDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSeqDeserializerPlugin;
@@ -201,7 +226,7 @@ typedef CSharpHashSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugi
 
 #end
 
-#if (scala_stm && java && scala)
+#if (java && scala)
 
 @:dox(hide)
 typedef StmRefDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin;
