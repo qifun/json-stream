@@ -408,7 +408,7 @@ class ImmutableMapDeserializerPlugin
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpDictionaryDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.CrossMap(nativeResult);
+        new com.qifun.jsonStream.crossPlatformTypes.ImmutableMap(nativeResult);
       }
     }
     else
@@ -496,3 +496,5 @@ class StmVectorDeserializerPlugin
   }
 
 }
+
+// vim: et sts=2 sw=2
