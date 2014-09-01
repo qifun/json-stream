@@ -33,7 +33,7 @@ class CSharpPluginsTest extends JsonTestCase
  #if cs
  function testCSPlugins()
   {
-    var csTest = new CSharpSimple();
+    var csTest = new CSharpEntities();
     csTest.list.Add(1);
     csTest.list.Add(2);
     csTest.list.Add(3);
@@ -45,7 +45,7 @@ class CSharpPluginsTest extends JsonTestCase
     csTest.dictionary.Add(3, 1);
     var jsonStream = JsonSerializer.serialize(csTest);
     var outputBuffer = new haxe.io.BytesOutput();
-    var csTest2:CSharpSimple = JsonDeserializer.deserialize(jsonStream);
+    var csTest2:CSharpEntities = JsonDeserializer.deserialize(jsonStream);
     
     var jsonStream2 = JsonStream.OBJECT(
       new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStreamPair>):Void
@@ -57,7 +57,7 @@ class CSharpPluginsTest extends JsonTestCase
       }
     )));
     
-    var csTest3:CSharpSimple = JsonDeserializer.deserialize(jsonStream2);
+    var csTest3:CSharpEntities = JsonDeserializer.deserialize(jsonStream2);
 
     assertDeepEquals(csTest, csTest2);
     assertDeepEquals(csTest, csTest3);
