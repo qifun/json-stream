@@ -31,10 +31,32 @@ using Lambda;
 @:allow(com.qifun.jsonStream)
 class GeneratorUtilities
 {
+  private static function hasConstructor(classType:ClassType):Bool return
+  {
+    var constructor = classType.constructor;
+    if (constructor == null)
+    {
+      var superClass = classType.superClass;
+      if (superClass == null)
+      {
+        false;
+      }
+      else
+      {
+        hasConstructor(classType.superClass.t.get());
+      }
+    }
+    else
+    {
+      true;
+    }
+  }
 
   private static function isAbstract(classType:ClassType):Bool return
   {
-    classType.isInterface || !classType.kind.match(KNormal);
+    classType.isInterface ||
+    !classType.kind.match(KNormal) ||
+    !hasConstructor(classType);
   }
 
   private static var _lowPriorityDynamicType:Type;

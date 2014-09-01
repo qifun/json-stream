@@ -348,6 +348,7 @@ class JsonDeserializerGenerator
           unknownEnumValueConstructor = constructor.name;
         }
         case { type: TFun(args, _) }:
+        {
           var valueParams: Array<TypeParamDecl> =
           [
             for (tp in constructor.params)
@@ -479,6 +480,7 @@ class JsonDeserializerGenerator
                 },
               }:Case);
             });
+        }
         case _: // 没有参数的枚举值，前面已经处理过了。
       }
     }
@@ -592,169 +594,361 @@ class JsonDeserializerGenerator
     }
   }
 
+  private static function findConstructor(classType:ClassType):Null<ClassField> return
+  {
+    var constructor = classType.constructor;
+    if (constructor == null)
+    {
+      var superClass = classType.superClass;
+      if (superClass == null)
+      {
+        null;
+      }
+      else
+      {
+        findConstructor(classType.superClass.t.get());
+      }
+    }
+    else
+    {
+      constructor.get();
+    }
+  }
+
   private function newClassDeserializeFunction(classType:ClassType):Function return
   {
-    var params: Array<TypeParamDecl> =
-    [
-      for (tp in classType.params)
-      {
-        name: tp.name,
-        // TODO: constraits
-      }
-    ];
-    var cases:Array<Case> = [];
-    var hasUnknownFieldMap = false;
-    function addFieldCases(classType:Null<ClassType>, ?concreteTypes:Array<Type>):Void
+    var constructor = findConstructor(classType);
+    switch (Context.follow(constructor.type))
     {
-      function applyTypeParameters(t:Type) return
+      case TFun(args, _):
       {
-        if (concreteTypes == null)
+        if (args.foreach(function(arg) return arg.opt))
         {
-          t;
-        }
-        else
-        {
-          TypeTools.applyTypeParameters(t, classType.params, concreteTypes);
-        }
-      }
-      for (field in classType.fields.get())
-      {
-        switch (field)
-        {
-          case
+          var params: Array<TypeParamDecl> =
+          [
+            for (tp in classType.params)
+            {
+              name: tp.name,
+              // TODO: constraits
+            }
+          ];
+          var cases:Array<Case> = [];
+          var hasUnknownFieldMap = false;
+          function addFieldCases(classType:Null<ClassType>, ?concreteTypes:Array<Type>):Void
           {
-            name: "unknownFieldMap",
-            kind: FVar(AccNormal | AccNo | AccCall, _),
-            type:
-              Context.follow(_) =>
-              TAbstract(
-                _.get() =>
-                {
-                  module: "com.qifun.jsonStream.unknown.UnknownFieldMap",
-                  name: "UnknownFieldMap"
-                },
-                []),
-          }:
-            hasUnknownFieldMap = true;
-          case
-          {
-            kind: FVar(AccNormal | AccNo, AccNormal | AccNo),
-            meta: meta,
-            type:
-              Context.follow(_) =>
-              TInst(
-                _.get() =>
-                {
-                  module: "haxe.Int64",
-                  name: "Int64"
-                },
-                [])
-              } if (!meta.has(":transient")):
-          {
-            // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
-            var fieldName = field.name;
-            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
-            cases.push(
+            function applyTypeParameters(t:Type) return
+            {
+              if (concreteTypes == null)
               {
-                values: [ macro $v{fieldName} ],
-                guard: null,
-                expr: macro result.$fieldName = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.toInt64($d),
-              });
-          }
-          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
-          {
-            var fieldName = field.name;
-            var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
-            cases.push(
+                t;
+              }
+              else
               {
-                values: [ macro $v{fieldName} ],
-                guard: null,
-                expr: macro result.$fieldName = $d,
-              });
+                TypeTools.applyTypeParameters(t, classType.params, concreteTypes);
+              }
+            }
+            for (field in classType.fields.get())
+            {
+              switch (field)
+              {
+                case
+                {
+                  name: "unknownFieldMap",
+                  kind: FVar(AccNormal | AccNo | AccCall, _),
+                  type:
+                    Context.follow(_) =>
+                    TAbstract(
+                      _.get() =>
+                      {
+                        module: "com.qifun.jsonStream.unknown.UnknownFieldMap",
+                        name: "UnknownFieldMap"
+                      },
+                      []),
+                }:
+                  hasUnknownFieldMap = true;
+                case
+                {
+                  kind: FVar(AccNormal | AccNo, AccNormal | AccNo),
+                  meta: meta,
+                  type:
+                    Context.follow(_) =>
+                    TInst(
+                      _.get() =>
+                      {
+                        module: "haxe.Int64",
+                        name: "Int64"
+                      },
+                      [])
+                    } if (!meta.has(":transient")):
+                {
+                  // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
+                  var fieldName = field.name;
+                  var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
+                  cases.push(
+                    {
+                      values: [ macro $v{fieldName} ],
+                      guard: null,
+                      expr: macro result.$fieldName = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.toInt64($d),
+                    });
+                }
+                case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
+                {
+                  var fieldName = field.name;
+                  var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
+                  cases.push(
+                    {
+                      values: [ macro $v{fieldName} ],
+                      guard: null,
+                      expr: macro result.$fieldName = $d,
+                    });
+                }
+                case _:
+                {
+                  continue;
+                }
+              }
+            }
+            var superClass = classType.superClass;
+            if (superClass != null)
+            {
+              addFieldCases(
+                superClass.t.get(),
+                [ for (p in superClass.params) applyTypeParameters(p) ]);
+            }
           }
-          case _:
+          addFieldCases(classType);
+          var classModule = classType.module;
+          var expectedTypePath =
           {
-            continue;
+            pack: classType.pack,
+            name: classModule.substring(classModule.lastIndexOf(".") + 1),
+            sub: classType.name,
+            params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
+          };
+          var newInstance =
+          {
+            pos: Context.currentPos(),
+            expr: ENew(expectedTypePath, []),
           }
+          var switchKey =
+          {
+            pos: Context.currentPos(),
+            expr: ESwitch(macro pair.key, cases,
+              if (hasUnknownFieldMap)
+              {
+                macro result.unknownFieldMap.underlying.set(pair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value));
+              }
+              else
+              {
+                macro null;
+              }),
+          }
+
+          var switchStream = macro switch (stream)
+          {
+            case OBJECT(pairs):
+              var result = $newInstance;
+              var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.asGenerator(pairs);
+              if (generator != null)
+              {
+                for (pair in generator)
+                {
+                  $switchKey;
+                }
+              }
+              else
+              {
+                for (pair in pairs)
+                {
+                  $switchKey;
+                }
+              }
+              result;
+            case _:
+              throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
+          }
+
+          // trace(ExprTools.toString(switchStream));
+
+          {
+            args:
+            [
+              {
+                name:"stream",
+                type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+              },
+            ],
+            ret: TPath(expectedTypePath),
+            expr: macro return $switchStream,
+            params: params,
+          }
+
+
+        }
+        else
+        {
+          var enumParams: Array<TypeParamDecl> =
+          [
+            for (tp in classType.params)
+            {
+              name: tp.name,
+              // TODO: constraits
+            }
+          ];
+          var valueParams: Array<TypeParamDecl> =
+          [
+            for (tp in constructor.params)
+            {
+              name: tp.name,
+              // TODO: constraits
+            }
+          ];
+          var enumAndValueParams = enumParams.concat(valueParams);
+          var constructorName = constructor.name;
+          var block = [];
+          var unknownFieldMapName = null;
+          for (i in 0...args.length)
+          {
+            var parameterName = 'parameter$i';
+            block.push(macro var $parameterName = null);
+          }
+          var parameterCases:Array<Case> = [];
+          for (i in 0...args.length)
+          {
+            var parameterName = 'parameter$i';
+            var arg = args[i];
+            if (arg.name == "unknownFieldMap" && Context.follow(arg.t).match(TAbstract(_.get() => {module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap"}, [])))
+            {
+              if (unknownFieldMapName == null)
+              {
+                unknownFieldMapName = parameterName;
+                block.push(macro $i{parameterName} = new com.qifun.jsonStream.unknown.UnknownFieldMap(new haxe.ds.StringMap.StringMap()));
+              }
+              else
+              {
+                Context.error("Expect zero or one UnknownFieldMap in enum parameter list!", constructor.pos);
+              }
+            }
+            else
+            {
+              var parameterValue = resolvedDeserialize(TypeTools.toComplexType(arg.t), macro parameterPair.value, enumAndValueParams);
+              var f =
+              {
+                pos: Context.currentPos(),
+                expr: EFunction(
+                  "inline_temporaryEnumDeserialize",
+                  {
+                    params: valueParams,
+                    ret: null,
+                    args: [],
+                    expr: macro return $parameterValue,
+                  })
+              };
+              parameterCases.push(
+                {
+                  values: [ Context.makeExpr(arg.name, Context.currentPos()) ],
+                  expr: macro
+                  {
+                    $f;
+                    inline function nullize<T>(t:T):Null<T> return t;
+                    $i{parameterName} = nullize(temporaryEnumDeserialize());
+                  }
+                });
+            }
+          }
+          var switchKey =
+          {
+            pos: Context.currentPos(),
+            expr: ESwitch(
+              macro parameterPair.key,
+              parameterCases,
+              if (unknownFieldMapName == null)
+              {
+                expr: EBlock([]),
+                pos: Context.currentPos(),
+              }
+              else
+              {
+                macro $i{unknownFieldMapName}.underlying.set(parameterPair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(parameterPair.value));
+              }),
+          };
+          var classModule = classType.module;
+          var expectedTypePath =
+          {
+            pack: classType.pack,
+            name: classModule.substring(classModule.lastIndexOf(".") + 1),
+            sub: classType.name,
+            params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
+          };
+          var newEnum =
+          {
+            pos: Context.currentPos(),
+            expr: ENew(
+              expectedTypePath,
+              [
+                for (i in 0...args.length)
+                {
+                  var parameterName = 'parameter$i';
+                  macro $i{parameterName};
+                }
+              ]),
+          };
+          block.push(
+            macro
+            {
+              var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.asGenerator(parameterPairs);
+              if (generator != null)
+              {
+                for (parameterPair in generator)
+                {
+                  $switchKey;
+                }
+              }
+              else
+              {
+                for (parameterPair in parameterPairs)
+                {
+                  $switchKey;
+                }
+              }
+              $newEnum;
+            });
+          var blockExpr =
+          {
+            pos: Context.currentPos(),
+            expr: EBlock(block),
+          };
+          {
+            args:
+            [
+              {
+                name:"stream",
+                type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
+              },
+            ],
+            ret: TPath(expectedTypePath),
+            expr: macro return
+            {
+              switch (stream)
+              {
+                case com.qifun.jsonStream.JsonStream.OBJECT(parameterPairs):
+                  $blockExpr;
+                case _:
+                  throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
+              }
+            },
+            params: enumParams,
+          }
+
+
         }
       }
-      var superClass = classType.superClass;
-      if (superClass != null)
+      default:
       {
-        addFieldCases(
-          superClass.t.get(),
-          [ for (p in superClass.params) applyTypeParameters(p) ]);
+        throw "Expected TFun";
       }
     }
-    addFieldCases(classType);
-    var classModule = classType.module;
-    var expectedTypePath =
-    {
-      pack: classType.pack,
-      name: classModule.substring(classModule.lastIndexOf(".") + 1),
-      sub: classType.name,
-      params: [ for (tp in classType.params) TPType(TPath({ name: tp.name, pack: []})) ]
-    };
-    var classParts = classModule.split(".");
-    classParts.push(classType.name);
-    var classExpr = MacroStringTools.toFieldExpr(classParts);
-    var newInstance =
-    {
-      pos: Context.currentPos(),
-      expr: ECheckType(macro Type.createEmptyInstance($classExpr), TPath(expectedTypePath)),
-    }
-    var switchKey =
-    {
-      pos: Context.currentPos(),
-      expr: ESwitch(macro pair.key, cases,
-        if (hasUnknownFieldMap)
-        {
-          macro result.unknownFieldMap.underlying.set(pair.key, com.qifun.jsonStream.JsonDeserializer.deserializeRaw(pair.value));
-        }
-        else
-        {
-          macro null;
-        }),
-    }
 
-    var switchStream = macro switch (stream)
-    {
-      case OBJECT(pairs):
-        var result = $newInstance;
-        var generator = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.asGenerator(pairs);
-        if (generator != null)
-        {
-          for (pair in generator)
-          {
-            $switchKey;
-          }
-        }
-        else
-        {
-          for (pair in pairs)
-          {
-            $switchKey;
-          }
-        }
-        result;
-      case _:
-        throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "OBJECT" ]);
-    }
-
-    // trace(ExprTools.toString(switchStream));
-
-    {
-      args:
-      [
-        {
-          name:"stream",
-          type: MacroStringTools.toComplex("com.qifun.jsonStream.JsonStream"),
-        },
-      ],
-      ret: TPath(expectedTypePath),
-      expr: macro return $switchStream,
-      params: params,
-    }
   }
 
   public function tryAddDeserializeMethod(type:Type):Void
