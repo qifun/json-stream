@@ -1098,6 +1098,7 @@ class JsonBuilderFactoryGenerator
           case TFun([ _, Context.follow(_.t) => TFun([ Context.follow(_.t) => TInst(_.get() => { module: module, name: name }, _) ], _) ], _): getFullName(module, name);
           case t: continue;
         }
+        #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
         dynamicCases.push(
         {
           values: [ macro $v{fullName} ],
@@ -1110,6 +1111,7 @@ class JsonBuilderFactoryGenerator
     {
       var baseType = deserializingTypes.get(methodName);
       var fullName = getFullName(baseType.module, baseType.name);
+      #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
       dynamicCases.push(
         {
           values: [ macro $v{ fullName } ],

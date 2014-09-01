@@ -220,6 +220,7 @@ class JsonDeserializerGenerator
           case TFun(_, Context.follow(_) => TEnum(_.get() => { module: module, name: name }, _)): getFullName(module, name);
           case t: continue;
         }
+        #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
         dynamicCases.push(
         {
           values: [ macro $v{fullName} ],
@@ -232,6 +233,7 @@ class JsonDeserializerGenerator
     {
       var baseType = deserializingTypes.get(methodName);
       var fullName = getFullName(baseType.module, baseType.name);
+      #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
       dynamicCases.push(
         {
           values: [ macro $v{ fullName } ],

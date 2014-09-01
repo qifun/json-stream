@@ -10,6 +10,8 @@ haxeOptions ++= Seq("-dce", "no")
 
 haxeOptions ++= Seq("-lib", "HUGS")
 
+haxeOptions ++= Seq("-D", "json_stream_no_dot")
+
 haxeOptions in Test ++= Seq("-main", "com.qifun.jsonStream.Main")
 
 haxeOptions in Compile ++= Seq("-D", "stateless_future")

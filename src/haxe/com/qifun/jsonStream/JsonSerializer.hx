@@ -228,40 +228,48 @@ class JsonSerializerGenerator
           var pattern = macro _;
           var guard = macro Std.is(data, haxe.Int64);
           var fullName = "haxe.Int64";
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], guard: guard, expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TInst(_.get() => { module: module, name: name }, _):
           var moduleExpr = MacroStringTools.toFieldExpr(module.split("."));
           var pattern = macro Type.ValueType.TClass($moduleExpr.$name);
           var fullName = getFullName(module, name);
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TEnum(_.get() => { module: module, name: name }, _):
           var moduleExpr = MacroStringTools.toFieldExpr(module.split("."));
           var pattern = macro Type.ValueType.TEnum($moduleExpr.$name);
           var fullName = getFullName(module, name);
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TAbstract(_.get() => { module: "StdTypes", name: "Float" }, _):
           var pattern = macro Type.ValueType.TFloat;
           var fullName = "Float";
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TAbstract(_.get() => { module: "StdTypes", name: "Single" }, _):
           var pattern = macro Type.ValueType.TFloat;
           var fullName = "Single";
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TAbstract(_.get() => { module: "StdTypes", name: "Bool" }, _):
           var pattern = macro Type.ValueType.TBool;
           var fullName = "Bool";
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TAbstract(_.get() => { module: "StdTypes", name: "Int" }, _):
           var pattern = macro Type.ValueType.TInt;
           var fullName = "Int";
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TAbstract(_.get() => { module: "UInt", name: "UInt" }, _):
           var pattern = macro Type.ValueType.TInt;
           var fullName = "UInt";
+          #if json_stream_no_dot fullName = fullName.replace(".", "/"); #end
           { values: [ pattern ], expr: macro new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fullName}, $valueExpr), };
         case TAbstract(_.get() => { type: impType }, _):
           null;
-        case t:
+        case _:
           null;
       }
     }
