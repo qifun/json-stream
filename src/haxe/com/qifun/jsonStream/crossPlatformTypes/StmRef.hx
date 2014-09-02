@@ -42,7 +42,7 @@ abstract StmRef<A>(StmNativeRef<A>)
     this = ref;
   }
   
-  public static function empty<A>():StmRef<A> return 
+  public static inline function empty<A>():StmRef<A> return 
   {
     #if (scala && java)
       var refView:scala.concurrent.stm.RefView<A> = scala.concurrent.stm.japi.STM.MODULE.newRef(null);
