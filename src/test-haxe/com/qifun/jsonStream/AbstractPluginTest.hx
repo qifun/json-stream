@@ -44,7 +44,7 @@ class AbstractPluginTest extends JsonTestCase
       setBuilder.plusEquals(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
-      var tarrayView:scala.concurrent.stm.TArrayView<Int> = scala.concurrent.stm.japi.STM.MODULE.newTArray(5);
+      var tarrayView:scala.concurrent.stm.TArrayView<String> = scala.concurrent.stm.japi.STM.MODULE.newTArray(5);
       tarrayView.update(0, 1);
       tarrayView.update(1, 1);
       tarrayView.update(2, 2);
@@ -67,7 +67,7 @@ class AbstractPluginTest extends JsonTestCase
       set.Add(4099);
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy([1, 1, 2, 3, 5]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
@@ -96,7 +96,7 @@ class AbstractPluginTest extends JsonTestCase
     #end
     
     var jsonStream = JsonSerializer.serialize(o);
-    assertDeepEquals(["1", "1", "2", "3", "5"], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
+    assertDeepEquals([1, 1, 2, 3, 5], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
     
   }
 
@@ -115,11 +115,11 @@ class AbstractPluginTest extends JsonTestCase
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
       var tarrayView:scala.concurrent.stm.TArrayView<String> = scala.concurrent.stm.japi.STM.MODULE.newTArray(5);
-      tarrayView.update(0, "1");
-      tarrayView.update(1, "1");
-      tarrayView.update(2, "2");
-      tarrayView.update(3, "3");
-      tarrayView.update(4, "5");
+      tarrayView.update(0, 1);
+      tarrayView.update(1, 1);
+      tarrayView.update(2, 2);
+      tarrayView.update(3, 3);
+      tarrayView.update(4, 5);
       o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(tarrayView.tarray());
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, scala.concurrent.stm.TMap<Int, Int>> = scala.concurrent.stm.TMap.TMapSingleton.MODULE.newBuilder();
@@ -138,7 +138,7 @@ class AbstractPluginTest extends JsonTestCase
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
 
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.Vector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy([1, 1, 2, 3, 5]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
@@ -167,7 +167,7 @@ class AbstractPluginTest extends JsonTestCase
       o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
     #end
     var jsonStream = JsonSerializer.serializeRaw(new RawJson({ref: 5,
-     list:["1", "1", "2", "3", "5"],
+     list:[1, 1, 2, 3, 5],
      map:[[14, 169], [25, 625], [42, 1764],
      [256,65536]], set :[30,82,255,4099,96354] })); 
     var o2:AbstractEntities = JsonDeserializer.deserialize(jsonStream);
