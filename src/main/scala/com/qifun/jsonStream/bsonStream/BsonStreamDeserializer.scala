@@ -18,7 +18,7 @@ class BsonStreamDeserializer[T](
       val code = buffer.readByte()
       val name = buffer.readCString()
       if (code == 0x03 || name == "Content") {
-        val contentLength = buffer.readInt
+        val contentLength = buffer.readInt()
         toJsonStreamBuffer.writeInt(contentLength)
         toJsonStreamBuffer.writeBytes(buffer.slice(contentLength - 4))
         toJsonStreamBuffer.writeByte(0)
