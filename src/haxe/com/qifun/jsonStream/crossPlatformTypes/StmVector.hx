@@ -37,8 +37,20 @@ abstract StmVector<A>(StmNativeVector<A>)
     this;
   }
 
-  inline public function new(underlying:StmNativeVector<A>)
+  inline public function new(?underlying:StmNativeVector<A>)
   {
-    this = underlying;
+    if (underlying == null)
+    {
+      #if (scala && java)
+        var newTarrayView:scala.concurrent.stm.TArrayView<A> = scala.concurrent.stm.japi.STM.MODULE.newTArray(0);
+        this = newTarrayView.tarray();
+      #else
+        this = new haxe.ds.Vector(0);
+      #end
+    }
+    else
+    {
+      this = underlying;
+    }
   }
 }

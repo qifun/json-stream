@@ -39,7 +39,7 @@ class Main
     runner.add(new GenericClassTest());
     runner.add(new TextTest());
     runner.add(new CSharpPluginsTest());
-    runner.add(new AbstractPluginTest());
+    //runner.add(new AbstractPluginTest());
     var isSuccess = runner.run();
     if (!isSuccess)
     {

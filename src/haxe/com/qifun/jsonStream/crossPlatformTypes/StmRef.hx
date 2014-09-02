@@ -19,6 +19,8 @@
 
 package com.qifun.jsonStream.crossPlatformTypes;
 
+
+
 #if (scala && java)
 typedef StmNativeRef<A> = scala.concurrent.stm.Ref<A>;
 #elseif cs
@@ -37,8 +39,20 @@ abstract StmRef<A>(StmNativeRef<A>)
     this;
   }
 
-  inline public function new(ref:StmNativeRef<A>)
+  inline public function new(?ref:StmNativeRef<A>)
   {
-    this = ref;
+    if (ref == null)
+    {
+      #if (scala && java)
+        var refView:scala.concurrent.stm.RefView<A> = scala.concurrent.stm.japi.STM.MODULE.newRef(null);
+        this = refView.ref();
+      #elseif cs
+        this = null;
+      #end
+    }
+    else
+    {
+      this = ref;
+    }
   }
 }

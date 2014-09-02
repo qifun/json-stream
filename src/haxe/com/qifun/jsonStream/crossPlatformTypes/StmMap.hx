@@ -39,9 +39,21 @@ abstract StmMap<A, B>(StmNativeMap<A, B>)
     this;
   }
 
-  inline public function new(map:StmNativeMap<A, B>)
+  inline public function new(?map:StmNativeMap<A, B>)
   {
-    this = map;
+    if (map == null)
+    {
+      #if (scala && java)
+        var mapView:scala.concurrent.stm.TMapView<A, B> = scala.concurrent.stm.japi.STM.MODULE.newTMap();
+        this = mapView.tmap();
+      #elseif cs
+        this = new dotnet.system.collections.generic.Dictionary<A, B>();
+      #end
+    }
+    else 
+    {
+      this = map;
+    }
   }
 
 }

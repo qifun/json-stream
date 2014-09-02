@@ -39,8 +39,19 @@ abstract StmSet<A>(StmNativeSet<A>)
     this;
   }
 
-  inline public function new(set:StmNativeSet<A>)
+  inline public function new(?set:StmNativeSet<A>)
   {
-    this = set;
+    if (set == null)
+    {
+      #if (scala && java)
+        this = scala.concurrent.stm.TSet.TSetSingleton.MODULE.empty();
+      #elseif cs
+        this = new dotnet.system.collections.generic.HashSet<A>();
+      #end
+    }
+    else
+    {
+      this = set;
+    }
   }
 }
