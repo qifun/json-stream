@@ -38,6 +38,7 @@ import dotnet.system.collections.generic.HashSet;
   ```cs.System.Collection.Generic.List```的序列化插件。
 **/
 @:final
+@:nativeGen
 class CSharpListSerializerPlugin
 {
 
@@ -76,12 +77,13 @@ class CSharpListSerializerPlugin
   ```cs.System.Collection.Generic.Dictionary```的序列化插件。
 **/
 @:final
+@:nativeGen
 class CSharpDictionarySerializerPlugin
 {
   #if cs
   @:dox(hide)
   @:noUsing
-  public static inline function serializeForElement<Key, Value>(
+  public static function serializeForElement<Key, Value>(
     data:JsonSerializerPluginData<dotnet.system.collections.generic.Dictionary<Key, Value>>,
     KeySerializeFunction:JsonSerializerPluginData<Key>->JsonStream,
     ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
@@ -121,6 +123,7 @@ class CSharpDictionarySerializerPlugin
   ```cs.System.Collection.Generic.HashSet```的序列化插件。
 **/
 @:final
+@:nativeGen
 class CSharpHashSetSerializerPlugin
 {
   #if cs

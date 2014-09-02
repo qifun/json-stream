@@ -38,6 +38,7 @@ import dotnet.system.collections.generic.HashSet;
   ```cs.System.Collection.Generic.List```的序列化插件。
 **/
 @:final
+@:nativeGen
 class CSharpListDeserializerPlugin
 {
   #if cs
@@ -86,6 +87,7 @@ class CSharpListDeserializerPlugin
   ```cs.System.Collection.Generic.Dictionary```的序列化插件。
 **/
 @:final
+@:nativeGen
 class CSharpDictionaryDeserializerPlugin
 {
   #if cs
@@ -196,6 +198,7 @@ class CSharpDictionaryDeserializerPlugin
   ```cs.System.Collection.Generic.HashSet```的序列化插件。
 **/
 @:final
+@:nativeGen
 class CSharpHashSetDeserializerPlugin
 {
   #if cs
