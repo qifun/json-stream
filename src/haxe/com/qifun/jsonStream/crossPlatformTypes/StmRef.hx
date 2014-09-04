@@ -37,19 +37,23 @@ abstract StmRef<A>(StmNativeRef<A>)
     this;
   }
 
-  inline public function new(ref:StmNativeRef<A>)
+  public inline function new(underlying:StmNativeRef<A>)
   {
-    this = ref;
+    this = underlying;
   }
-  
-  public static inline function empty<A>():StmRef<A> return 
+
+  @:from public static inline function make<A>(value:A):StmRef<A> return
   {
     #if (scala && java)
-      var refView:scala.concurrent.stm.RefView<A> = scala.concurrent.stm.japi.STM.MODULE.newRef(null);
-      new StmRef<A>(refView.ref());
+      var refView = scala.concurrent.stm.japi.STM.MODULE.newRef(value);
+      new StmRef(refView.ref());
     #else
-      var result:StmRef<A> = new StmRef<A>(null);
-      result;
+      new StmRef(value);
     #end
+  }
+
+  public static inline function empty<A>():StmRef<A> return
+  {
+    make((null:A));
   }
 }

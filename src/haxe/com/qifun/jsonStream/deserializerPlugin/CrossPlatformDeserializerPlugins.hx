@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -71,36 +71,20 @@ class StmTRefDeserializerPlugin
 {
   @:noUsing
   @:dox(hide)
-  public static inline function toNativeStream<Element>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.StmRef<Element>>) return
+  public static inline function toNativeStream<Value>(stream:JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.StmRef<Value>>) return
   {
-    #if (java && scala)
-      new JsonDeserializerPluginStream<scala.concurrent.stm.Ref<Element>>(stream.underlying);
-    #else
-      new JsonDeserializerPluginStream<Element>(stream.underlying);
-    #end
+    new JsonDeserializerPluginStream<Value>(stream.underlying);
   }
 
 
   @:noDynamicDeserialize
-  macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.StmRef<Element>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.StmRef<Element>>> return
+  macro public static function pluginDeserialize<Value>(self:ExprOf<JsonDeserializerPluginStream<com.qifun.jsonStream.crossPlatformTypes.StmRef<Value>>>):ExprOf<Null<com.qifun.jsonStream.crossPlatformTypes.StmRef<Value>>> return
   {
-    if (Context.defined("java") && Context.defined("scala"))
+    macro
     {
-      macro
-      {
-        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmTRefDeserializerPlugin.toNativeStream($self);
-        var nativeResult = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmRefDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
-        new com.qifun.jsonStream.crossPlatformTypes.StmRef(nativeResult);
-      }
-    }
-    else
-    {
-      macro
-      {
-        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmTRefDeserializerPlugin.toNativeStream($self);
-        var nativeResult = nativeStream.pluginDeserialize();
-        new com.qifun.jsonStream.crossPlatformTypes.StmRef(nativeResult);
-      }
+      var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmTRefDeserializerPlugin.toNativeStream($self);
+      var nativeResult = nativeStream.pluginDeserialize();
+      com.qifun.jsonStream.crossPlatformTypes.StmRef.make(nativeResult);
     }
   }
 }
