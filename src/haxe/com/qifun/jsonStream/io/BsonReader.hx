@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,20 +44,20 @@ enum BsonReaderError
     下面一段会重复出现
 
     >下一个键值对的Value类型
-    
+
     >下一个键值对的Key，类型Cstring
-    
+
     >下一个键值对的Value
-    
+
     结束标记，0，类型Byte，1字节
 **/
 class BsonReader
 
 {
   public function new() { }
-  
+
   private static var EXCEPT_BSON_TYPE_CODE(default, never):Array<Int> = [0x01, 0x02, 0x03, 0x04, 0x05, 0x07, 0x08, 0x0A, 0x10, 0x12];
-  
+
   private static function readBsonValue(buffer:BsonInput, valueTypeCode:Int):JsonStream return
   {
     switch(valueTypeCode)
@@ -83,18 +83,18 @@ class BsonReader
           buffer.discard(arrayBufferLength - 4);
           var lastLabel:Int = -1;
           while (arrayBuffer.readable() > 1)
-          {     
+          {
             var code = arrayBuffer.readByte();
             var label:Int = Std.parseInt(arrayBuffer.readCString());
             while (++lastLabel < label)
             {
-              yield(JsonStream.NULL).async();
+              @await yield(JsonStream.NULL);
             }
-            yield(readBsonValue(arrayBuffer, code)).async();
+            @await yield(readBsonValue(arrayBuffer, code));
           }
         })));
       }
-      case 0x05: // BSONBinary 
+      case 0x05: // BSONBinary
       {
         var binaryLength = buffer.readInt();
         //1位type码
@@ -112,7 +112,7 @@ class BsonReader
       case 0x06: // BSONUndefined // undefined, 已经被BSON标准弃用
       {
         throw BsonReaderError.UNSUPPORT_BSON_TYPE(0x06, EXCEPT_BSON_TYPE_CODE);
-      }     
+      }
       case 0x07: // BSONObjectID // objectid,
       {
         var i:Int = -1;
@@ -186,8 +186,8 @@ class BsonReader
       }
     }
   }
-  
-  public static function readBsonStream(input:BsonInput):JsonStream return 
+
+  public static function readBsonStream(input:BsonInput):JsonStream return
   {
     JsonStream.OBJECT(
     {
@@ -202,7 +202,7 @@ class BsonReader
         {
           var valueTypeCode = buffer.readByte();
           var key:String = buffer.readCString();
-          yield(new JsonStreamPair(key, readBsonValue(buffer, valueTypeCode))).async();
+          @await yield(new JsonStreamPair(key, readBsonValue(buffer, valueTypeCode)));
         }
       }));
     });

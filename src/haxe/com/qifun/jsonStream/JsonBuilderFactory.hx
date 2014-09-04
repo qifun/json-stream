@@ -321,7 +321,7 @@ class JsonBuilderFactoryGenerator
           var next = createFunction(i + 1, key, value);
           macro
           {
-            var result = $modulePath.$className.dynamicBuild($key, $value).async();
+            var result = @await $modulePath.$className.dynamicBuild($key, $value);
             if (result != null)
             {
               result;
@@ -344,7 +344,7 @@ class JsonBuilderFactoryGenerator
         var fallbackExpr =
           if (Context.unify(expectedType, lowPriorityDynamicType))
           {
-            macro new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw($value).async());
+            macro new com.qifun.jsonStream.unknown.UnknownType($key, @await com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw($value));
           }
           else if (
             Context.unify(expectedType, hasUnknownTypeFieldType) ||
@@ -353,7 +353,7 @@ class JsonBuilderFactoryGenerator
             macro
             {
               var result = new $typePath();
-              result.unknownType = new com.qifun.jsonStream.unknown.UnknownType($key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw($value).async());
+              result.unknownType = new com.qifun.jsonStream.unknown.UnknownType($key, @await com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw($value));
               result;
             }
           }
@@ -376,7 +376,7 @@ class JsonBuilderFactoryGenerator
             {
               untyped($modulePath.$className).dynamicBuild($key, $value, onComplete);
             }
-            var knownValue = untypedBuild().async();
+            var knownValue = @await untypedBuild();
             if (knownValue == null)
             {
               $fallbackExpr;
@@ -395,12 +395,12 @@ class JsonBuilderFactoryGenerator
       switch (stream)
       {
         case OBJECT(readPair):
-          var dynamicKey, dynamicValue = readPair().async();
+          var dynamicKey, dynamicValue = @await readPair();
           if (dynamicKey == null)
           {
             throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.NOT_ENOUGH_FIELDS(readPair, 1, 0);
           }
-          var nullKey, nullValue = readPair().async();
+          var nullKey, nullValue = @await readPair();
           if (nullKey != null)
           {
             throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.TOO_MANY_FIELDS(readPair, 1);
@@ -611,7 +611,7 @@ class JsonBuilderFactoryGenerator
                       expr: macro
                       {
                         $f;
-                        $i{parameterName} = com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.nullize(temporaryEnumDeserialize().async());
+                        $i{parameterName} = com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.nullize(@await temporaryEnumDeserialize());
                       }
                     });
                 }
@@ -629,7 +629,7 @@ class JsonBuilderFactoryGenerator
                   }
                   else
                   {
-                    macro $i{unknownFieldMapName}.underlying.set(parameterKey, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(parameterValue).async());
+                    macro $i{unknownFieldMapName}.underlying.set(parameterKey, @await com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(parameterValue));
                   }),
               };
               var newEnum =
@@ -648,11 +648,11 @@ class JsonBuilderFactoryGenerator
               block.push(
                 macro
                 {
-                  var parameterKey, parameterValue = readParameter().async();
+                  var parameterKey, parameterValue = @await readParameter();
                   while (parameterKey != null)
                   {
                     $switchKey;
-                    var k, v = readParameter().async();
+                    var k, v = @await readParameter();
                     parameterKey = k;
                     parameterValue = v;
                   }
@@ -695,7 +695,7 @@ class JsonBuilderFactoryGenerator
           macro $enumFieldExpr.UNKNOWN_ENUM_VALUE(
             com.qifun.jsonStream.unknown.UnknownEnumValue.UNKNOWN_PARAMETERIZED_CONSTRUCTOR(
               constructorKey,
-              com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(constructorValue).async()));
+              @await com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(constructorValue)));
         }),
     }
     var zeroParameterBranch =
@@ -728,12 +728,12 @@ class JsonBuilderFactoryGenerator
       case STRING(constructorName):
         $zeroParameterBranch;
       case OBJECT(readConstructor):
-        var constructorKey:Null<String>, constructorValue:Null<com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream> = readConstructor().async();
+        var constructorKey:Null<String>, constructorValue:Null<com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream> = @await readConstructor();
         if (constructorKey == null)
         {
           throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.NOT_ENOUGH_FIELDS(readConstructor, 1, 0);
         }
-        var nullKey:String, nullValue:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream = readConstructor().async();
+        var nullKey:String, nullValue:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream = @await readConstructor();
         if (nullKey != null)
         {
           throw com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderError.TOO_MANY_FIELDS(readConstructor, 1);
@@ -823,7 +823,7 @@ class JsonBuilderFactoryGenerator
         com.dongxiguo.continuation.Continuation.cpsFunction(
           function(stream:com.qifun.jsonStream.JsonBuilder.AsynchronousJsonStream):$expectedComplexType
           {
-            return cast $implExpr().async();
+            return cast @await $implExpr();
           })(stream, onComplete),
       params: params,
     }
@@ -892,7 +892,7 @@ class JsonBuilderFactoryGenerator
               {
                 values: [ macro $v{fieldName} ],
                 guard: null,
-                expr: macro result.$fieldName = $d().async(),
+                expr: macro result.$fieldName = @await $d(),
               });
           case _:
             continue;
@@ -945,7 +945,7 @@ class JsonBuilderFactoryGenerator
       expr: ESwitch(macro key, cases,
         if (hasUnknownFieldMap)
         {
-          macro result.unknownFieldMap.underlying.set(key, com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(value).async());
+          macro result.unknownFieldMap.underlying.set(key, @await com.qifun.jsonStream.JsonBuilderFactory.JsonBuilderRuntime.buildRaw(value));
         }
         else
         {
@@ -957,11 +957,11 @@ class JsonBuilderFactoryGenerator
     {
       case OBJECT(read):
         var result = $newInstance;
-        var key, value = read().async();
+        var key, value = @await read();
         while (key != null)
         {
           $switchKey;
-          var k, v = read().async();
+          var k, v = @await read();
           key = k;
           value = v;
         }
@@ -1192,11 +1192,11 @@ class JsonBuilderRuntime
         case STRING(value): value;
         case ARRAY(read):
           var array = [];
-          var element = read().async();
+          var element = @await read();
           while (element != null)
           {
-            array.push(buildRaw(element).async());
-            element = read().async();
+            array.push(@await buildRaw(element));
+            element = @await read();
           }
           array;
         case OBJECT(read):
@@ -1204,12 +1204,12 @@ class JsonBuilderRuntime
           var object = (function() return {})();
           while (true)
           {
-            var key, value = read().async();
+            var key, value = @await read();
             if (key == null)
             {
               return new RawJson(object);
             }
-            Reflect.setField(object, key, buildRaw(value).async());
+            Reflect.setField(object, key, @await buildRaw(value));
           }
           throw "unreachable code";
       });

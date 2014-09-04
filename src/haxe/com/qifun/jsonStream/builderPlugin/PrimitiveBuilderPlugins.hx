@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,17 +39,17 @@ class Int64BuilderPlugin
       switch (stream)
       {
         case ARRAY(read):
-          switch (read().async())
+          switch (@await read())
           {
             case null:
               throw JsonBuilderError.NOT_ENOUGH_FIELDS(read, 2, 0);
             case NUMBER(high):
-              switch (read().async())
+              switch (@await read())
               {
                 case null:
                   throw JsonBuilderError.NOT_ENOUGH_FIELDS(read, 2, 1);
                 case NUMBER(low):
-                  if (read().async() != null)
+                  if ((@await read()) != null)
                   {
                     throw JsonBuilderError.TOO_MANY_FIELDS(read, 2);
                   }
@@ -220,9 +220,9 @@ class ArrayBuilderPlugin
         case ARRAY(read):
           var result = [];
           var element = null;
-          while ((element = read().async()) != null)
+          while ((element = @await read()) != null)
           {
-            result.push(elementDeserializeFunction(new JsonBuilderPluginStream(element)).async());
+            result.push(@await elementDeserializeFunction(new JsonBuilderPluginStream(element)));
           }
           result;
         case NULL:
@@ -254,9 +254,9 @@ class VectorBuilderPlugin
         case ARRAY(read):
           var result = [];
           var element = null;
-          while ((element = read().async()) != null)
+          while ((element = @await read()) != null)
           {
-            result.push(elementDeserializeFunction(new JsonBuilderPluginStream(element)).async());
+            result.push(@await elementDeserializeFunction(new JsonBuilderPluginStream(element)));
           }
           Vector.fromArrayCopy(result);
         case NULL:

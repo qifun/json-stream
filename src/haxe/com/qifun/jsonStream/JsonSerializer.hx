@@ -70,7 +70,7 @@ class JsonSerializer
     {
       for (field in Reflect.fields(instance))
       {
-        yield(new JsonStream.JsonStreamPair(field, serializeRaw(Reflect.field(instance, field)))).async();
+        @await yield(new JsonStream.JsonStreamPair(field, serializeRaw(Reflect.field(instance, field))));
       }
     }));
   }
@@ -81,7 +81,7 @@ class JsonSerializer
     {
       for (element in instance)
       {
-        yield(serializeRaw(element)).async();
+        @await yield(serializeRaw(element));
       }
     }));
   }
@@ -451,7 +451,7 @@ class JsonSerializerGenerator
                 name: "unknownFieldMap",
                 t: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
               }:
-                blockExprs.push(macro com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap($parameterExpr, yield).async());
+                blockExprs.push(macro @await com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap($parameterExpr, yield));
               case { name: parameterKey, t: parameterType, }:
                 var s = resolvedSerialize(TypeTools.toComplexType(parameterType), macro parameterData, enumAndValueParams);
                 // trace(ExprTools.toString(s));
@@ -475,7 +475,7 @@ class JsonSerializerGenerator
                   macro if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull($parameterExpr))
                   {
                     $f;
-                    yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{parameterKey}, temporaryEnumValueSerialize(com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.nullize($parameterExpr)))).async();
+                    @await yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{parameterKey}, temporaryEnumValueSerialize(com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.nullize($parameterExpr))));
                   });
             }
           }
@@ -492,13 +492,13 @@ class JsonSerializerGenerator
                 new com.dongxiguo.continuation.utils.Generator(
                   com.dongxiguo.continuation.Continuation.cpsFunction(
                     function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void
-                      yield(
+                      @await yield(
                         new com.qifun.jsonStream.JsonStream.JsonStreamPair(
                           $v{constructorName},
                           com.qifun.jsonStream.JsonStream.OBJECT(
                             new com.dongxiguo.continuation.utils.Generator(
                               com.dongxiguo.continuation.Continuation.cpsFunction(
-                                function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void $block))))).async()))),
+                                function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void $block)))))))),
             });
         case { name: constructorName } :
           cases.push(
@@ -609,7 +609,7 @@ class JsonSerializerGenerator
             type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
           }:
           {
-            blockExprs.push(macro com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap(data.unknownFieldMap, yield).async());
+            blockExprs.push(macro @await com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap(data.unknownFieldMap, yield));
           }
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
           {
@@ -618,7 +618,7 @@ class JsonSerializerGenerator
             blockExprs.push(
               macro if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull(data.$fieldName))
               {
-                yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fieldName}, $s)).async();
+                @await yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fieldName}, $s));
               });
           }
           case _:
@@ -789,7 +789,7 @@ class JsonSerializerGenerator
                 com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void
             {
               var dynamicValueType = Type.Type.typeof(dynamicData);
-              yield($processDynamic).async();
+              @await yield($processDynamic);
             }))))($data);
   }
 
@@ -1014,7 +1014,7 @@ class JsonSerializerRuntime
         {
           var value = unknownFieldMap.underlying.get(key);
           var valueStream = JsonSerializer.serializeRaw(value);
-          yield(new JsonStreamPair(key, valueStream)).async();
+          @await yield(new JsonStreamPair(key, valueStream));
         }
       })(unknownFieldMap, yield, onComplete);
   }
@@ -1031,10 +1031,10 @@ class JsonSerializerRuntime
           new Generator(
             Continuation.cpsFunction(
               function(yield:YieldFunction<JsonStreamPair>):Void
-                yield(
+                @await yield(
                   new JsonStreamPair(
                     constructorName,
-                    JsonSerializer.serializeRaw(parameters))).async())));
+                    JsonSerializer.serializeRaw(parameters))))));
     }
   }
 

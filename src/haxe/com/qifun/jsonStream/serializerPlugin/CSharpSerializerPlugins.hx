@@ -58,7 +58,7 @@ class CSharpListSerializerPlugin
         var enumerator:IEnumerator<Element> = data.underlying.GetEnumerator();
         while(enumerator.MoveNext())
         {
-          yield(elementSerializeFunction(new JsonSerializerPluginData(enumerator.Current))).async();
+          @await yield(elementSerializeFunction(new JsonSerializerPluginData(enumerator.Current)));
         }
       })));
     }
@@ -99,12 +99,12 @@ class CSharpDictionarySerializerPlugin
         var enumerator:IEnumerator<dotnet.system.collections.generic.KeyValuePair<Key, Value>> = data.underlying.GetEnumerator();
         while (enumerator.MoveNext())
         {
-          yield(ARRAY(
+          @await yield(ARRAY(
           new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
           {
-            yield(KeySerializeFunction(new JsonSerializerPluginData(enumerator.Current.Key))).async();
-            yield(ValueSerializeFunction(new JsonSerializerPluginData(enumerator.Current.Value))).async();
-          })))).async();
+            @await yield(KeySerializeFunction(new JsonSerializerPluginData(enumerator.Current.Key)));
+            @await yield(ValueSerializeFunction(new JsonSerializerPluginData(enumerator.Current.Value)));
+          }))));
         }
       })));
     }
@@ -142,7 +142,7 @@ class CSharpHashSetSerializerPlugin
         var enumerator:IEnumerator<Element> = data.underlying.GetEnumerator();
         while(enumerator.MoveNext())
         {
-          yield(elementSerializeFunction(new JsonSerializerPluginData(enumerator.Current))).async();
+          @await yield(elementSerializeFunction(new JsonSerializerPluginData(enumerator.Current)));
         }
       })));
     }
