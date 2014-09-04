@@ -129,6 +129,10 @@ class JsonDeserializer
       <li>如果`Result`是基本类型，执行序列化的类可能是`deserializerPlugin`包中的内置插件。</li>
       <li>如果`Result`不是基本类型，执行序列化的类需要用`@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([ ... ]))`创建。</li>
     </ul>
+
+    @return 解析`stream`生成的数据结构
+
+    @throws com.qifun.jsonStream.JsonDeserializerError 反序列化时格式错误
   **/
   @:noUsing
   macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Null<Result>> return
