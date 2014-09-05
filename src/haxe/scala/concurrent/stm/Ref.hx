@@ -56,22 +56,4 @@ extern class RefSingleton
 
 }
 
-
-//
-  //public function apply<A>(initialValue: A, om: OptManifest<A>): Ref<A>;
-//
-  //@:native("apply")
-  //public function applyBool(initialValue:Bool):Ref<Bool>;
-//
-  //@:native("apply")
-  //public function applySingle(initialValue:Single):Ref<Single>;
-//
-  //@:native("apply")
-  //public function applyFloat(initialValue:Float):Ref<Float>;
-//
-  //@:native("apply")
-  //public function applyInt(initialValue:Int):Ref<Int>;
-//
-  //@:native("apply")
-  //public function applyInt64(initialValue:Int64):Ref<Int64>;
 #end
