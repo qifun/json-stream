@@ -135,8 +135,8 @@ class StmTMapSerializerPlugin
   @:noUsing
   public static function serializeForElement<Key, Value>(
     data:JsonSerializerPluginData<scala.concurrent.stm.TMap<Key, Value>>,
-    KeySerializeFunction:JsonSerializerPluginData<Key>->JsonStream,
-    ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
+    keySerializeFunction:JsonSerializerPluginData<Key>->JsonStream,
+    valueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
   {
     if (data == null)
     {
@@ -153,8 +153,8 @@ class StmTMapSerializerPlugin
           new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
           {
             var element = iterator.next();
-            @await yield(KeySerializeFunction(new JsonSerializerPluginData(element._1)));
-            @await yield(ValueSerializeFunction(new JsonSerializerPluginData(element._2)));
+            @await yield(keySerializeFunction(new JsonSerializerPluginData(element._1)));
+            @await yield(valueSerializeFunction(new JsonSerializerPluginData(element._2)));
           }))));
         }
       })));
