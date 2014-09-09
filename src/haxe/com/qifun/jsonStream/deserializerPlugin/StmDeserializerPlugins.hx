@@ -84,14 +84,14 @@ class StmTSetDeserializerPlugin
         {
           for (element in generator)
           {
-            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         else
         {
           for (element in value)
           {
-            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         setBuilder.result();
@@ -197,7 +197,7 @@ class StmTMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    mapBuilder._plus_eq(new Tuple2(key, value));
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
@@ -233,7 +233,7 @@ class StmTMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    mapBuilder._plus_eq(new Tuple2(key, value));
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
