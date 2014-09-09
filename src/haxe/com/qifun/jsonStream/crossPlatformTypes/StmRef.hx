@@ -42,6 +42,24 @@ abstract StmRef<A>(StmNativeRef<A>)
     this = underlying;
   }
 
+  @:from public static inline function makeInt(value:Int):StmRef<Int> return
+  {
+    #if (scala && java)
+      new StmRef(scala.concurrent.stm.Ref.RefSingleton.MODULE.apply(value));
+    #else
+      new StmRef(value);
+    #end
+  }
+
+  @:from public static inline function makeBool(value:Bool):StmRef<Bool> return
+  {
+    #if (scala && java)
+      new StmRef(scala.concurrent.stm.Ref.RefSingleton.MODULE.apply(value));
+    #else
+      new StmRef(value);
+    #end
+  }
+
   @:from public static inline function make<A>(value:A):StmRef<A> return
   {
     #if (scala && java)
