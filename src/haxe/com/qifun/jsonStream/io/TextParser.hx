@@ -120,12 +120,12 @@ class TextParser
   static function parsePositiveInteger(source:ISource):Float
   {
     var digit = source.current;
-    if (digit >= "0".code && digit < "9".code)
+    if (digit >= "0".code && digit <= "9".code)
     {
       var result:Float = digit - "0".code;
       source.next();
       digit = source.current;
-      while (digit >= "0".code && digit < "9".code)
+      while (digit >= "0".code && digit <= "9".code)
       {
         result = result * 10 + (digit - "0".code);
         source.next();
@@ -171,13 +171,13 @@ class TextParser
     {
       source.next();
       var digit = source.current;
-      if (digit >= "0".code && digit < "9".code)
+      if (digit >= "0".code && digit <= "9".code)
       {
         var factor = 0.1;
         base += (digit - "0".code) * factor;
         source.next();
         digit = source.current;
-        while (digit >= "0".code && digit < "9".code)
+        while (digit >= "0".code && digit <= "9".code)
         {
           factor *= 0.1;
           base += (digit - "0".code) * factor;
@@ -203,12 +203,12 @@ class TextParser
         source.next();
         return parseFraction(0, source);
       }
-      case notZero if (notZero >= "1".code && notZero < "9".code):
+      case notZero if (notZero >= "1".code && notZero <= "9".code):
       {
         var f:Float = notZero - "0".code;
         source.next();
         var digit = source.current;
-        while (digit >= "0".code && digit < "9".code)
+        while (digit >= "0".code && digit <= "9".code)
         {
           f = f * 10 + (digit - "0".code);
           source.next();
@@ -340,7 +340,7 @@ class TextParser
       case "-".code:
         source.next();
         return JsonStream.NUMBER(-parsePositiveNumberLiteral(source));
-      case digit if (digit >= "0".code && digit < "9".code):
+      case digit if (digit >= "0".code && digit <= "9".code):
         return JsonStream.NUMBER(parsePositiveNumberLiteral(source));
       case "{".code:
         return JsonStream.OBJECT(parseObjectLiteral(source));
