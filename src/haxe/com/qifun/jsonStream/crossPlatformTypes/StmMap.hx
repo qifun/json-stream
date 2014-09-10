@@ -18,7 +18,6 @@
  */
 
 package com.qifun.jsonStream.crossPlatformTypes;
-import scala.collection.mutable.MapLike;
 
 #if (scala && java)
 typedef StmNativeMap<Key, Value> = scala.concurrent.stm.TMap<Key, Value>;
