@@ -18,41 +18,53 @@
  */
 
 package com.qifun.jsonStream.crossPlatformTypes;
+import scala.collection.mutable.MapLike;
 
 #if (scala && java)
-typedef StmNativeMap<A, B> = scala.concurrent.stm.TMap<A, B>;
+typedef StmNativeMap<Key, Value> = scala.concurrent.stm.TMap<Key, Value>;
 #elseif cs
-typedef StmNativeMap<A, B> = dotnet.system.collections.generic.Dictionary<A, B>;
+typedef StmNativeMap<Key, Value> = dotnet.system.collections.generic.Dictionary<Key, Value>;
 #else
 import Map in StdMap;
-typedef StmNativeMap<A, B> = StdMap<A, B>;
+typedef StmNativeMap<Key, Value> = StdMap<Key, Value>;
 #end
 
-abstract StmMap<A, B>(StmNativeMap<A, B>)
+abstract StmMap<Key, Value>(StmNativeMap<Key, Value>)
 {
 
-  public var underlying(get, never):StmNativeMap<A, B>;
+  public inline function add(key:Key, value:Value):Void
+  {
+    #if cs
+      this.Add(key, value);
+    #elseif (scala && java)
+      this.single().update(key, value);
+    #else
+      throw "Unsupported platform!";
+    #end
+  }
+
+  public var underlying(get, never):StmNativeMap<Key, Value>;
 
   @:extern
-  inline function get_underlying():StmNativeMap<A, B> return
+  inline function get_underlying():StmNativeMap<Key, Value> return
   {
     this;
   }
 
-  public inline function new(map:StmNativeMap<A, B>)
+  public inline function new(map:StmNativeMap<Key, Value>)
   {
     this = map;
   }
-  
-  public static inline function empty<A, B>():StmMap<A, B> return
+
+  public static inline function empty<Key, Value>():StmMap<Key, Value> return
   {
   #if (scala && java)
-    var mapView:scala.concurrent.stm.TMapView<A, B> = scala.concurrent.stm.japi.STM.MODULE.newTMap();
+    var mapView:scala.concurrent.stm.TMapView<Key, Value> = scala.concurrent.stm.japi.STM.MODULE.newTMap();
     new StmMap(mapView.tmap());
   #elseif cs
-    new StmMap(new dotnet.system.collections.generic.Dictionary<A, B>());
+    new StmMap(new dotnet.system.collections.generic.Dictionary<Key, Value>());
   #else
-    new StmMap<A, B>(null);
+    throw "Unsupported platform!";
   #end
   }
 }

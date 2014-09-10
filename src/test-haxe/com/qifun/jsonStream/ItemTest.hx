@@ -18,37 +18,36 @@
  */
 
 package com.qifun.jsonStream;
-import com.qifun.jsonStream.IT1;
+import com.qifun.jsonStream.ItemEntities;
 import haxe.unit.TestCase;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 import com.qifun.jsonStream.testUtil.JsonTestCase;
-using com.qifun.jsonStream.CSharpTestMacro;
+using com.qifun.jsonStream.ItemIo;
 import com.dongxiguo.continuation.utils.Generator;
 import com.dongxiguo.continuation.Continuation;
 using com.qifun.jsonStream.Plugins;
 
-class CSharpItemPluginTest extends JsonTestCase
+class ItemTest extends JsonTestCase
 {
   #if cs
   function testSerialize()
   {
 		var csItemTest = new CSharpItems();
-		csItemTest.items.Add(new IT1(), 99);
-    assertDeepEquals(JsonSerializer.serializeRaw(new RawJson(
-				{ "items": [ [ { "com/qifun/jsonStream/IT1": { }}, "99" ] ] }
-		)), csItemTest);
+		csItemTest.items.add(new IT1(), 99);
+
+    assertDeepEquals(JsonDeserializer.deserializeRaw(JsonSerializer.serialize(csItemTest)), { "items": [ [ ({ "com/qifun/jsonStream/IT1": { }}:Dynamic), (99:Dynamic) ] ] });
   }
-	
+
   function testDeserialize()
   {
 		var jsonStream = JsonSerializer.serializeRaw(new RawJson(
-				{ "items": [ [ { "com/qifun/jsonStream/IT1": { }}, "99" ] ] }
+				{ "items": [ [ ({ "com/qifun/jsonStream/IT1": { }}:Dynamic), (99:Dynamic) ] ] }
 		));
 		var item: CSharpItems = JsonDeserializer.deserialize(jsonStream);
 		var csItemTest = new CSharpItems();
-		csItemTest.items.Add(new IT1(), 99);
+		csItemTest.items.add(new IT1(), 99);
     assertDeepEquals(item, csItemTest);
   }
   #end

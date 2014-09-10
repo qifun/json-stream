@@ -96,7 +96,7 @@ class AbstractPluginTest extends JsonTestCase
     #end
 
     var jsonStream = JsonSerializer.serialize(o);
-    assertDeepEquals([1, 1, 2, 3, 5], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
+    assertDeepEquals(["1", "1", "2", "3", "5"], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
 
   }
 
@@ -167,7 +167,7 @@ class AbstractPluginTest extends JsonTestCase
       o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
     #end
     var jsonStream = JsonSerializer.serializeRaw(new RawJson({ref: 5,
-     list:[1, 1, 2, 3, 5],
+     list:["1", "1", "2", "3", "5"],
      map:[[14, 169], [25, 625], [42, 1764],
      [256,65536]], set :[30,82,255,4099,96354] }));
     var o2:AbstractEntities = JsonDeserializer.deserialize(jsonStream);
