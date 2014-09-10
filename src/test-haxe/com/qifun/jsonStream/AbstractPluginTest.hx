@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -67,7 +67,7 @@ class AbstractPluginTest extends JsonTestCase
       set.Add(4099);
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy([1, 1, 2, 3, 5]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
@@ -94,10 +94,10 @@ class AbstractPluginTest extends JsonTestCase
       mapBuilder.plusEquals(new scala.Tuple2(256, 65536));
       o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
     #end
-    
+
     var jsonStream = JsonSerializer.serialize(o);
     assertDeepEquals([1, 1, 2, 3, 5], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
-    
+
   }
 
   function testAbstractTypeDeseralizerPlugins()
@@ -138,7 +138,7 @@ class AbstractPluginTest extends JsonTestCase
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
 
-      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy([1, 1, 2, 3, 5]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
@@ -169,7 +169,7 @@ class AbstractPluginTest extends JsonTestCase
     var jsonStream = JsonSerializer.serializeRaw(new RawJson({ref: 5,
      list:[1, 1, 2, 3, 5],
      map:[[14, 169], [25, 625], [42, 1764],
-     [256,65536]], set :[30,82,255,4099,96354] })); 
+     [256,65536]], set :[30,82,255,4099,96354] }));
     var o2:AbstractEntities = JsonDeserializer.deserialize(jsonStream);
     assertDeepEquals(o, o2);
   }
