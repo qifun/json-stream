@@ -36,18 +36,41 @@ class ItemTest extends JsonTestCase
   {
 		var csItemTest = new CSharpItems();
 		csItemTest.items.add(new IT1(), 99);
+		csItemTest.items.add(new IT2(), 99);
+		csItemTest.items.add(new IT3(), 99);
+		csItemTest.items.add(new IT4(), 99);
+		csItemTest.items.add(new IT5(), 99);
+		
 
-    assertDeepEquals(JsonDeserializer.deserializeRaw(JsonSerializer.serialize(csItemTest)), { "items": [ [ ({ "com/qifun/jsonStream/IT1": { }}:Dynamic), (99:Dynamic) ] ] });
+    assertDeepEquals(JsonDeserializer.deserializeRaw(
+		  JsonSerializer.serialize(csItemTest)), 
+			{ "items": [ 
+			  [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT2": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT3": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT5": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT4": { }} :Dynamic), (99:Dynamic) ]
+			] });
   }
 
   function testDeserialize()
   {
 		var jsonStream = JsonSerializer.serializeRaw(new RawJson(
-				{ "items": [ [ ({ "com/qifun/jsonStream/IT1": { }}:Dynamic), (99:Dynamic) ] ] }
+			{ "items": [ 
+				[ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT2": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT3": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT4": { }} :Dynamic), (99:Dynamic) ],
+				[ ( { "com/qifun/jsonStream/IT5": { }} :Dynamic), (99:Dynamic) ]
+			] }
 		));
 		var item: CSharpItems = JsonDeserializer.deserialize(jsonStream);
 		var csItemTest = new CSharpItems();
 		csItemTest.items.add(new IT1(), 99);
+		csItemTest.items.add(new IT2(), 99);
+		csItemTest.items.add(new IT3(), 99);
+		csItemTest.items.add(new IT4(), 99);
+		csItemTest.items.add(new IT5(), 99);
     assertDeepEquals(item, csItemTest);
   }
   #end

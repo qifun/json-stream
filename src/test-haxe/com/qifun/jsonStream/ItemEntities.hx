@@ -20,12 +20,36 @@
 package com.qifun.jsonStream;
 
 import com.qifun.jsonStream.crossPlatformTypes.StmMap;
+import com.qifun.jsonStream.ItemEntities.Item;
 
 @:final
 class IT1 extends Item
 {
 
+}
 
+@:final 
+class IT2 extends Item
+{
+	
+}
+
+@:final 
+class IT3 extends Item
+{
+	
+}
+
+@:final 
+class IT4 extends Item
+{
+	
+}
+
+@:final 
+class IT5 extends Item
+{
+	
 }
 
 class Item
