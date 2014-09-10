@@ -32,31 +32,11 @@ using com.qifun.jsonStream.Plugins;
 class ItemTest extends JsonTestCase
 {
   #if cs
-  function testSerialize()
-  {
-		var csItemTest = new CSharpItems();
-		csItemTest.items.add(new IT1(), 99);
-		csItemTest.items.add(new IT2(), 99);
-		csItemTest.items.add(new IT3(), 99);
-		csItemTest.items.add(new IT4(), 99);
-		csItemTest.items.add(new IT5(), 99);
-		
-
-    assertDeepEquals(JsonDeserializer.deserializeRaw(
-		  JsonSerializer.serialize(csItemTest)), 
-			{ "items": [ 
-			  [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ],
-				[ ( { "com/qifun/jsonStream/IT2": { }} :Dynamic), (99:Dynamic) ],
-				[ ( { "com/qifun/jsonStream/IT3": { }} :Dynamic), (99:Dynamic) ],
-				[ ( { "com/qifun/jsonStream/IT5": { }} :Dynamic), (99:Dynamic) ],
-				[ ( { "com/qifun/jsonStream/IT4": { }} :Dynamic), (99:Dynamic) ]
-			] });
-  }
 
   function testDeserialize()
   {
 		var jsonStream = JsonSerializer.serializeRaw(new RawJson(
-			{ "items": [ 
+			{ "items": [
 				[ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ],
 				[ ( { "com/qifun/jsonStream/IT2": { }} :Dynamic), (99:Dynamic) ],
 				[ ( { "com/qifun/jsonStream/IT3": { }} :Dynamic), (99:Dynamic) ],
@@ -64,14 +44,16 @@ class ItemTest extends JsonTestCase
 				[ ( { "com/qifun/jsonStream/IT5": { }} :Dynamic), (99:Dynamic) ]
 			] }
 		));
-		var item: CSharpItems = JsonDeserializer.deserialize(jsonStream);
+		var item1: CSharpItems = JsonDeserializer.deserialize(jsonStream);
+		var item2: CSharpItems = JsonDeserializer.deserialize(JsonSerializer.serialize(item1));
 		var csItemTest = new CSharpItems();
 		csItemTest.items.add(new IT1(), 99);
 		csItemTest.items.add(new IT2(), 99);
 		csItemTest.items.add(new IT3(), 99);
 		csItemTest.items.add(new IT4(), 99);
 		csItemTest.items.add(new IT5(), 99);
-    assertDeepEquals(item, csItemTest);
+    assertDeepEquals(item1, csItemTest);
+    assertDeepEquals(item2, csItemTest);
   }
   #end
 }

@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,10 +57,28 @@ class JsonEquality
         return true;
       }
       #if cs
+        case [ TClass(leftClass), TClass(rightClass)] if (leftClass == rightClass && Std.is(left, dotnet.system.collections.IDictionary)):
+        {
+          var leftDictionary:cs.system.collections.IDictionary = cast left;
+          var rightDictionary:cs.system.collections.IDictionary = cast right;
+          if (leftDictionary.Count != rightDictionary.Count)
+          {
+            return false;
+          }
+          var leftEnumerator = cast(leftDictionary.GetEnumerator(), cs.system.collections.IDictionaryEnumerator);
+          while (leftEnumerator.MoveNext())
+          {
+              if (deepEquals(leftEnumerator.Value, rightDictionary.get_Item(leftEnumerator.Key)))
+                continue;
+              else
+                return false;
+          }
+          return true;
+        }
         case [ TClass(leftClass), TClass(rightClass)] if (leftClass == rightClass && Std.is(left, dotnet.system.collections.IEnumerable)):
         {
           var leftEnumerable:dotnet.system.collections.IEnumerable = cast left;
-          var rightEnumerable:dotnet.system.collections.IEnumerable = cast left;
+          var rightEnumerable:dotnet.system.collections.IEnumerable = cast right;
           var leftEnumerator = leftEnumerable.GetEnumerator();
           var rightEnumerator = rightEnumerable.GetEnumerator();
           while (true)
@@ -71,7 +89,7 @@ class JsonEquality
             {
               if (deepEquals(untyped leftEnumerator.Current, untyped rightEnumerator.Current))
                 continue;
-              else 
+              else
                 return false;
             }
             else if (leftEnumeratorHasNext || rightEnumeratorHasNext)

@@ -25,31 +25,51 @@ import com.qifun.jsonStream.ItemEntities.Item;
 @:final
 class IT1 extends Item
 {
-
+  public function GetHashCode():Int return 0;
+  public function Equals(other:Dynamic)
+  {
+    return Std.is(other, IT1);
+  }
 }
 
-@:final 
+@:final
 class IT2 extends Item
 {
-	
+  public function GetHashCode():Int return 0;
+  public function Equals(other:Dynamic)
+  {
+    return Std.is(other, IT2);
+  }
 }
 
-@:final 
+@:final
 class IT3 extends Item
 {
-	
+  public function GetHashCode():Int return 0;
+  public function Equals(other:Dynamic)
+  {
+    return Std.is(other, IT3);
+  }
 }
 
-@:final 
+@:final
 class IT4 extends Item
 {
-	
+  public function GetHashCode():Int return 0;
+  public function Equals(other:Dynamic)
+  {
+    return Std.is(other, IT4);
+  }
 }
 
-@:final 
+@:final
 class IT5 extends Item
 {
-	
+  public function GetHashCode():Int return 0;
+  public function Equals(other:Dynamic)
+  {
+    return Std.is(other, IT5);
+  }
 }
 
 class Item
