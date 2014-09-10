@@ -18,22 +18,12 @@
  */
 
 package com.qifun.jsonStream;
-using com.qifun.jsonStream.Plugins;
-
-
-@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([
-		"com.qifun.jsonStream.CSharpEntities",
-		"com.qifun.jsonStream.CSharpItems"
-]))
-class CSharpSimpleSerializer
+@:final
+class CSharpItems
 {
-}
 
-
-@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([
-  "com.qifun.jsonStream.CSharpEntities",
-	"com.qifun.jsonStream.CSharpItems"
-]))
-class CSharpSimpleDeserializer
-{
+  public function new() { }
+  #if cs
+	public var items = new dotnet.system.collections.generic.Dictionary<Item, Int>();
+  #end
 }

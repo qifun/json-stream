@@ -31,6 +31,7 @@ class Main
   static function testAll()
   {
     var runner = new TestRunner();
+		runner.add(new CSharpItemPluginTest());
     runner.add(new RawTest());
     runner.add(new SimpleTest());
     runner.add(new SimpleAbstractTest());
@@ -38,7 +39,7 @@ class Main
     runner.add(new Rpc2Test());
     runner.add(new GenericClassTest());
     runner.add(new TextTest());
-    runner.add(new CSharpPluginsTest());
+    runner.add(new CSharpPluginsTest());	
     runner.add(new AbstractPluginTest());
     var isSuccess = runner.run();
     if (!isSuccess)
