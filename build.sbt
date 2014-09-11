@@ -2,31 +2,31 @@ haxeJavaSettings
 
 haxeCSharpSettings
 
-haxeOptions ++= Seq("-lib", "continuation")
+for (c <- Seq(Compile, Test)) yield {
+  haxeOptions in c ++=
+    Seq("-D", "scala", "-D", "stateless_future")
+}
 
-libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
+for (c <- Seq(Compile, Test, CSharp, TestCSharp)) yield {
+  haxeOptions in c ++=
+    Seq(
+      "-D", "json_stream_no_dot",
+      "-lib", "continuation")
+}
 
-haxeOptions ++= Seq("-dce", "no")
-
-haxeOptions ++= Seq("-lib", "HUGS")
-
-haxeOptions ++= Seq("-D", "json_stream_no_dot")
+for (c <- Seq(CSharp, TestCSharp)) yield {
+  haxeOptions in c ++= Seq("-lib", "HUGS")
+}
 
 haxeOptions in Test ++= Seq("-main", "com.qifun.jsonStream.Main")
 
-haxeOptions in Compile ++= Seq("-D", "stateless_future")
-
-haxeOptions in Test ++= Seq("-D", "stateless_future")
-
 haxeOptions in Compile ++= Seq("--macro", "com.qifun.util.Patcher.noExternalDoc()")
-
-haxeOptions in Compile ++= Seq("-D", "scala")
-
-haxeOptions in Test ++= Seq("-D", "scala")
 
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 
 doxPlatforms := Seq("java", "cs")
+
+libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
 libraryDependencies += "com.qifun" %% "stateless-future" % "0.2.2"
 
