@@ -67,7 +67,7 @@ class TextTest extends JsonTestCase
   public function testParser2()
   {
     var nativeData =
-      { "items": [ [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ] ] };
+      { "items": [ [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ], [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ], [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ] ] };
     var text = Json.stringify(nativeData);
     var nativeData2 = JsonDeserializer.deserializeRaw(TextParser.parseString(text));
     assertDeepEquals(nativeData, nativeData2);
@@ -76,7 +76,7 @@ class TextTest extends JsonTestCase
   public function testPrinter2()
   {
     var nativeData =
-      { "items": [ [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ] ] };
+      { "items": [ [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ], [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ], [ ( { "com/qifun/jsonStream/IT1": { }} :Dynamic), (99:Dynamic) ] ] };
     var output = new BytesOutput();
     PrettyTextPrinter.print(output, JsonSerializer.serializeRaw(new RawJson(nativeData)));
     var text = output.getBytes().toString();
