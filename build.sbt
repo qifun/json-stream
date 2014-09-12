@@ -23,6 +23,10 @@ haxeOptions in Test ++= Seq("-main", "com.qifun.jsonStream.Main")
 
 haxeOptions in Compile ++= Seq("--macro", "com.qifun.util.Patcher.noExternalDoc()")
 
+haxeOptions in Compile ++= Seq("-dce", "no")
+
+haxeOptions in Test ++= Seq("-dce", "no")
+
 javacOptions in (Compile, compile) += "-Xlint:-deprecation"
 
 doxPlatforms := Seq("java", "cs")
