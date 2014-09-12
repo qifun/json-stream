@@ -49,7 +49,7 @@ resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesaf
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.10.4", "2.11.2")
+crossScalaVersions := Seq("2.11.2")
 
 organization := "com.qifun"
 
