@@ -18,3 +18,7 @@ before_install:
  - travis_retry sudo haxelib install nodejs
  - travis_retry sudo haxelib install hxjava
  - travis_retry sudo haxelib install hxcs
+ - travis_retry sudo haxelib install continuation
+ - travis_retry sudo haxelib git hxparse https://github.com/Simn/hxparse development src
+ - travis_retry sudo haxelib git haxeparser https://github.com/qifun/haxeparser qifun src
+ - travis_retry sudo haxelib git HUGS git@github.com:qifun/HUGS.git
