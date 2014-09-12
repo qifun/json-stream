@@ -29,11 +29,13 @@ doxPlatforms := Seq("java", "cs")
 
 libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
-libraryDependencies += "com.qifun" %% "stateless-future" % "0.2.2"
+libraryDependencies += "com.qifun" %% "stateless-future" % "0.3.1"
 
-libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava
+libraryDependencies += "com.qifun" %% "stateless-future-util" % "0.5.0"
 
-libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.1.0" % HaxeJava
+libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava classifier "haxe-java"
+
+libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.1.0" % HaxeJava classifier "haxe-java"
 
 libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % "test"
 
