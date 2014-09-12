@@ -27,7 +27,7 @@ haxeOptions in Compile ++= Seq("-dce", "no")
 
 haxeOptions in Test ++= Seq("-dce", "no")
 
-javacOptions in (Compile, compile) += "-Xlint:-deprecation"
+javacOptions in Compile in compile += "-Xlint:-deprecation"
 
 doxPlatforms := Seq("java", "cs")
 
@@ -50,6 +50,18 @@ resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesaf
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
 
 crossScalaVersions := Seq("2.11.2")
+
+doc in Compile :=  {
+  (doc in Compile).result.value.toEither match {
+    case Left(_) => {
+      // Ignore error
+      (target in doc in Compile).value
+    }
+    case Right(right) => {
+      right
+    }
+  }
+}
 
 organization := "com.qifun"
 
