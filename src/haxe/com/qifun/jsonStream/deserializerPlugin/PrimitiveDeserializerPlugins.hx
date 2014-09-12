@@ -43,37 +43,34 @@ class Int64DeserializerPlugin
       switch (element0)
       {
         case NUMBER(high):
+        {
           if (iterator.hasNext())
           {
-            throw JsonDeserializerError.TOO_MANY_FIELDS(iterator, 2);
+            var element1 = iterator.next();
+            switch (element1)
+            {
+              case NUMBER(low):
+                if (iterator.hasNext())
+                {
+                  throw JsonDeserializerError.TOO_MANY_FIELDS(iterator, 2);
+                }
+                else
+                {
+                  Int64.make(cast high, cast low);
+                }
+              case _:
+                throw JsonDeserializerError.UNMATCHED_JSON_TYPE(element1, [ "NUMBER" ]);
+            }
           }
           else
           {
-            if (iterator.hasNext())
-            {
-              var element1 = iterator.next();
-              switch (element1)
-              {
-                case NUMBER(low):
-                  if (iterator.hasNext())
-                  {
-                    throw JsonDeserializerError.TOO_MANY_FIELDS(iterator, 2);
-                  }
-                  else
-                  {
-                    Int64.make(cast high, cast low);
-                  }
-                case _:
-                  throw JsonDeserializerError.UNMATCHED_JSON_TYPE(element1, [ "NUMBER" ]);
-              }
-            }
-            else
-            {
-              throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
-            }
+            throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
           }
+        }
         case _:
+        {
           throw JsonDeserializerError.UNMATCHED_JSON_TYPE(element0, [ "NUMBER" ]);
+        }
       }
     }
     else
