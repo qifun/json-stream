@@ -44,6 +44,7 @@ resolvers in ThisBuild += "Sonatype Snapshots" at "https://oss.sonatype.org/cont
 resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
+
 crossScalaVersions := Seq("2.10.4", "2.11.2")
 
 organization := "com.qifun"
