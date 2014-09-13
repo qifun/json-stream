@@ -67,7 +67,7 @@ organization := "com.qifun"
 
 name := "json-stream"
 
-version := "0.1.0-SNAPSHOT"
+version := "0.1.0"
 
 homepage := Some(url(s"https://github.com/qifun/${name.value}"))
 
