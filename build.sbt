@@ -16,7 +16,7 @@ for (c <- Seq(Compile, Test, CSharp, TestCSharp)) yield {
 }
 
 for (c <- Seq(CSharp, TestCSharp)) yield {
-  haxeOptions in c ++= Seq("-lib", "HUGS", "-D", "CF", "-D", "unity")
+  haxeOptions in c ++= Seq("-lib", "HUGS", "-D", "CF", "-D", "unity", "-D", "dll")
 }
 
 haxeOptions in Test ++= Seq("-main", "com.qifun.jsonStream.Main")
@@ -28,8 +28,6 @@ haxeOptions in Compile ++= Seq("-dce", "no")
 haxeOptions in Test ++= Seq("-dce", "no")
 
 javacOptions in Compile in compile += "-Xlint:-deprecation"
-
-doxPlatforms := Seq("java", "cs")
 
 libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
