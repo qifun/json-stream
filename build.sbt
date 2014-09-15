@@ -4,7 +4,7 @@ haxeCSharpSettings
 
 for (c <- Seq(Compile, Test)) yield {
   haxeOptions in c ++=
-    Seq("-D", "scala", "-D", "stateless_future")
+    Seq("-D", "scala")
 }
 
 for (c <- Seq(Compile, Test, CSharp, TestCSharp)) yield {
@@ -32,10 +32,6 @@ javacOptions in Compile in compile += "-Xlint:-deprecation"
 doxPlatforms := Seq("java", "cs")
 
 libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
-
-libraryDependencies += "com.qifun" %% "stateless-future" % "0.3.1"
-
-libraryDependencies += "com.qifun" %% "stateless-future-util" % "0.5.0"
 
 libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava classifier "haxe-java"
 
