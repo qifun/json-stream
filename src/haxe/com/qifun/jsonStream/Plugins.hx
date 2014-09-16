@@ -118,6 +118,12 @@ typedef StmMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlat
 @:dox(hide)
 typedef StmVectorSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.StmVectorSerializerPlugin;
 
+@:dox(hide)
+typedef ImmutableSetSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.ImmutableSetSerializerPlugin;
+
+@:dox(hide)
+typedef ImmutableMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.ImmutableMapSerializerPlugin;
+
 #if (java && scala)
 
 @:dox(hide)
@@ -201,6 +207,12 @@ typedef StmMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.Cross
 @:dox(hide)
 typedef StmVectorDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmVectorDeserializerPlugin;
 
+@:dox(hide)
+typedef ImmutableSetDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableSetDeserializerPlugin;
+
+@:dox(hide)
+typedef ImmutableMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableMapDeserializerPlugin;
+
 
 #if (java && scala)
 @:dox(hide)
@@ -239,6 +251,7 @@ typedef StmTMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmD
 
 @:dox(hide)
 typedef StmTArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.StmDeserializerPlugins.StmTArrayDeserializerPlugin;
+
 #end
 
 @:dox(hide)
