@@ -4,7 +4,7 @@ haxeCSharpSettings
 
 for (c <- Seq(Compile, Test)) yield {
   haxeOptions in c ++=
-    Seq("-D", "scala", "-D", "stateless_future")
+    Seq("-D", "scala")
 }
 
 for (c <- Seq(Compile, Test, CSharp, TestCSharp)) yield {
@@ -31,10 +31,6 @@ javacOptions in Compile in compile += "-Xlint:-deprecation"
 
 libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
-libraryDependencies += "com.qifun" %% "stateless-future" % "0.3.1"
-
-libraryDependencies += "com.qifun" %% "stateless-future-util" % "0.5.0"
-
 libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava classifier "haxe-java"
 
 libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.1.0" % HaxeJava classifier "haxe-java"
@@ -47,7 +43,7 @@ resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesaf
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
 
-crossScalaVersions := Seq("2.11.2")
+crossScalaVersions := Seq("2.10.4", "2.11.2")
 
 doc in Compile :=  {
   (doc in Compile).result.value.toEither match {
@@ -65,7 +61,7 @@ organization := "com.qifun"
 
 name := "json-stream"
 
-version := "0.1.1-SNAPSHOT"
+version := "0.2.0-SNAPSHOT"
 
 homepage := Some(url(s"https://github.com/qifun/${name.value}"))
 

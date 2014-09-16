@@ -25,93 +25,15 @@ import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.macro.TypeTools;
 import haxe.macro.ComplexTypeTools;
-#if stateless_future
-#if java
-import scala.runtime.*;
-import scala.*;
-import java.lang.Throwable;
-#end
-#end
-
 
 typedef Catcher = Dynamic->Void;
-
-#if stateless_future
-#if java
-
-@:dox(hide)
-@:final
-class HaxeToScalaOnCompleteFunction<AwaitResult>
-extends AbstractFunction1<AwaitResult, BoxedUnit>
-{
-  var underlying:AwaitResult->Void;
-
-  public inline function new(underlying:AwaitResult->Void)
-  {
-    super();
-    this.underlying = underlying;
-  }
-
-  override inline function apply(result:AwaitResult):BoxedUnit
-  {
-    underlying(result);
-    return BoxedUnit.UNIT;
-  }
-
-
-}
-
-
-@:dox(hide)
-class HaxeToScalaForeachFunction<AwaitResult>
-extends AbstractFunction2<Function1<AwaitResult, BoxedUnit>, PartialFunction<Throwable, BoxedUnit>, BoxedUnit>
-{
-
-  var underlying:(AwaitResult->Void)->Catcher->Void;
-
-  public inline function new(underlying:(AwaitResult->Void)->Catcher->Void)
-  {
-    super();
-    this.underlying = underlying;
-  }
-
-  override inline function apply(handler:Function1<AwaitResult, BoxedUnit>, catcher:PartialFunction<Throwable, BoxedUnit>):BoxedUnit
-  {
-    underlying(
-      function(result):Void
-      {
-        handler.apply(result);
-      },
-      function(e):Void
-      {
-        if (catcher.isDefinedAt(e))
-        {
-          catcher.apply(e);
-        }
-        else
-        {
-          scala.util.control.Exception.allCatcher().apply(e);
-        }
-      });
-    return BoxedUnit.UNIT;
-  }
-
-}
-#end
-#end
-
-
 
 /**
   跨平台的异步任务。
 
   @param Handler 任务完成时调用的回调函数类型。
 **/
-#if (stateless_future && java)
-
-typedef NativeFuture<AwaitResult> = com.qifun.statelessFuture.Awaitable<AwaitResult, BoxedUnit>;
-
-#elseif cs
+#if cs
 
 typedef DotNetCatcher = cs.system.Action_1<Dynamic>
 
@@ -193,13 +115,7 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
 
   public inline function new(startFunction:(AwaitResult->Void)->Catcher->Void)
   {
-    #if (stateless_future && java)
-    // 此处由于Haxe bugs，所以必须加上untyped
-    this = untyped new com.qifun.statelessFuture.util.FunctionFuture(
-      untyped new HaxeToScalaForeachFunction(
-        function(tupleHandler:AwaitResult->Void, catcher:Dynamic->Void):Void
-          startFunction(tupleHandler, catcher)));
-    #elseif cs
+    #if cs
       this = cast untyped __delegate__(
         function(handler:cs.system.Action_1<AwaitResult>, catcher:cs.system.Action_1<Dynamic>):Void
           startFunction(
@@ -214,12 +130,7 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
     completeHandler:AwaitResult->Void,
     errorHandler:Catcher):Void
   {
-    #if (stateless_future && java)
-    // 此处由于Haxe bugs，所以必须加上untyped
-    this.foreach(
-      untyped new com.qifun.jsonStream.rpc.Future.HaxeToScalaOnCompleteFunction(completeHandler),
-      new com.qifun.jsonStream.rpc.Future.HaxeToScalaCatcher(errorHandler));
-    #elseif cs
+    #if cs
     this.Invoke(cs.system.Action_1.FromHaxeFunction(function(r:AwaitResult)completeHandler(r)), cs.system.Action_1.FromHaxeFunction(function(e:Dynamic)errorHandler(e)));
     #else
     this.start(new FunctionCompleteHandler<AwaitResult>(completeHandler, errorHandler));
@@ -227,37 +138,3 @@ abstract Future<AwaitResult>(NativeFuture<AwaitResult>)
   }
 
 }
-
-#if stateless_future
-#if java
-
-@:dox(hide)
-@:final
-class HaxeToScalaCatcher extends AbstractPartialFunction<java.lang.Throwable, BoxedUnit>
-{
-
-  var underlying:Catcher;
-  public inline function new(underlying:Catcher)
-  {
-    super();
-    this.underlying = underlying;
-  }
-
-  @:overload
-  override public function apply(e:java.lang.Throwable):BoxedUnit
-  {
-    underlying(e);
-    return BoxedUnit.UNIT;
-  }
-
-  @:overload
-  override public function isDefinedAt(e:java.lang.Throwable):Bool
-  {
-    return true;
-  }
-
-}
-
-#end
-#end
-
