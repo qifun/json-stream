@@ -35,9 +35,9 @@ libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava classifier
 
 libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.1.0" % HaxeJava classifier "haxe-java"
 
-libraryDependencies += "com.dongxiguo" %% "zero-log" % "0.3.6"
+libraryDependencies += "com.dongxiguo" %% "zero-log" % "0.3.6" % Test
 
-libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % "test"
+libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % Test
 
 resolvers in ThisBuild += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
