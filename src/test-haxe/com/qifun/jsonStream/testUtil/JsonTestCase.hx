@@ -122,6 +122,11 @@ class JsonTestCase extends TestCase
   macro function assertMatch(self:Expr, expected:Expr, actual:Expr):Expr return
   {
     var prefix = "expected '" + ExprTools.toString(expected) + "' but was '";
+    var callGetPosInfos =
+    {
+      pos: Context.currentPos(),
+      expr: ECall(macro getPosInfos, []),
+    }
     macro
     {
       $self.currentTest.done = true;
@@ -133,7 +138,7 @@ class JsonTestCase extends TestCase
           $self.currentTest.success = false;
           $self.currentTest.error   = $v{prefix} + $actual + "'";
           inline function getPosInfos(?c : haxe.PosInfos) return c;
-          $self.currentTest.posInfos = getPosInfos();
+          $self.currentTest.posInfos = $callGetPosInfos;
           throw $self.currentTest;
         }
       }
