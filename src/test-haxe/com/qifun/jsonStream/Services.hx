@@ -32,3 +32,8 @@ interface IRpc2
   public dynamic function baz(parameter1:String, parameter2:Int):Future < Float > ;
 
 }
+
+interface VoidInterface
+{
+
+}

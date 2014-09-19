@@ -21,8 +21,6 @@ package com.qifun.jsonStream;
 import haxe.unit.TestRunner;
 import com.qifun.jsonStream.testUtil.JsonTestCase;
 import com.qifun.jsonStream.CSharpPluginsTest;
-import Rpc2Test;
-
 
 
 class Main
@@ -36,7 +34,7 @@ class Main
     runner.add(new SimpleTest());
     runner.add(new SimpleAbstractTest());
     runner.add(new EnumWithParameterTest());
-    runner.add(new Rpc2Test());
+    runner.add(new Rpc2TestIo());
     runner.add(new GenericClassTest());
     runner.add(new TextTest());
     runner.add(new CSharpPluginsTest());
