@@ -33,3 +33,7 @@ interface IRpc2
 
 }
 
+interface VoidInterface
+{
+
+}
