@@ -1,15 +1,15 @@
 /*
  * json-stream
  * Copyright 2014 深圳岂凡网络有限公司 (Shenzhen QiFun Network Corp., LTD)
- * 
+ *
  * Author: 杨博 (Yang Bo) <pop.atry@gmail.com>, 张修羽 (Zhang Xiuyu) <zxiuyu@126.com>
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,9 @@ package com.qifun.jsonStream.testUtil;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
 import haxe.macro.Expr;
+import haxe.macro.*;
 #end
 import com.qifun.jsonStream.JsonDeserializer;
-import haxe.macro.MacroStringTools;
 import haxe.unit.TestCase;
 import haxe.PosInfos;
 
@@ -117,6 +117,32 @@ class JsonTestCase extends TestCase
     }
 
 
+  }
+
+  macro function assertMatch(self:Expr, expected:Expr, actual:Expr):Expr return
+  {
+    var prefix = "expected '" + ExprTools.toString(expected) + "' but was '";
+    var callGetPosInfos =
+    {
+      pos: Context.currentPos(),
+      expr: ECall(macro getPosInfos, []),
+    }
+    macro
+    {
+      $self.currentTest.done = true;
+      switch ($actual)
+      {
+        case $expected: // Fine
+        default:
+        {
+          $self.currentTest.success = false;
+          $self.currentTest.error   = $v{prefix} + $actual + "'";
+          inline function getPosInfos(?c : haxe.PosInfos) return c;
+          $self.currentTest.posInfos = $callGetPosInfos;
+          throw $self.currentTest;
+        }
+      }
+    }
   }
 
   function assertDeepEquals(expected: Dynamic, actual: Dynamic, ?c : PosInfos):Void

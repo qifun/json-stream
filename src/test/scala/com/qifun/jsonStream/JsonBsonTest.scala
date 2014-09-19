@@ -22,8 +22,14 @@ import scala.concurrent.stm.japi.STM
 import scala.concurrent.stm.TSet
 import scala.concurrent.stm.TMap
 import scala.concurrent.stm.TArray
+
+object JsonBsonTest {
+  private implicit val (logger, formatter, appender) = ZeroLoggerFactory.newLogger(this)
+}
+
 class JsonBsonTest {
 
+  import JsonBsonTest._
   implicit object UserClass2Writer extends BsonStreamSerializer[UserEntities](UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserEntities)
   implicit object UserClass2Reader extends BsonStreamDeserializer[UserEntities](UserEntitiesDeserializer.deserialize_com_qifun_jsonStream_UserEntities)
 
@@ -39,7 +45,7 @@ class JsonBsonTest {
     us.info.skills.push(Integer.valueOf(8888))
     val byteArray: Array[Byte] = Array[Byte](
       0x77.toByte, 0xD5.toByte, 0xD8.toByte, 0x6B.toByte, 0xB7.toByte, 0xD8.toByte, 0xE6.toByte, 0x89.toByte);
-    for (i <- byteArray) println(i)
+    for (i <- byteArray) logger.fine(i.toString)
     us.info.md5Code = haxe.io.Bytes.alloc(byteArray.length);
     for (i <- 0 until byteArray.length) us.info.md5Code.set(i, byteArray(i))
     val writeableBuffer = UserClass2Writer.serialize(us)
@@ -50,16 +56,16 @@ class JsonBsonTest {
       for (i <- h.get._2.seeAsTry[BSONDocument].get.stream.toList) {
         assertEquals(i.get._1, "info")
         assertEquals(i.get._2.code, 0x03)
-        println(i.get._1 + "->" + i.get._2)
+        logger.fine(i.get._1 + "->" + i.get._2)
         val subBson = i.get._2.seeAsTry[BSONDocument].get
         for (j <- subBson.stream toList) {
-          println("subBson :" + j.get._1 + "->" + j.get._2 + "code:" + j.get._2.code)
+          logger.fine("subBson :" + j.get._1 + "->" + j.get._2 + "code:" + j.get._2.code)
           if (j.get._1 == "skills") {
             for (k <- j.get._2.seeAsTry[BSONArray].get.stream.toList.map(_.get.seeAsTry[BSONInteger].get.value))
-              println("elem of Array skill:" + k)
+              logger.fine("elem of Array skill:" + k)
           }
           if (j.get._1 == "md5Code") {
-            println(j.get._2.seeAsTry[BSONBinary].get.value.readable)
+            logger.fine(j.get._2.seeAsTry[BSONBinary].get.value.readable.toString)
           }
         }
       }
@@ -67,15 +73,15 @@ class JsonBsonTest {
     val bson2 = BSONDocument("info" -> BSONDocument(
       "hp" -> Long.MaxValue, "mp" -> 200, "skills" -> Array(9527, 8888),
       "md5Code" -> BSONBinary(byteArray, Subtype(0x00))))
-    println(PrettyTextPrinter.toString(UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserEntities(us)))
+    logger.fine(PrettyTextPrinter.toString(UserEntitiesSerializer.serialize_com_qifun_jsonStream_UserEntities(us)))
     writeableBuffer.buffer.clear()
     BSONDocument.write(bson, writeableBuffer)
     val rbuffer = writeableBuffer.toReadableBuffer()
     val arr = rbuffer.readArray(rbuffer.readable)
-    for (i <- arr) print(i + " ")
+    logger.fine({for (i <- arr) yield i}.toString)
     val obj = UserClass2Reader.deserialize(writeableBuffer.toReadableBuffer)
-    println(obj.info.md5Code.length)
-    for (i <- 0 until 8) println(obj.info.md5Code.get(i))
+    logger.fine(obj.info.md5Code.length.toString)
+    for (i <- 0 until 8) logger.fine(obj.info.md5Code.get(i).toString)
     assertEquals(obj.info.hp, Long.MaxValue)
     assertEquals(obj.info.mp, 200)
     assertEquals(obj.info.skills.length, 2)
@@ -157,7 +163,7 @@ class JsonBsonTest {
     entity.md5Code = haxe.io.Bytes.alloc(0);
 
     val bson = BSONDocument.read(UserInfoClass2Writer.serialize(entity).toReadableBuffer)
-    println(BSONDocument.pretty(bson))
+    logger.fine(BSONDocument.pretty(bson))
     val writeableBuffer = new ChannelBufferWritableBuffer
     BSONDocument.write(bson, writeableBuffer)
     val entity2 = UserInfoClass2Reader.deserialize(writeableBuffer.toReadableBuffer)

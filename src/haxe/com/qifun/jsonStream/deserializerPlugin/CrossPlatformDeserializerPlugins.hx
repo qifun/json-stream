@@ -230,7 +230,7 @@ class ImmutableSetDeserializerPlugin
     {
       macro
       {
-        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformSetDeserializerPlugin.toNativeStream($self);
+        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableSetDeserializerPlugin.toNativeStream($self);
         var nativeResult =
           com.qifun.jsonStream.deserializerPlugin.ScalaDeserializerPlugins.ScalaSetDeserializerPlugin.deserializeForElement(
             nativeStream,
@@ -242,7 +242,7 @@ class ImmutableSetDeserializerPlugin
     {
       macro
       {
-        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformSetDeserializerPlugin.toNativeStream($self);
+        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableSetDeserializerPlugin.toNativeStream($self);
         var nativeResult =
           com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpHashSetDeserializerPlugin.deserializeForElement(
             nativeStream,
@@ -390,7 +390,7 @@ class ImmutableMapDeserializerPlugin
     {
       macro
       {
-        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformMapDeserializerPlugin.toNativeStream($self);
+        var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.ImmutableMapDeserializerPlugin.toNativeStream($self);
         var nativeResult = com.qifun.jsonStream.deserializerPlugin.CSharpDeserializerPlugins.CSharpDictionaryDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize(), function(substream) return substream.pluginDeserialize());
         new com.qifun.jsonStream.crossPlatformTypes.ImmutableMap(nativeResult);
       }

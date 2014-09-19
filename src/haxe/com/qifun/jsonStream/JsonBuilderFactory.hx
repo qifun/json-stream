@@ -155,6 +155,13 @@ abstract JsonBuilderPluginStream<Result>(AsynchronousJsonStream)
 class JsonBuilderFactoryGenerator
 {
 
+  public function new(buildingClass:ClassType, buildingFields:Array<Field>)
+  {
+    this.buildingClass = buildingClass;
+    this.buildingFields = buildingFields;
+    allBuilders.set(id, this);
+  }
+
   private var buildingClassExpr(get, never):Expr;
 
   private function get_buildingClassExpr():Expr return
@@ -428,13 +435,6 @@ class JsonBuilderFactoryGenerator
   private function get_id() return
   {
     buildingClass.module + "." + buildingClass.name;
-  }
-
-  public function new(buildingClass:ClassType, buildingFields:Array<Field>)
-  {
-    this.buildingClass = buildingClass;
-    this.buildingFields = buildingFields;
-    allBuilders.set(id, this);
   }
 
   private static function processName(sb:StringBuf, s:String):Void

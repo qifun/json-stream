@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-package ;
+package com.qifun.jsonStream;
 using com.qifun.jsonStream.rpc.Future;
 import com.qifun.jsonStream.rpc.OutgoingProxyFactory;
 using com.qifun.jsonStream.Plugins;
 import com.qifun.jsonStream.testUtil.JsonTestCase;
 
-class Rpc2Test extends JsonTestCase
+class Rpc2TestIo extends JsonTestCase
 {
 
   function foo()
