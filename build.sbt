@@ -16,8 +16,12 @@ for (c <- Seq(Compile, Test, CSharp, TestCSharp)) yield {
 }
 
 for (c <- Seq(CSharp, TestCSharp)) yield {
-  haxeOptions in c ++= Seq("-lib", "HUGS", "-D", "CF", "-D", "unity", "-D", "dll")
+  haxeOptions in c ++= Seq("-lib", "HUGS", "-D", "CF")
 }
+
+haxeOptions in CSharp ++= Seq("-D", "unity", "-D", "dll")
+
+haxeOptions in TestCSharp ++= Seq("-D", "WITHOUTUNITY", "-main", "com.qifun.jsonStream.Main")
 
 haxeOptions in Test ++= Seq("-main", "com.qifun.jsonStream.Main")
 
