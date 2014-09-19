@@ -26,9 +26,10 @@ extern interface TSet<A>
 }
 
 @:native("scala.concurrent.stm.TSet$")
-extern class TSetSingleton
+@:javaCanonical("scala.concurrent.stm", "TSet$")
+extern class TSet_
 {
-	@:native("MODULE$") public static var MODULE(default, never):TSetSingleton;
+	@:native("MODULE$") public static var MODULE_(default, never):TSet_;
   
   public function newBuilder<A>():scala.collection.mutable.Builder<A, scala.concurrent.stm.TSet<A>>;
 

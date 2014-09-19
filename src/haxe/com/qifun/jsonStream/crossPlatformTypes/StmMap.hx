@@ -58,7 +58,7 @@ abstract StmMap<Key, Value>(StmNativeMap<Key, Value>)
   public static inline function empty<Key, Value>():StmMap<Key, Value> return
   {
   #if (scala && java)
-    var mapView:scala.concurrent.stm.TMapView<Key, Value> = scala.concurrent.stm.japi.STM.MODULE.newTMap();
+    var mapView:scala.concurrent.stm.TMapView<Key, Value> = scala.concurrent.stm.japi.STM.newTMap();
     new StmMap(mapView.tmap());
   #elseif cs
     new StmMap(new dotnet.system.collections.generic.Dictionary<Key, Value>());
