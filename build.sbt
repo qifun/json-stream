@@ -41,6 +41,8 @@ libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava classifier
 
 libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.1.0" % HaxeJava classifier "haxe-java"
 
+libraryDependencies += "com.qifun.sbt-haxe" %% "test-interface" % "0.1.0" % Test
+
 libraryDependencies += "com.dongxiguo" %% "zero-log" % "0.3.6" % Test
 
 libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % Test
