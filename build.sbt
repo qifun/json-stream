@@ -53,7 +53,7 @@ resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesaf
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
 
-testFrameworks += new TestFramework("com.qifun.haxeUnit.HaxeUnitFramework")
+testFrameworks += new TestFramework("com.qifun.sbtHaxe.testInterface.HaxeUnitFramework")
 
 crossScalaVersions := Seq("2.10.4", "2.11.2")
 
