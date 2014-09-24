@@ -52,7 +52,7 @@ class StmRefDeserializerPlugin
       }
       case stream:
       {
-        var refView:RefView<Element> = STM.MODULE.newRef(elementDeserializeFunction(new JsonDeserializerPluginStream(self.underlying)));
+        var refView:RefView<Element> = STM.newRef(elementDeserializeFunction(new JsonDeserializerPluginStream(self.underlying)));
         refView.ref();
       }
     }
@@ -78,20 +78,20 @@ class StmTSetDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        var setBuilder = scala.concurrent.stm.TSetSingleton.MODULE.newBuilder();
+        var setBuilder = scala.concurrent.stm.TSet.TSet_.MODULE_.newBuilder();
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
           for (element in generator)
           {
-            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         else
         {
           for (element in value)
           {
-            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         setBuilder.result();
@@ -139,7 +139,7 @@ class StmTArrayDeserializerPlugin
             array.push(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
-        var tarrayView:TArrayView<Element> = STM.MODULE.newTArray(array.length);
+        var tarrayView:TArrayView<Element> = STM.newTArray(array.length);
         var i:Int = -1;
         while (++i < array.length)
         {
@@ -179,7 +179,7 @@ class StmTMapDeserializerPlugin
     {
       case ARRAY(iterator):
       {
-        var mapBuilder = scala.concurrent.stm.TMapSingleton.MODULE.newBuilder();
+        var mapBuilder = scala.concurrent.stm.TMap.TMap_.MODULE_.newBuilder();
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
         if (generator == null)
         {
@@ -197,7 +197,7 @@ class StmTMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    mapBuilder._plus_eq(new Tuple2(key, value));
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
@@ -233,7 +233,7 @@ class StmTMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    mapBuilder._plus_eq(new Tuple2(key, value));
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);

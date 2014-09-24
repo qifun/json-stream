@@ -47,20 +47,20 @@ class ScalaSeqDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        var seqBuilder = scala.collection.immutable.SeqSingleton.MODULE.newBuilder();
+        var seqBuilder = scala.collection.immutable.Seq.Seq_.MODULE_.newBuilder();
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
           for (element in generator)
           {
-            seqBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            seqBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         else
         {
           for (element in value)
           {
-            seqBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            seqBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         seqBuilder.result();
@@ -96,20 +96,20 @@ class ScalaSetDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.ARRAY(value):
       {
-        var setBuilder = scala.collection.immutable.SetSingleton.MODULE.newBuilder();
+        var setBuilder = scala.collection.immutable.Set.Set_.MODULE_.newBuilder();
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
           for (element in generator)
           {
-            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           }
         }
         else
         {
           for (element in value)
           {
-            setBuilder.plusEquals(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
+            setBuilder._plus_eq(elementDeserializeFunction(new JsonDeserializerPluginStream(element)));
           } 
         }
         setBuilder.result();
@@ -151,7 +151,7 @@ class ScalaMapDeserializerPlugin
     {
       case ARRAY(iterator):
       {
-        var mapBuilder = scala.collection.immutable.MapSingleton.MODULE.newBuilder();
+        var mapBuilder = scala.collection.immutable.Map.Map_.MODULE_.newBuilder();
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
         if (generator == null)
         {
@@ -169,7 +169,7 @@ class ScalaMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    mapBuilder._plus_eq(new Tuple2(key, value));
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
@@ -205,7 +205,7 @@ class ScalaMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-                    mapBuilder.plusEquals(new Tuple2(key, value));
+                    mapBuilder._plus_eq(new Tuple2(key, value));
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);

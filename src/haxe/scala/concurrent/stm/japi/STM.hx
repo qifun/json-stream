@@ -22,18 +22,16 @@ package scala.concurrent.stm.japi;
 #if (java && scala)
 
 
-@:native("scala.concurrent.stm.japi.STM$")
 extern class STM
 {
-  @:native("MODULE$") public static var MODULE(default, never):STM;
   
-  public function newRef<A>(_:A):scala.concurrent.stm.RefView<A>;
+  public static function newRef<A>(_:A):scala.concurrent.stm.RefView<A>;
 
-  public function newTArray<A>(_:Int):scala.concurrent.stm.TArrayView<A>;
+  public static function newTArray<A>(_:Int):scala.concurrent.stm.TArrayView<A>;
   
-  public function newTSet<A>():scala.concurrent.stm.TSetView<A>;
+  public static function newTSet<A>():scala.concurrent.stm.TSetView<A>;
 
-  public function newTMap<A, B>():scala.concurrent.stm.TMapView<A, B>;
+  public static function newTMap<A, B>():scala.concurrent.stm.TMapView<A, B>;
 
 
 }

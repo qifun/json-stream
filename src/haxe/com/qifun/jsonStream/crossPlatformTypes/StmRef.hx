@@ -45,7 +45,7 @@ abstract StmRef<A>(StmNativeRef<A>)
   @:from public static inline function makeInt(value:Int):StmRef<Int> return
   {
     #if (scala && java)
-      new StmRef(scala.concurrent.stm.Ref.RefSingleton.MODULE.apply(value));
+      new StmRef(scala.concurrent.stm.Ref.Ref_.MODULE_.apply(value));
     #else
       new StmRef(value);
     #end
@@ -54,7 +54,7 @@ abstract StmRef<A>(StmNativeRef<A>)
   @:from public static inline function makeBool(value:Bool):StmRef<Bool> return
   {
     #if (scala && java)
-      new StmRef(scala.concurrent.stm.Ref.RefSingleton.MODULE.apply(value));
+      new StmRef(scala.concurrent.stm.Ref.Ref_.MODULE_.apply(value));
     #else
       new StmRef(value);
     #end
@@ -63,7 +63,7 @@ abstract StmRef<A>(StmNativeRef<A>)
   @:from public static inline function make<A>(value:A):StmRef<A> return
   {
     #if (scala && java)
-      var refView = scala.concurrent.stm.japi.STM.MODULE.newRef(value);
+      var refView = scala.concurrent.stm.japi.STM.newRef(value);
       new StmRef(refView.ref());
     #else
       new StmRef(value);

@@ -51,7 +51,7 @@ class RawTest extends JsonTestCase
         field1: 123,
         field2: 8.0,
         field3: "foo",
-        field4: [ "foo", null, [], "bar", (_:Array<Dynamic>) => [ (_:Array<Dynamic>) => [ [], 2, null, (_: { ?a:Int }) => { a: 0, } ], "baz", [], ], (_: { ?b:Dynamic }) => { b: null } ],
+        field4: [ "foo", null, (_:Array<Dynamic>) => [], "bar", (_:Array<Dynamic>) => [ (_:Array<Dynamic>) => [ (_:Array<Dynamic>) => [], 2, null, (_: { ?a:Int }) => { a: 0, } ], "baz", (_:Array<Dynamic>) => [], ], (_: { ?b:Dynamic }) => { b: null } ],
         field5: null,
       },
       nativeData2);

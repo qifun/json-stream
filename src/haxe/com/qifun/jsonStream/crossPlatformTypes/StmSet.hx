@@ -47,7 +47,7 @@ abstract StmSet<A>(StmNativeSet<A>)
   public static inline function empty<A>():StmSet<A> return
   {
   #if (scala && java)
-    var setView:scala.concurrent.stm.TSetView<A> = scala.concurrent.stm.japi.STM.MODULE.newTSet();
+    var setView:scala.concurrent.stm.TSetView<A> = scala.concurrent.stm.japi.STM.newTSet();
     new StmSet(setView.tset());
   #elseif cs
     new StmSet(new dotnet.system.collections.generic.HashSet<A>());

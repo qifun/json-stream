@@ -29,21 +29,11 @@ extern interface Ref<A> extends scala.concurrent.stm.RefLike<A, scala.concurrent
   public function single():scala.concurrent.stm.RefView<A>;
 }
 
-
-@:native("scala.concurrent.stm.Ref$")
-extern class RefSingleton_Single
-{
-  @:native("MODULE$") public static var MODULE(default, never):RefSingleton_Single;
-
-  public function apply(initialValue:Single):Ref<Dynamic>;
-
-}
-
-@:native("scala.concurrent.stm.Ref$")
-extern class RefSingleton
+@:javaCanonical("scala.concurrent.stm", "Ref$")
+extern class Ref_
 {
 
-  @:native("MODULE$") public static var MODULE(default, never):RefSingleton;
+  @:native("MODULE$") public static var MODULE_(default, never):Ref_;
 
   @:overload(function(initialValue:Int):Ref<Int>{})
   @:overload(function(initialValue:Bool):Ref<Bool>{})

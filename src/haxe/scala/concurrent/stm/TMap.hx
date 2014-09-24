@@ -26,10 +26,10 @@ extern interface TMap<A, B>
   public function single():scala.concurrent.stm.TMapView<A, B>;
 }
 
-@:native("scala.concurrent.stm.TMap$")
-extern class TMapSingleton
+@:javaCanonical("scala.concurrent.stm", "TMap$")
+extern class TMap_
 {
-	@:native("MODULE$") public static var MODULE(default, never):TMapSingleton;
+	@:native("MODULE$") public static var MODULE_(default, never):TMap_;
 
   public function newBuilder<A, B>():scala.collection.mutable.Builder<scala.Tuple2<A, B>, scala.concurrent.stm.TMap<A, B>>;
   

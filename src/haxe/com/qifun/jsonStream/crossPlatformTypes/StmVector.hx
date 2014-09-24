@@ -45,7 +45,7 @@ abstract StmVector<A>(StmNativeVector<A>)
   public static inline function empty<A>():StmVector<A> return
   {
   #if (scala && java)
-    var tarrayView:scala.concurrent.stm.TArrayView<A> = scala.concurrent.stm.japi.STM.MODULE.newTArray(0);
+    var tarrayView:scala.concurrent.stm.TArrayView<A> = scala.concurrent.stm.japi.STM.newTArray(0);
     new StmVector(tarrayView.tarray());
   #else
     new StmVector<A>(new haxe.ds.Vector(0));
