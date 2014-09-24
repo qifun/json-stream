@@ -42,13 +42,13 @@ abstract StmVector<A>(StmNativeVector<A>)
     this = underlying;
   }
   
-  public static inline function empty<A>():StmVector<A> return
+  public static inline function empty<A>(length:Int):StmVector<A> return
   {
   #if (scala && java)
-    var tarrayView:scala.concurrent.stm.TArrayView<A> = scala.concurrent.stm.japi.STM.newTArray(0);
+    var tarrayView:scala.concurrent.stm.TArrayView<A> = scala.concurrent.stm.japi.STM.newTArray(length);
     new StmVector(tarrayView.tarray());
   #else
-    new StmVector<A>(new haxe.ds.Vector(0));
+    new StmVector<A>(new haxe.ds.Vector(length));
   #end
   }
 }

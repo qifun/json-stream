@@ -29,7 +29,7 @@ class Main
   static function testAll()
   {
     var runner = new TestRunner();
-		runner.add(new ItemTest());
+	runner.add(new ItemTest());
     runner.add(new RawTest());
     runner.add(new SimpleTest());
     runner.add(new SimpleAbstractTest());
