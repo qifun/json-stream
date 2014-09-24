@@ -99,7 +99,7 @@ class AbstractPluginTest extends JsonTestCase
     assertDeepEquals(["1", "1", "2", "3", "5"], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
 
   }
-
+/*
   function testAbstractTypeDeseralizerPlugins()
   {
     var o = new AbstractEntities();
@@ -173,4 +173,5 @@ class AbstractPluginTest extends JsonTestCase
     var o2:AbstractEntities = JsonDeserializer.deserialize(jsonStream);
     assertDeepEquals(o, o2);
   }
+  */
 }
