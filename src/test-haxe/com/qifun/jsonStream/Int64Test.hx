@@ -5,25 +5,8 @@ import com.qifun.jsonStream.testUtil.JsonTestCase;
 import com.qifun.jsonStream.crossPlatformTypes.StmRef;
 import haxe.Int64;
 
-enum Int64Enum
-{
-  INT64(i:Int64);
-}
-
 class Int64Test extends JsonTestCase
 {
-  function testInt64InEnum()
-  {
-    var i64 = INT64(Int64.make(5, 5));
-    switch (i64)
-    {
-      case INT64(i):
-      {
-        assertMatch(5, Int64.getHigh(i));
-        assertMatch(5, Int64.getLow(i));
-      }
-    }
-  }
 
 /*
   function testInt64AsRefParameter()
