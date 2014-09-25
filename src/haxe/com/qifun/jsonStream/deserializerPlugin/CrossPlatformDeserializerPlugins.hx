@@ -433,7 +433,7 @@ class CrossPlatformVectorDeserializerPlugin
       macro
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.CrossPlatformVectorDeserializerPlugin.toNativeStream($self);
-        var nativeResult = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
+        var nativeResult = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement(nativeStream, function(a) return { var v = new haxe.ds.Vector(a.length); for (i in 0...a.length) v[i] = a[i]; v; }, function(substream) return substream.pluginDeserialize());
         new com.qifun.jsonStream.crossPlatformTypes.CrossVector(nativeResult);
       }
     }
@@ -473,7 +473,7 @@ class StmVectorDeserializerPlugin
       macro
       {
         var nativeStream = com.qifun.jsonStream.deserializerPlugin.CrossPlatformDeserializerPlugins.StmVectorDeserializerPlugin.toNativeStream($self);
-        var nativeResult = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement(nativeStream, function(substream) return substream.pluginDeserialize());
+        var nativeResult = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement(nativeStream, function(a) return { var v = new haxe.ds.Vector(a.length); for (i in 0...a.length) v[i] = a[i]; v; }, function(substream) return substream.pluginDeserialize());
         new com.qifun.jsonStream.crossPlatformTypes.StmVector(nativeResult);
       }
     }

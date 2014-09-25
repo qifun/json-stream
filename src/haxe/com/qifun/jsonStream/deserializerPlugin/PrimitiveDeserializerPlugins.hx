@@ -298,7 +298,7 @@ class VectorDeserializerPlugin
 
   @:noUsing
   @:dox(hide)
-  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Vector<Element>>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Vector<Element>> return
+  public static inline function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Vector<Element>>, arrayToVector:Array<Element>->Vector<Element>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Vector<Element>> return
   {
     switch (self.underlying)
     {
@@ -306,7 +306,7 @@ class VectorDeserializerPlugin
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
-          Vector.fromArrayCopy(
+          arrayToVector(
             [
               for (element in generator)
               {
@@ -316,7 +316,7 @@ class VectorDeserializerPlugin
         }
         else
         {
-          Vector.fromArrayCopy(
+          arrayToVector(
             [
               for (element in value)
               {
@@ -333,7 +333,7 @@ class VectorDeserializerPlugin
 
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<Vector<Element>>>):ExprOf<Null<Vector<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement($self, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement($self, function(a) return { var v = new haxe.ds.Vector(a.length); for (i in 0...a.length) v[i] = a[i]; v; }, function(substream) return substream.pluginDeserialize());
   }
 }
 

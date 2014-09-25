@@ -21,7 +21,7 @@ class Issue21Test extends JsonTestCase
   }
   */
 
-  /*
+
   // Disabled due to https://github.com/HaxeFoundation/haxe/issues/3399
   public function testStringVector0():Void
   {
@@ -29,7 +29,5 @@ class Issue21Test extends JsonTestCase
     var duplicated:CrossVector<String> = JsonDeserializer.deserialize(JsonSerializer.serialize(stringVector0));
     assertDeepEquals(stringVector0, duplicated);
   }
-  */
-
 
 }
