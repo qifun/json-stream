@@ -29,8 +29,7 @@ class AbstractEntities
 
   public var set:com.qifun.jsonStream.crossPlatformTypes.CrossSet<Int>;
 
-  // Disable this due to https://github.com/qifun/json-stream/issues/21
-  // public var list:com.qifun.jsonStream.crossPlatformTypes.CrossVector<String>;
+  public var list:com.qifun.jsonStream.crossPlatformTypes.CrossVector<String>;
 
   public var map:com.qifun.jsonStream.crossPlatformTypes.CrossMap<Int, Int>;
 

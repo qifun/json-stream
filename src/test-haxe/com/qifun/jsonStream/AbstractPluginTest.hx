@@ -51,8 +51,7 @@ class AbstractPluginTest extends JsonTestCase
       tarrayView.update(3, 3);
       tarrayView.update(4, 5);
 
-      // Disable due to https://github.com/qifun/json-stream/issues/21
-      // o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(tarrayView.tarray());
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(tarrayView.tarray());
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, scala.concurrent.stm.TMap<Int, Int>> = scala.concurrent.stm.TMap.TMapSingleton.MODULE.newBuilder();
       mapBuilder._plus_eq(new scala.Tuple2(42, 1764));
@@ -69,8 +68,7 @@ class AbstractPluginTest extends JsonTestCase
       set.Add(4099);
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
-      // Disable due to https://github.com/qifun/json-stream/issues/21
-      // o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
@@ -88,8 +86,7 @@ class AbstractPluginTest extends JsonTestCase
       setBuilder._plus_eq(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
-      // Disable due to https://github.com/qifun/json-stream/issues/21
-      // o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, Dynamic> = scala.collection.immutable.Map.Map_.MODULE_.newBuilder();
       mapBuilder._plus_eq(new scala.Tuple2(42, 1764));
@@ -100,10 +97,7 @@ class AbstractPluginTest extends JsonTestCase
       var jsonStream = JsonSerializer.serialize(o);
     #end
 
-    // Disable due to https://github.com/qifun/json-stream/issues/21
-    // assertDeepEquals(["1", "1", "2", "3", "5"], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
-
-    assertDeepEquals(4, JsonDeserializer.deserializeRaw(jsonStream).underlying.map.length);
+    assertDeepEquals(["1", "1", "2", "3", "5"], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
   }
 
   function testAbstractTypeDeseralizerPlugins()
@@ -127,8 +121,7 @@ class AbstractPluginTest extends JsonTestCase
       tarrayView.update(3, 3);
       tarrayView.update(4, 5);
 
-      // Disable due to https://github.com/qifun/json-stream/issues/21
-      // o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(tarrayView.tarray());
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(tarrayView.tarray());
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, scala.concurrent.stm.TMap<Int, Int>> = scala.concurrent.stm.TMap.TMapSingleton.MODULE.newBuilder();
       mapBuilder._plus_eq(new scala.Tuple2(42, 1764));
@@ -146,8 +139,7 @@ class AbstractPluginTest extends JsonTestCase
       set.Add(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(set);
 
-      // Disable due to https://github.com/qifun/json-stream/issues/21
-      // o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var map = new dotnet.system.collections.generic.Dictionary();
       map.Add(42, 1764);
@@ -166,8 +158,7 @@ class AbstractPluginTest extends JsonTestCase
       setBuilder._plus_eq(96354);
       o.set = new com.qifun.jsonStream.crossPlatformTypes.CrossSet(setBuilder.result());
 
-      // Disable due to https://github.com/qifun/json-stream/issues/21
-      // o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
+      o.list = new com.qifun.jsonStream.crossPlatformTypes.CrossVector(haxe.ds.Vector.fromArrayCopy(["1", "1", "2", "3", "5"]));
 
       var mapBuilder:scala.collection.mutable.Builder<scala.Tuple2<Int, Int>, Dynamic> = scala.collection.immutable.Map.Map_.MODULE_.newBuilder();
       mapBuilder._plus_eq(new scala.Tuple2(42, 1764));
@@ -177,7 +168,7 @@ class AbstractPluginTest extends JsonTestCase
       o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap<Int, Int>(mapBuilder.result());
     #end
     var jsonStream = JsonSerializer.serializeRaw(new RawJson({ref: 5,
-     // list:["1", "1", "2", "3", "5"], // Disable due to https://github.com/qifun/json-stream/issues/21
+     list:["1", "1", "2", "3", "5"],
      map:[[14, 169], [25, 625], [42, 1764],
      [256,65536]], set :[30,82,255,4099,96354] }));
     var o2:AbstractEntities = JsonDeserializer.deserialize(jsonStream);
