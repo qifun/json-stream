@@ -298,7 +298,7 @@ class VectorDeserializerPlugin
 
   @:noUsing
   @:dox(hide)
-  public static inline function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Vector<Element>>, arrayToVector:Array<Element>->Vector<Element>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Vector<Element>> return
+  public static function deserializeForElement<Element>(self:JsonDeserializerPluginStream<Vector<Element>>, arrayToVector:Array<Element>->Vector<Element>, elementDeserializeFunction:JsonDeserializerPluginStream<Element>->Element):Null<Vector<Element>> return
   {
     switch (self.underlying)
     {
