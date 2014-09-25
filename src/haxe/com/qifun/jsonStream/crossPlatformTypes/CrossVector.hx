@@ -41,4 +41,15 @@ abstract CrossVector<A>(NativeVector<A>)
   {
     this = underlying;
   }
+
+  @:nativeGen
+  public static inline function make<A>(length:Int):CrossVector<A> return
+  {
+    #if (scala && java && scala_stm)
+      scala.concurrent.stm.japi.STM.newTArray<A>(length);
+    #else
+      new CrossVector<A>(new haxe.ds.Vector<A>(length));
+    #end
+  }
+
 }
