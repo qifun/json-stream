@@ -35,8 +35,7 @@ JSON Stream is written in Haxe, which is able to compile to many other programmi
 
 ### `JsonStream`
 
-The most important type is `com.qifun.jsonStream.JsonStream`, a hierarchical iterator created from an object, an input stream or a string, and able to produce another object, output stream, or string.
-`JsonStream` is the universal intermedia type for most of conversions.
+`com.qifun.jsonStream.JsonStream` is the universal intermedia type for most of conversions. It is a hierarchical iterator created from an object, an input stream or a string. And then, the `JsonStream` is able to produce another object, output stream, or string.
 
 ### Dynamically-typed objects
 
@@ -67,7 +66,7 @@ var duplicatedData = JsonDeserializer.deserializeRaw(jsonStream2);
 trace(duplicatedData.message);
 ```
 
-The above example may be written in others languages, too.
+The above example may be written in languages other than Haxe, too.
 
 ### Statically-typed Serialization / Deserialization
 
