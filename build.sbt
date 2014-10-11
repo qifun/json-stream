@@ -49,11 +49,7 @@ libraryDependencies += "com.dongxiguo" %% "zero-log" % "0.3.6" % Test
 
 libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % Test
 
-resolvers in ThisBuild += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-
-resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
-
-libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.0-SNAPSHOT"
+libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"
 
 crossScalaVersions := Seq("2.10.4", "2.11.2")
 
