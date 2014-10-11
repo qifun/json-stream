@@ -4,6 +4,8 @@ haxeJavaSettings
 
 haxeCSharpSettings
 
+resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
+
 for (c <- Seq(Compile, Test)) yield {
   haxeOptions in c ++=
     Seq("-D", "scala")
