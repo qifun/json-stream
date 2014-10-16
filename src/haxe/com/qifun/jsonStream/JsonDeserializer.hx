@@ -132,7 +132,7 @@ class JsonDeserializer
 
     @return 解析`stream`生成的数据结构
 
-    @throws com.qifun.jsonStream.JsonDeserializerError 反序列化时格式错误
+    @throws JsonDeserializerError 反序列化时格式错误
   **/
   @:noUsing
   macro public static function deserialize<Result>(stream:ExprOf<JsonStream>):ExprOf<Null<Result>> return
