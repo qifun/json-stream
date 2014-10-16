@@ -39,11 +39,9 @@ javacOptions in Compile in compile += "-Xlint:-deprecation"
 
 libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
-libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % "provided" classifier "haxe-java"
+libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava classifier "haxe-java"
 
-libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.2.0" % "provided" classifier "haxe-java"
-
-libraryDependencies += "com.qifun.sbt-haxe" %% "test-interface" % "0.1.0" % Test
+libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.2.0" % HaxeJava classifier "haxe-java"
 
 libraryDependencies += "com.qifun.sbt-haxe" %% "test-interface" % "0.1.0" % Test
 
@@ -108,5 +106,4 @@ pomExtra :=
       <email>fangliquan@qq.com</email>
     </developer>
   </developers>
-
 
