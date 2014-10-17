@@ -1,3 +1,7 @@
+import SonatypeKeys._
+
+sonatypeSettings
+
 haxeSettings
 
 haxeJavaSettings
@@ -45,7 +49,7 @@ libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.2.0" % HaxeJava 
 
 libraryDependencies += "com.qifun.sbt-haxe" %% "test-interface" % "0.1.0" % Test
 
-libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.0-SNAPSHOT" % HaxeJava classifier "haxe-java"
+libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.0" % HaxeJava classifier "haxe-java"
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"
 
@@ -68,7 +72,7 @@ organization := "com.qifun"
 
 name := "json-stream"
 
-version := "0.2.0-SNAPSHOT"
+version := "0.2.0"
 
 homepage := Some(url(s"https://github.com/qifun/${name.value}"))
 
