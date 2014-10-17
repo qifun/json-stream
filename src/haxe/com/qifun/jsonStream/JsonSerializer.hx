@@ -126,7 +126,11 @@ class JsonSerializer
   @:noUsing
   macro public static function generateSerializer(includeModules:Array<String>):Array<Field> return
   {
-    var generator = new JsonSerializerGenerator(Context.getLocalClass().get(), Context.getBuildFields());
+    var localClass = Context.getLocalClass().get();
+    var modulePath = MacroStringTools.toFieldExpr(localClass.module.split("."));
+    var className = localClass.name;
+    var thisClassExpr = macro $modulePath.$className;
+    var generator = new JsonSerializerGenerator(thisClassExpr);
     for (moduleName in includeModules)
     {
       for (rootType in Context.getModule(moduleName))
@@ -134,7 +138,12 @@ class JsonSerializer
         generator.tryAddSerializeMethod(rootType);
       }
     }
-    generator.buildFields();
+    var meta = localClass.meta;
+    for (newMeta in generator.buildMetadata())
+    {
+      meta.add(newMeta.name, newMeta.params, newMeta.pos);
+    }
+    Context.getBuildFields().concat(generator.buildFields());
   }
 
   /**
@@ -196,27 +205,35 @@ class JsonSerializerGenerator
     }
   }
 
-  private static var allBuilders = new StringMap<JsonSerializerGenerator>();
+  private static var allBuilders = new Array<JsonSerializerGenerator>();
 
-  public function buildFields():Array<Field> return
+  public function buildMetadata():Metadata return
   {
-    var meta = buildingClass.meta;
-
-    meta.add(
-      ":access",
-      [ macro com.qifun.jsonStream.JsonSerializerRuntime ],
-      Context.currentPos());
-
+    var meta:Metadata =
+    [
+      {
+        name: ":access",
+        params: [ macro com.qifun.jsonStream.JsonSerializerRuntime ],
+        pos: Context.currentPos(),
+      }
+    ];
     for (serializingType in serializingTypes)
     {
       var baseType = toBaseType(serializingType);
       var accessPack = MacroStringTools.toFieldExpr(baseType.pack);
       var accessName = baseType.name;
-      meta.add(
-        ":access",
-        [ accessPack == null ? macro $i{accessName} : macro $accessPack.$accessName ],
-        Context.currentPos());
+      meta.push(
+        {
+          name: ":access",
+          params: [ accessPack == null ? macro $i{accessName} : macro $accessPack.$accessName ],
+          pos: Context.currentPos()
+        });
     }
+    meta;
+  }
+
+  public function buildFields():Array<Field> return
+  {
 
     var dynamicCases:Array<Case> = [];
 
@@ -328,31 +345,24 @@ class JsonSerializerGenerator
         access: [ APublic, AStatic ],
         kind: FFun(extractFunction(macro function(valueType:Type.ValueType, data:Dynamic):Null<com.qifun.jsonStream.JsonStream.JsonStreamPair> return $switchExpr)),
       });
-    allBuilders.remove(id);
+    var removed = allBuilders.pop();
+    if (removed != this)
+    {
+      throw "Illegal internal state!";
+    }
     buildingFields;
   }
 
-  private var buildingClass:ClassType;
-
-  // id的格式：packageNames.ModuleName.ClassName
-  private var id(get, never):String;
-
-  private function get_id() return
+  public function new(thisClassExpr:Expr)
   {
-    buildingClass.module + "." + buildingClass.name;
-  }
-
-  public function new(buildingClass:ClassType, buildingFields:Array<Field>)
-  {
-    this.buildingClass = buildingClass;
-    this.buildingFields = buildingFields;
-    allBuilders.set(id, this);
+    this.thisClassExpr = thisClassExpr;
+    this.buildingFields = [];
+    allBuilders.push(this);
   }
 
   private static function getContextBuilder():JsonSerializerGenerator return
   {
-    var localClass = Context.getLocalClass().get();
-    allBuilders.get(localClass.module + "." + localClass.name);
+    allBuilders[allBuilders.length - 1];
   }
 
   private static function processName(sb:StringBuf, s:String):Void
@@ -758,12 +768,10 @@ class JsonSerializerGenerator
         }
         else
         {
-          var classType = getContextBuilder().buildingClass;
-          var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
-          var className = classType.name;
+          var thisClassExpr = getContextBuilder().thisClassExpr;
           macro
           {
-            var knownValue = untyped($modulePath.$className).dynamicSerialize($valueType, $value);
+            var knownValue = untyped($thisClassExpr).dynamicSerialize($valueType, $value);
             if (knownValue == null)
             {
               com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.serializeUnknown($value);
@@ -793,14 +801,7 @@ class JsonSerializerGenerator
             }))))($data);
   }
 
-  private var buildingClassExpr(get, never):Expr;
-
-  private function get_buildingClassExpr():Expr return
-  {
-    var modulePath = MacroStringTools.toFieldExpr(buildingClass.module.split("."));
-    var className = buildingClass.name;
-    macro $modulePath.$className;
-  }
+  private var thisClassExpr:Expr;
 
   @:noUsing
   public static function generatedSerialize(data:Expr, expectedType:Type):Expr return
@@ -851,8 +852,8 @@ class JsonSerializerGenerator
         }
         if (classType.meta.has(":final"))
         {
-          var buildingClassExpr = contextBuilder.buildingClassExpr;
-          macro untyped($buildingClassExpr).$methodName($data);
+          var thisClassExpr = contextBuilder.thisClassExpr;
+          macro untyped($thisClassExpr).$methodName($data);
         }
         else
         {
@@ -885,8 +886,8 @@ class JsonSerializerGenerator
               kind: FFun(contextBuilder.newEnumSerializeFunction(enumType)),
             });
         }
-        var buildingClassExpr = contextBuilder.buildingClassExpr;
-        macro untyped($buildingClassExpr).$methodName($data);
+        var thisClassExpr = contextBuilder.thisClassExpr;
+        macro untyped($thisClassExpr).$methodName($data);
       case TAbstract(_.get() => abstractType, _):
         var methodName = serializeMethodName(abstractType.pack, abstractType.name);
         for (usingClassRef in Context.getLocalUsing())
@@ -921,8 +922,8 @@ class JsonSerializerGenerator
               kind: FFun(contextBuilder.newAbstractSerializeFunction(abstractType)),
             });
         }
-        var buildingClassExpr = contextBuilder.buildingClassExpr;
-        macro untyped($buildingClassExpr).$methodName($data);
+        var thisClassExpr = contextBuilder.thisClassExpr;
+        macro untyped($thisClassExpr).$methodName($data);
       case t:
         dynamicSerialize(data, TypeTools.toComplexType(expectedType));
     }
