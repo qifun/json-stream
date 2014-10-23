@@ -18,15 +18,19 @@ before_install:
  - travis_retry sudo add-apt-repository ppa:eyecreate/haxe -y
  - travis_retry sudo apt-get update -qq
  - travis_retry sudo apt-get install -qq neko ocaml
- - travis_retry git clone --recursive --depth 1 --branch development https://github.com/HaxeFoundation/haxe.git
- - (cd haxe && make && sudo make install)
- - travis_retry sudo haxelib setup .haxelib
- - if [[ "$SBT_TEST_CONFIGURATION" = "test" ]]; then travis_retry sudo haxelib install hxjava; fi
+ - haxe_file=haxe_latest.tar.gz
+ - travis_retry wget http://hxbuilds.s3-website-us-east-1.amazonaws.com/builds/haxe/linux64/$haxe_file
+ - sudo tar zxvf $haxe_file
+ - sudo mv haxe-* haxe
+ - export PATH=$PATH:`pwd`/haxe
+ - export HAXE_STD_PATH=`pwd`/haxe/std
+ - travis_retry haxelib setup .haxelib
+ - if [[ "$SBT_TEST_CONFIGURATION" = "test" ]]; then travis_retry haxelib install hxjava; fi
  - if [[ "$SBT_TEST_CONFIGURATION" = "csharp-test" ]]; then travis_retry sudo apt-get install mono-devel; fi
- - if [[ "$SBT_TEST_CONFIGURATION" = "csharp-test" ]]; then travis_retry sudo haxelib install hxcs; fi
- - if [[ "$SBT_TEST_CONFIGURATION" = "csharp-test" ]]; then travis_retry sudo haxelib git HUGS https://github.com/qifun/HUGS.git; fi
- - travis_retry sudo haxelib install continuation
- - travis_retry sudo haxelib git hxparse https://github.com/Simn/hxparse.git development src
- - travis_retry sudo haxelib git haxeparser https://github.com/qifun/haxeparser qifun.git src
+ - if [[ "$SBT_TEST_CONFIGURATION" = "csharp-test" ]]; then travis_retry haxelib install hxcs; fi
+ - if [[ "$SBT_TEST_CONFIGURATION" = "csharp-test" ]]; then travis_retry haxelib git HUGS https://github.com/qifun/HUGS.git; fi
+ - travis_retry haxelib install continuation
+ - travis_retry haxelib git hxparse https://github.com/Simn/hxparse.git development src
+ - travis_retry haxelib git haxeparser https://github.com/qifun/haxeparser qifun.git src
 
 script: sbt ++$TRAVIS_SCALA_VERSION $SBT_TEST_CONFIGURATION:test
