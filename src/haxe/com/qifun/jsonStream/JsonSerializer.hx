@@ -290,28 +290,39 @@ class JsonSerializerGenerator
           null;
       }
     }
+    //遍历所有插件
     for (localUsing in Context.getLocalUsing())
     {
+      //localUsing是插件的包路径+类名
       var baseType:BaseType = switch (localUsing.get())
       {
-        case { kind: KAbstractImpl(a) } : a.get();
+        case { kind: KAbstractImpl(a) } : a.get();  //??调试时unreached
         case classType: classType;
       }
+      //获得要序列化插件(即文件名)的字段表达式
       var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
+      //插件名
       var nameField = baseType.name;
+      //插件的序列化函数(Expr)
       var pluginSerializeField = TypeTools.findField(localUsing.get(), "pluginSerialize", true);
       if (pluginSerializeField != null && !pluginSerializeField.meta.has(":noDynamicSerialize"))
       {
+        //如果序列化函数存在且不包含noDynamicSerialize注解(通常为基础类型)
+        //序列化的函数
         var expr = macro $moduleExpr.$nameField.pluginSerialize(data);
-        var temporaryFunction = macro function (data) return $expr;
+        //获得类名+包路径Expr
+        var temporaryFunction = macro (function (data) return $expr);
         var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
-        var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
+        //获得函数真正的Expr
+        var resolvedTemporaryFunction:Expr = Context.getTypedExpr(typedTemporaryFunction);
+
         switch (Context.follow(typedTemporaryFunction.t))
         {
           case TFun([ { t: TAbstract(_, [dataType]) } ], _):
             var c = newCase(
               dataType,
-              macro $resolvedTemporaryFunction(data));
+              macro ($resolvedTemporaryFunction(data)));
+            
             if (c != null)
             {
               dynamicCases.push(c);
@@ -323,7 +334,7 @@ class JsonSerializerGenerator
 
     for (methodName in serializingTypes.keys())
     {
-      var c = newCase(serializingTypes.get(methodName), macro $i{methodName}(data));
+      var c = newCase(serializingTypes.get(methodName), macro ($i{methodName}(data)));
       if (c != null)
       {
         dynamicCases.push(c);
@@ -365,6 +376,7 @@ class JsonSerializerGenerator
     allBuilders[allBuilders.length - 1];
   }
 
+  //子函数命名
   private static function processName(sb:StringBuf, s:String):Void
   {
     var i = 0;
@@ -386,6 +398,7 @@ class JsonSerializerGenerator
     }
   }
 
+  //根据包路径和类名获得完整的带包路径类名的 序列化函数名。
   private static function serializeMethodName(pack:Array<String>, name:String):String
   {
     var sb = new StringBuf();
@@ -681,6 +694,7 @@ class JsonSerializerGenerator
     switch (followedType)
     {
       case TInst(_.get() => classType, _) if (!isAbstract(classType)):
+        //获得序列化函数名
         var methodName = serializeMethodName(classType.pack, classType.name);
         if (serializingTypes.get(methodName) == null)
         {
@@ -695,10 +709,14 @@ class JsonSerializerGenerator
             });
         }
       case TEnum(_.get() => enumType, _):
+        //获得序列化函数名
         var methodName = serializeMethodName(enumType.pack, enumType.name);
+        //如果这个枚举值的序列化函数还没有被加入列表，则加入
         if (serializingTypes.get(methodName) == null)
         {
+          //加入到列表(函数名和Type映射表)
           serializingTypes.set(methodName, followedType);
+          //加入到build宏用的字段数组
           buildingFields.push(
             {
               name: methodName,
@@ -716,6 +734,7 @@ class JsonSerializerGenerator
           buildingFields.push(
             {
               name: methodName,
+              
               pos: Context.currentPos(),
               meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
