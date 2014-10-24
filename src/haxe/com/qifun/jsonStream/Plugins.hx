@@ -34,6 +34,8 @@ extern class Plugins{}
 @:dox(hide)
 typedef GeneratedSerializerPlugin = com.qifun.jsonStream.serializerPlugin.GeneratedSerializerPlugin;
 
+//序列化插件添加在此之后
+
 @:dox(hide)
 typedef RawSerializerPlugin = com.qifun.jsonStream.serializerPlugin.RawSerializerPlugin;
 
@@ -69,6 +71,10 @@ typedef ArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveS
 
 @:dox(hide)
 typedef VectorSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin;
+
+//TODO scala.immutable.Set/Seq build plugin
+
+
 
 @:dox(hide)
 typedef CrossPlatformRefSerializerPlugin = com.qifun.jsonStream.serializerPlugin.CrossPlatformSerializerPlugins.CrossPlatformRefSerializerPlugin;
@@ -141,12 +147,22 @@ typedef StmTArraySerializerPlugin = com.qifun.jsonStream.serializerPlugin.StmSer
 #end
 
 @:dox(hide)
+typedef IntMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.IntMapSerializerPlugin;
+
+@:dox(hide)
+typedef StringMapSerializerPlugin = com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.StringMapSerializerPlugin;
+
+//序列化插件添加*不能*在此之后，haxe报错
+
+@:dox(hide)
 typedef LowPriorityDynamicSerializerPlugin = com.qifun.jsonStream.serializerPlugin.LowPriorityDynamicSerializerPlugin;
 
 
 
 @:dox(hide)
 typedef GeneratedDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.GeneratedDeserializerPlugin;
+
+//反序列化插件添加在此之后
 
 @:dox(hide)
 typedef RawDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.RawDeserializerPlugin;
@@ -255,13 +271,21 @@ typedef StmTArrayDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.St
 #end
 
 @:dox(hide)
+typedef IntMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.IntMapDeserializerPlugin;
+
+@:dox(hide)
+typedef StringMapDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.StringMapDeserializerPlugin;
+
+//反序列化插件添加*不能*在此之后，haxe报错
+
+@:dox(hide)
 typedef LowPriorityDynamicDeserializerPlugin = com.qifun.jsonStream.deserializerPlugin.LowPriorityDynamicDeserializerPlugin;
-
-
 
 
 @:dox(hide)
 typedef GeneratedBuilderPlugin = com.qifun.jsonStream.builderPlugin.GeneratedBuilderPlugin;
+
+//构建插件添加在此之后
 
 @:dox(hide)
 typedef RawBuilderPlugin = com.qifun.jsonStream.builderPlugin.RawBuilderPlugin;
@@ -297,7 +321,7 @@ typedef ArrayBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilder
 @:dox(hide)
 typedef VectorBuilderPlugin = com.qifun.jsonStream.builderPlugin.PrimitiveBuilderPlugins.VectorBuilderPlugin;
 
+//构建插件添加*不能*在此之后，haxe报错
 @:dox(hide)
 typedef LowPriorityDynamicBuilderPlugin = com.qifun.jsonStream.builderPlugin.LowPriorityDynamicBuilderPlugin;
 
-//TODO scala.immutable.Set/Seq build plugin

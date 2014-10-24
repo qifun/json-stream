@@ -19,6 +19,9 @@
 
 package com.qifun.jsonStream.testUtil;
 import haxe.PosInfos;
+import haxe.ds.IntMap;
+import haxe.ds.StringMap;
+
 class JsonEquality
 {
 
@@ -39,6 +42,24 @@ class JsonEquality
       {
         return left == right;
       }
+			case [TClass(IntMap), TClass(IntMap)]: {
+				var leftIntMap:IntMap<Dynamic> = left;
+        var rightIntMap:IntMap<Dynamic> = right;
+				if (!deepEquals(leftIntMap.toString(), rightIntMap.toString()))
+				{
+					return false;
+				}
+        return true;
+			}
+			case [TClass(StringMap), TClass(StringMap)]: {
+				var leftIntMap:StringMap<Dynamic> = left;
+        var rightIntMap:StringMap<Dynamic> = right;
+				if (!deepEquals(leftIntMap.toString(), rightIntMap.toString()))
+				{
+					return false;
+				}
+        return true;
+			}
       case [ TClass(Array), TClass(Array) ]:
       {
         var leftArray:Array<Dynamic> = left;
