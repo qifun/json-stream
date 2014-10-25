@@ -23,6 +23,7 @@ import com.dongxiguo.continuation.Continuation;
 import com.qifun.jsonStream.JsonBuilder;
 import com.qifun.jsonStream.JsonBuilderFactory;
 import haxe.ds.Vector;
+import haxe.ds.StringMap;
 import haxe.Int64;
 #if macro
 import haxe.macro.Expr;

@@ -17,19 +17,23 @@
  * limitations under the License.
  */
 
-package scala.concurrent.stm;
 
-#if (java && scala)
+package com.qifun.jsonStream;
+using com.qifun.jsonStream.Plugins;
 
-extern interface SourceLike<A, Context>
+
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([
+  "com.qifun.jsonStream.IntMapEntities",
+]))
+class IntMapSerializer
 {
-  public function apply(_:Context):A;
-
-  public function get(_:Context):A;
-
-  public function getWith<Z>(function1:scala.Function1<A, Z>, _:Context):Z;
-
-  public function relaxedGet(function2:scala.Function2<A, A, Dynamic>, _:Context):A;
 }
 
-#end
+
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([
+  "com.qifun.jsonStream.IntMapEntities",
+]))
+class IntMapDeserializer
+{
+}
+

@@ -17,23 +17,22 @@
  * limitations under the License.
  */
 
-package scala.concurrent.stm;
 
-#if (scala && java)
-extern interface TSet<A>
+package com.qifun.jsonStream;
+
+import haxe.ds.IntMap;
+import haxe.ds.Vector;
+
+@:final
+class IntMapEntities
 {
-  public function single():scala.concurrent.stm.TSetView<A>;
+  public function new() { }
+  public var intData = new IntMap<Int>();
+  public var stringData = new IntMap<String>();
+  public var floatData = new IntMap<Float>();
+  //public var vectorData = new IntMap<Vector<Int>>();
+  public var arrayData = new IntMap<Array<Int>>();
+  public var nullableIntData = new IntMap<Null<Int>>();
+  public var nullableArrayData = new IntMap<Null<Array<Int>>>();
+
 }
-
-@:native("scala.concurrent.stm.TSet$")
-@:javaCanonical("scala.concurrent.stm", "TSet$")
-extern class TSet_
-{
-	@:native("MODULE$") public static var MODULE_(default, never):TSet_;
-  
-  public function newBuilder<A>():scala.collection.mutable.Builder<A, scala.concurrent.stm.TSet<A>>;
-
-
-	public function empty<A>():TSet<A>;
-}
-#end

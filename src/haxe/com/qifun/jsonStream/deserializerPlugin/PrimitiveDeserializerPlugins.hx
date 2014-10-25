@@ -23,8 +23,10 @@ import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream;
 import com.qifun.jsonStream.JsonDeserializer;
 import haxe.crypto.Base64;
-import haxe.ds.Vector;
 import haxe.Int64;
+import haxe.ds.Vector;
+import haxe.ds.IntMap;
+import haxe.ds.StringMap;
 import haxe.io.Bytes;
 import haxe.macro.Context;
 import haxe.macro.TypeTools;
@@ -337,4 +339,220 @@ class VectorDeserializerPlugin
   }
 }
 
+
 //TODO : StringMap and IntMap
+
+@:final
+class StringMapDeserializerPlugin
+{
+ 
+  @:noUsing
+  @:dox(hide)
+  public static function deserializeForElement<Value>(self:JsonDeserializerPluginStream<StringMap<Value>>, 
+    valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
+    Null<StringMap<Value>> return  
+  {
+    switch (self.underlying)
+    {
+      case ARRAY(iterator):
+		{
+		var mapObj = new StringMap<Value>();
+        var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+		  while(generator.hasNext())
+          {            
+			switch (generator.next())
+            {
+              case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
+              {
+				if (pairIterator.hasNext())
+                {
+                  var keyStream = pairIterator.next();
+                  var key = StringDeserializerPlugin.pluginDeserialize(new JsonDeserializerPluginStream(keyStream));
+                  if (pairIterator.hasNext())
+                  {
+                    var valueStream = pairIterator.next();
+                    var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
+					mapObj.set(key, value);
+                    if (pairIterator.hasNext())
+                    {
+                      throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
+                    }
+                  }
+                  else
+                  {
+                    throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+                  }
+                }
+                else
+                {
+                  throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
+                }
+			  }
+              case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
+            }
+		  }
+		  mapObj;
+		}
+        else
+        {
+		  while(iterator.hasNext())
+          {
+			switch (generator.next())
+            {
+              case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
+              {
+                if (pairIterator.hasNext())
+                {
+                  var keyStream = pairIterator.next();
+                  var key = StringDeserializerPlugin.pluginDeserialize(new JsonDeserializerPluginStream(keyStream));
+                  if (pairIterator.hasNext())
+                  {
+                    var valueStream = pairIterator.next();
+                    var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
+                    mapObj.set(key, value);
+                    if (pairIterator.hasNext())
+                    {
+                      throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
+                    }
+                  }
+                  else
+                  {
+                    throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+                  }
+                }
+                else
+                {
+                  throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
+                }
+              }
+              case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
+            }
+		  }
+		mapObj;
+        }
+      }
+      case NULL:
+        null;
+      case _:
+        throw "Expect StringMap";
+    }
+  }
+
+  macro public static function pluginDeserialize<Value>(self:ExprOf<JsonDeserializerPluginStream<StringMap<Value>>>):
+	  ExprOf<Null<StringMap<Value>>> return
+  {
+    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.StringMapDeserializerPlugin.deserializeForElement(
+	  $self, function(substream) return substream.pluginDeserialize());
+  }
+
+}
+
+
+@:final
+class IntMapDeserializerPlugin
+{
+ 
+  @:noUsing
+  @:dox(hide)
+  public static function deserializeForElement<Value>(self:JsonDeserializerPluginStream<IntMap<Value>>, 
+    valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
+    Null<IntMap<Value>> return  
+  {
+    switch (self.underlying)
+    {
+      case ARRAY(iterator):
+		{
+		var mapObj = new IntMap<Value>();
+        var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+		  while(generator.hasNext())
+          {            
+			switch (generator.next())
+            {
+              case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
+              {
+				if (pairIterator.hasNext())
+                {
+                  var keyStream = pairIterator.next();
+                  var key = IntDeserializerPlugin.pluginDeserialize(new JsonDeserializerPluginStream(keyStream));
+                  if (pairIterator.hasNext())
+                  {
+                    var valueStream = pairIterator.next();
+                    var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
+					mapObj.set(key, value);
+                    if (pairIterator.hasNext())
+                    {
+                      throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
+                    }
+                  }
+                  else
+                  {
+                    throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+                  }
+                }
+                else
+                {
+                  throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
+                }
+			  }
+              case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
+            }
+		  }
+		  mapObj;
+		}
+        else
+        {
+		  while(iterator.hasNext())
+          {
+			switch (generator.next())
+            {
+              case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
+              {
+                if (pairIterator.hasNext())
+                {
+                  var keyStream = pairIterator.next();
+                  var key = IntDeserializerPlugin.pluginDeserialize(new JsonDeserializerPluginStream(keyStream));
+                  if (pairIterator.hasNext())
+                  {
+                    var valueStream = pairIterator.next();
+                    var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
+                    mapObj.set(key, value);
+                    if (pairIterator.hasNext())
+                    {
+                      throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
+                    }
+                  }
+                  else
+                  {
+                    throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
+                  }
+                }
+                else
+                {
+                  throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
+                }
+              }
+              case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
+            }
+		  }
+		mapObj;
+        }
+      }
+      case NULL:
+        null;
+      case _:
+        throw "Expect IntMap";
+    }
+  }
+
+  macro public static function pluginDeserialize<Value>(self:ExprOf<JsonDeserializerPluginStream<IntMap<Value>>>):
+	  ExprOf<Null<IntMap<Value>>> return
+  {
+    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.IntMapDeserializerPlugin.deserializeForElement(
+	  $self, function(substream) return substream.pluginDeserialize());
+  }
+
+}

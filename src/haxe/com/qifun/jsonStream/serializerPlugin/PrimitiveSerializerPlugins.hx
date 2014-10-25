@@ -23,6 +23,8 @@ import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonSerializer;
 import com.qifun.jsonStream.JsonStream;
+import haxe.ds.IntMap;
+import haxe.ds.StringMap;
 import haxe.ds.Vector;
 import haxe.Int64;
 import haxe.io.Bytes;
@@ -170,6 +172,7 @@ class VectorSerializerPlugin
   @:noUsing
   public static function serializeForElement<Element>(data:JsonSerializerPluginData<Vector<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
+		trace(">>>>>>>>>"+data);
     if (data == null)
     {
       NULL;
@@ -196,3 +199,81 @@ class VectorSerializerPlugin
 }
 
 //TODO : StringMap and IntMap
+
+
+@:final
+class StringMapSerializerPlugin
+{
+  @:dox(hide)
+  @:noUsing
+  public static function serializeForElement<Value>(
+    data:JsonSerializerPluginData<StringMap<Value>>, 
+    ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
+  {
+    if (data == null)
+    {
+      NULL;
+    }
+    else
+    {
+      ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+      {
+		var keys = data.underlying.keys();
+        while (keys.hasNext())
+        {
+		  @await yield(ARRAY(
+          new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+		  {
+		    var elementKey = keys.next();
+            @await yield(StringSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(elementKey)));
+            @await yield(ValueSerializeFunction(new JsonSerializerPluginData(data.underlying.get(elementKey))));
+          }))));
+		}
+      })));
+    }
+  }
+  
+  macro public static function pluginSerialize<Value>(self:ExprOf<JsonSerializerPluginData<StringMap<Value>>>):ExprOf<JsonStream> return
+  {
+    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.StringMapSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+  }
+}
+
+
+@:final
+class IntMapSerializerPlugin
+{
+  @:dox(hide)
+  @:noUsing
+  public static function serializeForElement<Value>(
+    data:JsonSerializerPluginData<IntMap<Value>>, 
+    ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
+  {
+    if (data == null)
+    {
+      NULL;
+    }
+    else
+    {
+      ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+      {
+		var keys = data.underlying.keys();
+        while (keys.hasNext())
+        {
+		  @await yield(ARRAY(
+          new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
+		  {
+		    var elementKey = keys.next();
+            @await yield(IntSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(elementKey)));
+            @await yield(ValueSerializeFunction(new JsonSerializerPluginData(data.underlying.get(elementKey))));
+          }))));
+		}
+      })));
+    }
+  }
+  
+  macro public static function pluginSerialize<Value>(self:ExprOf<JsonSerializerPluginData<IntMap<Value>>>):ExprOf<JsonStream> return
+  {
+    macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.IntMapSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
+  }
+}

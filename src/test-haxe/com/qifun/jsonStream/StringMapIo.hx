@@ -17,17 +17,23 @@
  * limitations under the License.
  */
 
-package scala.concurrent.stm;
 
-#if (java && scala)
+package com.qifun.jsonStream;
+using com.qifun.jsonStream.Plugins;
 
-@:native("scala.concurrent.stm.Sink$View")
-extern interface SinkView<A>
+
+@:build(com.qifun.jsonStream.JsonSerializer.generateSerializer([
+  "com.qifun.jsonStream.StringMapEntities",
+]))
+class StringMapSerializer
 {
-  public function set(_:A):Void;
-  
-  public function update(_:A):Void;
-  
-  public function trySet(_:A):Bool;
 }
-#end
+
+
+@:build(com.qifun.jsonStream.JsonDeserializer.generateDeserializer([
+  "com.qifun.jsonStream.StringMapEntities",
+]))
+class StringMapDeserializer
+{
+}
+
