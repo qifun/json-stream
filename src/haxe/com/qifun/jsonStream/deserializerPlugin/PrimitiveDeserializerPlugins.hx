@@ -399,7 +399,7 @@ class StringMapDeserializerPlugin
         {
           while(iterator.hasNext())
           {
-            switch (generator.next())
+            switch (iterator.next())
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
               {
