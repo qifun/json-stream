@@ -172,7 +172,6 @@ class VectorSerializerPlugin
   @:noUsing
   public static function serializeForElement<Element>(data:JsonSerializerPluginData<Vector<Element>>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):JsonStream return
   {
-		trace(">>>>>>>>>"+data);
     if (data == null)
     {
       NULL;
@@ -218,17 +217,17 @@ class StringMapSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-		var keys = data.underlying.keys();
+        var keys = data.underlying.keys();
         while (keys.hasNext())
         {
-		  @await yield(ARRAY(
+          @await yield(ARRAY(
           new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
-		  {
-		    var elementKey = keys.next();
+          {
+            var elementKey = keys.next();
             @await yield(StringSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(elementKey)));
             @await yield(ValueSerializeFunction(new JsonSerializerPluginData(data.underlying.get(elementKey))));
           }))));
-		}
+        }
       })));
     }
   }
@@ -257,17 +256,17 @@ class IntMapSerializerPlugin
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
-		var keys = data.underlying.keys();
+        var keys = data.underlying.keys();
         while (keys.hasNext())
         {
-		  @await yield(ARRAY(
+          @await yield(ARRAY(
           new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
-		  {
-		    var elementKey = keys.next();
+          {
+            var elementKey = keys.next();
             @await yield(IntSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(elementKey)));
             @await yield(ValueSerializeFunction(new JsonSerializerPluginData(data.underlying.get(elementKey))));
           }))));
-		}
+        }
       })));
     }
   }

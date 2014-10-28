@@ -355,18 +355,18 @@ class StringMapDeserializerPlugin
     switch (self.underlying)
     {
       case ARRAY(iterator):
-		{
-		var mapObj = new StringMap<Value>();
+      {
+        var mapObj = new StringMap<Value>();
         var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
-		  while(generator.hasNext())
+          while(generator.hasNext())
           {            
-			switch (generator.next())
+            switch (generator.next())
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
               {
-				if (pairIterator.hasNext())
+              if (pairIterator.hasNext())
                 {
                   var keyStream = pairIterator.next();
                   var key = StringDeserializerPlugin.pluginDeserialize(new JsonDeserializerPluginStream(keyStream));
@@ -374,7 +374,7 @@ class StringMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-					mapObj.set(key, value);
+                    mapObj.set(key, value);
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
@@ -389,17 +389,17 @@ class StringMapDeserializerPlugin
                 {
                   throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
                 }
-			  }
+            }
               case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
             }
-		  }
-		  mapObj;
-		}
+          }
+          mapObj;
+        }
         else
         {
-		  while(iterator.hasNext())
+          while(iterator.hasNext())
           {
-			switch (generator.next())
+            switch (generator.next())
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
               {
@@ -429,8 +429,8 @@ class StringMapDeserializerPlugin
               }
               case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
             }
-		  }
-		mapObj;
+          }
+          mapObj;
         }
       }
       case NULL:
@@ -441,10 +441,10 @@ class StringMapDeserializerPlugin
   }
 
   macro public static function pluginDeserialize<Value>(self:ExprOf<JsonDeserializerPluginStream<StringMap<Value>>>):
-	  ExprOf<Null<StringMap<Value>>> return
+      ExprOf<Null<StringMap<Value>>> return
   {
     macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.StringMapDeserializerPlugin.deserializeForElement(
-	  $self, function(substream) return substream.pluginDeserialize());
+      $self, function(substream) return substream.pluginDeserialize());
   }
 
 }
@@ -463,18 +463,18 @@ class IntMapDeserializerPlugin
     switch (self.underlying)
     {
       case ARRAY(iterator):
-		{
-		var mapObj = new IntMap<Value>();
-        var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
-        if (generator != null)
-        {
-		  while(generator.hasNext())
-          {            
-			switch (generator.next())
+      {
+        var mapObj = new IntMap<Value>();
+          var generator = Std.instance(iterator, (Generator:Class<Generator<JsonStream>>));
+          if (generator != null)
+          {
+            while(generator.hasNext())
+            {            
+            switch (generator.next())
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
               {
-				if (pairIterator.hasNext())
+                if (pairIterator.hasNext())
                 {
                   var keyStream = pairIterator.next();
                   var key = IntDeserializerPlugin.pluginDeserialize(new JsonDeserializerPluginStream(keyStream));
@@ -482,7 +482,7 @@ class IntMapDeserializerPlugin
                   {
                     var valueStream = pairIterator.next();
                     var value = valueDeserializeFunction(new JsonDeserializerPluginStream(valueStream));
-					mapObj.set(key, value);
+                    mapObj.set(key, value);
                     if (pairIterator.hasNext())
                     {
                       throw JsonDeserializerError.TOO_MANY_FIELDS(pairIterator, 2);
@@ -492,22 +492,22 @@ class IntMapDeserializerPlugin
                   {
                     throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 1);
                   }
-                }
+                  }
                 else
                 {
                   throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
                 }
-			  }
+              }
               case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
             }
-		  }
-		  mapObj;
-		}
+          }
+          mapObj;
+        }
         else
         {
-		  while(iterator.hasNext())
+          while(iterator.hasNext())
           {
-			switch (generator.next())
+            switch (iterator.next())
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
               {
@@ -537,8 +537,8 @@ class IntMapDeserializerPlugin
               }
               case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
             }
-		  }
-		mapObj;
+          }
+          mapObj;
         }
       }
       case NULL:
@@ -549,10 +549,10 @@ class IntMapDeserializerPlugin
   }
 
   macro public static function pluginDeserialize<Value>(self:ExprOf<JsonDeserializerPluginStream<IntMap<Value>>>):
-	  ExprOf<Null<IntMap<Value>>> return
+    ExprOf<Null<IntMap<Value>>> return
   {
     macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.IntMapDeserializerPlugin.deserializeForElement(
-	  $self, function(substream) return substream.pluginDeserialize());
+    $self, function(substream) return substream.pluginDeserialize());
   }
 
 }
