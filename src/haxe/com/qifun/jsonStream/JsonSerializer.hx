@@ -126,7 +126,11 @@ class JsonSerializer
   @:noUsing
   macro public static function generateSerializer(includeModules:Array<String>):Array<Field> return
   {
-    var generator = new JsonSerializerGenerator(Context.getLocalClass().get(), Context.getBuildFields());
+    var localClass = Context.getLocalClass().get();
+    var modulePath = MacroStringTools.toFieldExpr(localClass.module.split("."));
+    var className = localClass.name;
+    var thisClassExpr = macro $modulePath.$className;
+    var generator = new JsonSerializerGenerator(thisClassExpr);
     for (moduleName in includeModules)
     {
       for (rootType in Context.getModule(moduleName))
@@ -134,7 +138,12 @@ class JsonSerializer
         generator.tryAddSerializeMethod(rootType);
       }
     }
-    generator.buildFields();
+    var meta = localClass.meta;
+    for (newMeta in generator.buildMetadata())
+    {
+      meta.add(newMeta.name, newMeta.params, newMeta.pos);
+    }
+    Context.getBuildFields().concat(generator.buildFields());
   }
 
   /**
@@ -196,27 +205,35 @@ class JsonSerializerGenerator
     }
   }
 
-  private static var allBuilders = new StringMap<JsonSerializerGenerator>();
+  private static var allBuilders = new Array<JsonSerializerGenerator>();
 
-  public function buildFields():Array<Field> return
+  public function buildMetadata():Metadata return
   {
-    var meta = buildingClass.meta;
-
-    meta.add(
-      ":access",
-      [ macro com.qifun.jsonStream.JsonSerializerRuntime ],
-      Context.currentPos());
-
+    var meta:Metadata =
+    [
+      {
+        name: ":access",
+        params: [ macro com.qifun.jsonStream.JsonSerializerRuntime ],
+        pos: Context.currentPos(),
+      }
+    ];
     for (serializingType in serializingTypes)
     {
       var baseType = toBaseType(serializingType);
       var accessPack = MacroStringTools.toFieldExpr(baseType.pack);
       var accessName = baseType.name;
-      meta.add(
-        ":access",
-        [ accessPack == null ? macro $i{accessName} : macro $accessPack.$accessName ],
-        Context.currentPos());
+      meta.push(
+        {
+          name: ":access",
+          params: [ accessPack == null ? macro $i{accessName} : macro $accessPack.$accessName ],
+          pos: Context.currentPos()
+        });
     }
+    meta;
+  }
+
+  public function buildFields():Array<Field> return
+  {
 
     var dynamicCases:Array<Case> = [];
 
@@ -273,28 +290,39 @@ class JsonSerializerGenerator
           null;
       }
     }
+    //遍历所有插件
     for (localUsing in Context.getLocalUsing())
     {
+      //localUsing是插件的包路径+类名
       var baseType:BaseType = switch (localUsing.get())
       {
-        case { kind: KAbstractImpl(a) } : a.get();
+        case { kind: KAbstractImpl(a) } : a.get();  //??调试时unreached
         case classType: classType;
       }
+      //获得要序列化插件(即文件名)的字段表达式
       var moduleExpr = MacroStringTools.toFieldExpr(baseType.module.split("."));
+      //插件名
       var nameField = baseType.name;
+      //插件的序列化函数(Expr)
       var pluginSerializeField = TypeTools.findField(localUsing.get(), "pluginSerialize", true);
       if (pluginSerializeField != null && !pluginSerializeField.meta.has(":noDynamicSerialize"))
       {
+        //如果序列化函数存在且不包含noDynamicSerialize注解(通常为基础类型)
+        //序列化的函数
         var expr = macro $moduleExpr.$nameField.pluginSerialize(data);
-        var temporaryFunction = macro function (data) return $expr;
+        //获得类名+包路径Expr
+        var temporaryFunction = macro (function (data) return $expr);
         var typedTemporaryFunction = Context.typeExpr(temporaryFunction);
-        var resolvedTemporaryFunction = Context.getTypedExpr(typedTemporaryFunction);
+        //获得函数真正的Expr
+        var resolvedTemporaryFunction:Expr = Context.getTypedExpr(typedTemporaryFunction);
+
         switch (Context.follow(typedTemporaryFunction.t))
         {
           case TFun([ { t: TAbstract(_, [dataType]) } ], _):
             var c = newCase(
               dataType,
-              macro $resolvedTemporaryFunction(data));
+              macro ($resolvedTemporaryFunction(data)));
+            
             if (c != null)
             {
               dynamicCases.push(c);
@@ -306,7 +334,7 @@ class JsonSerializerGenerator
 
     for (methodName in serializingTypes.keys())
     {
-      var c = newCase(serializingTypes.get(methodName), macro $i{methodName}(data));
+      var c = newCase(serializingTypes.get(methodName), macro ($i{methodName}(data)));
       if (c != null)
       {
         dynamicCases.push(c);
@@ -328,33 +356,27 @@ class JsonSerializerGenerator
         access: [ APublic, AStatic ],
         kind: FFun(extractFunction(macro function(valueType:Type.ValueType, data:Dynamic):Null<com.qifun.jsonStream.JsonStream.JsonStreamPair> return $switchExpr)),
       });
-    allBuilders.remove(id);
+    var removed = allBuilders.pop();
+    if (removed != this)
+    {
+      throw "Illegal internal state!";
+    }
     buildingFields;
   }
 
-  private var buildingClass:ClassType;
-
-  // id的格式：packageNames.ModuleName.ClassName
-  private var id(get, never):String;
-
-  private function get_id() return
+  public function new(thisClassExpr:Expr)
   {
-    buildingClass.module + "." + buildingClass.name;
-  }
-
-  public function new(buildingClass:ClassType, buildingFields:Array<Field>)
-  {
-    this.buildingClass = buildingClass;
-    this.buildingFields = buildingFields;
-    allBuilders.set(id, this);
+    this.thisClassExpr = thisClassExpr;
+    this.buildingFields = [];
+    allBuilders.push(this);
   }
 
   private static function getContextBuilder():JsonSerializerGenerator return
   {
-    var localClass = Context.getLocalClass().get();
-    allBuilders.get(localClass.module + "." + localClass.name);
+    allBuilders[allBuilders.length - 1];
   }
 
+  //子函数命名
   private static function processName(sb:StringBuf, s:String):Void
   {
     var i = 0;
@@ -376,6 +398,7 @@ class JsonSerializerGenerator
     }
   }
 
+  //根据包路径和类名获得完整的带包路径类名的 序列化函数名。
   private static function serializeMethodName(pack:Array<String>, name:String):String
   {
     var sb = new StringBuf();
@@ -671,6 +694,7 @@ class JsonSerializerGenerator
     switch (followedType)
     {
       case TInst(_.get() => classType, _) if (!isAbstract(classType)):
+        //获得序列化函数名
         var methodName = serializeMethodName(classType.pack, classType.name);
         if (serializingTypes.get(methodName) == null)
         {
@@ -685,10 +709,14 @@ class JsonSerializerGenerator
             });
         }
       case TEnum(_.get() => enumType, _):
+        //获得序列化函数名
         var methodName = serializeMethodName(enumType.pack, enumType.name);
+        //如果这个枚举值的序列化函数还没有被加入列表，则加入
         if (serializingTypes.get(methodName) == null)
         {
+          //加入到列表(函数名和Type映射表)
           serializingTypes.set(methodName, followedType);
+          //加入到build宏用的字段数组
           buildingFields.push(
             {
               name: methodName,
@@ -706,6 +734,7 @@ class JsonSerializerGenerator
           buildingFields.push(
             {
               name: methodName,
+              
               pos: Context.currentPos(),
               meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],
@@ -758,12 +787,10 @@ class JsonSerializerGenerator
         }
         else
         {
-          var classType = getContextBuilder().buildingClass;
-          var modulePath = MacroStringTools.toFieldExpr(classType.module.split("."));
-          var className = classType.name;
+          var thisClassExpr = getContextBuilder().thisClassExpr;
           macro
           {
-            var knownValue = untyped($modulePath.$className).dynamicSerialize($valueType, $value);
+            var knownValue = untyped($thisClassExpr).dynamicSerialize($valueType, $value);
             if (knownValue == null)
             {
               com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.serializeUnknown($value);
@@ -793,14 +820,7 @@ class JsonSerializerGenerator
             }))))($data);
   }
 
-  private var buildingClassExpr(get, never):Expr;
-
-  private function get_buildingClassExpr():Expr return
-  {
-    var modulePath = MacroStringTools.toFieldExpr(buildingClass.module.split("."));
-    var className = buildingClass.name;
-    macro $modulePath.$className;
-  }
+  private var thisClassExpr:Expr;
 
   @:noUsing
   public static function generatedSerialize(data:Expr, expectedType:Type):Expr return
@@ -851,8 +871,8 @@ class JsonSerializerGenerator
         }
         if (classType.meta.has(":final"))
         {
-          var buildingClassExpr = contextBuilder.buildingClassExpr;
-          macro untyped($buildingClassExpr).$methodName($data);
+          var thisClassExpr = contextBuilder.thisClassExpr;
+          macro untyped($thisClassExpr).$methodName($data);
         }
         else
         {
@@ -885,8 +905,8 @@ class JsonSerializerGenerator
               kind: FFun(contextBuilder.newEnumSerializeFunction(enumType)),
             });
         }
-        var buildingClassExpr = contextBuilder.buildingClassExpr;
-        macro untyped($buildingClassExpr).$methodName($data);
+        var thisClassExpr = contextBuilder.thisClassExpr;
+        macro untyped($thisClassExpr).$methodName($data);
       case TAbstract(_.get() => abstractType, _):
         var methodName = serializeMethodName(abstractType.pack, abstractType.name);
         for (usingClassRef in Context.getLocalUsing())
@@ -921,8 +941,8 @@ class JsonSerializerGenerator
               kind: FFun(contextBuilder.newAbstractSerializeFunction(abstractType)),
             });
         }
-        var buildingClassExpr = contextBuilder.buildingClassExpr;
-        macro untyped($buildingClassExpr).$methodName($data);
+        var thisClassExpr = contextBuilder.thisClassExpr;
+        macro untyped($thisClassExpr).$methodName($data);
       case t:
         dynamicSerialize(data, TypeTools.toComplexType(expectedType));
     }
