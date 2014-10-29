@@ -196,10 +196,73 @@ class VectorSerializerPlugin
     macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
 }
-
+#if macro
 //TODO : StringMap and IntMap
+class IterablePair<Value>
+{
+  private var pos:Int = 0;
+  
+  var key:JsonStream;
+  
+  var value:JsonStream;
+  
+  public function new<Value>(k:String, v:Value, ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):Void
+  {
+    key = StringSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(k));
+    value = ValueSerializeFunction(new JsonSerializerPluginData(v));
+  }
+  
+  public function hasNext():Bool return
+  {
+    if (pos < 2)
+      true;
+    else 
+      false;
+  }
+  
+  public function next():JsonStream return
+  {
+    switch (pos)
+    {
+      case 0:++pos; key;
+      case 1:++pos; value;
+      default:throw "has no more element.";
+    }
+  }
+}
 
-
+class IterableMap<Value>
+{
+  var elements:Array<JsonStream> = [];
+  
+  var pos:Int = 0;
+  
+  public function new(map:StringMap<Value>, valueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):Void
+  {
+    var keys = map.keys();
+    while (keys.hasNext())
+    {
+      var key = keys.next();
+      elements.push(ARRAY(new IterablePair(key, map.get(key), valueSerializeFunction)));
+    }
+  }
+  
+  public function hasNext():Bool return 
+  {
+    if (pos < elements.length)
+      true;
+    else
+      false;  
+  }
+  
+  public function next():JsonStream return
+  {
+    if (pos < elements.length)
+      elements[pos++];
+    else throw "has no more element.";
+  }
+}
+#end
 @:final
 class StringMapSerializerPlugin
 {
@@ -215,6 +278,9 @@ class StringMapSerializerPlugin
     }
     else
     {
+      #if macro
+      ARRAY(new IterableMap(data.underlying, ValueSerializeFunction));
+      #else
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
         var keys = data.underlying.keys();
@@ -229,6 +295,7 @@ class StringMapSerializerPlugin
           }))));
         }
       })));
+      #end
     }
   }
   

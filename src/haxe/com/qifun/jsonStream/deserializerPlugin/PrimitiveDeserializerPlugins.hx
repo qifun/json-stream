@@ -389,7 +389,7 @@ class StringMapDeserializerPlugin
                 {
                   throw JsonDeserializerError.NOT_ENOUGH_FIELDS(iterator, 2, 0);
                 }
-            }
+              }
               case stream: throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY" ]);
             }
           }
