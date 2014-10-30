@@ -22,7 +22,7 @@ before_install:
  - travis_retry sudo apt-get update -qq
  - travis_retry sudo apt-get install -qq neko ocaml
  - travis_retry wget http://hxbuilds.s3-website-us-east-1.amazonaws.com/builds/haxe/linux64/"$HAXE_FILE"
- - sudo tar zxvf $haxe_file
+ - sudo tar zxvf "$HAXE_FILE"
  - sudo mv haxe-* haxe
  - export PATH=$PATH:`pwd`/haxe
  - export HAXE_STD_PATH=`pwd`/haxe/std
