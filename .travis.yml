@@ -10,16 +10,19 @@ jdk:
   - openjdk7
 
 env:
-  - SBT_TEST_CONFIGURATION=test
-  # Disable currently, because of https://github.com/qifun/sbt-haxe/issues/8
-  # - SBT_TEST_CONFIGURATION=csharp-test
+  matrix:
+    - SBT_TEST_CONFIGURATION=test
+    # Disable currently, because of https://github.com/qifun/sbt-haxe/issues/8
+    # - SBT_TEST_CONFIGURATION=csharp-test
+    - HAXE_FILE=haxe_latest.tar.gz
+    - HAXE_FILE=haxe_2014-09-19_development_9f5b3f5.tar.gz
+    - HAXE_FILE=haxe_2014-10-21_development_a05b532.tar.gz
 
 before_install:
  - travis_retry sudo add-apt-repository ppa:eyecreate/haxe -y
  - travis_retry sudo apt-get update -qq
  - travis_retry sudo apt-get install -qq neko ocaml
- - haxe_file=haxe_latest.tar.gz
- - travis_retry wget http://hxbuilds.s3-website-us-east-1.amazonaws.com/builds/haxe/linux64/$haxe_file
+ - travis_retry wget http://hxbuilds.s3-website-us-east-1.amazonaws.com/builds/haxe/linux64/"$HAXE_FILE"
  - sudo tar zxvf $haxe_file
  - sudo mv haxe-* haxe
  - export PATH=$PATH:`pwd`/haxe
