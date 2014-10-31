@@ -41,11 +41,11 @@ libraryDependencies += "org.scala-stm" %% "scala-stm" % "0.7"
 
 libraryDependencies += "com.qifun" % "haxe-util" % "0.1.0" % HaxeJava classifier "haxe-java"
 
-libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.2.0" % HaxeJava classifier "haxe-java"
+libraryDependencies += "com.qifun" %% "haxe-scala-library" % "0.2.1" % HaxeJava classifier "haxe-java"
 
 libraryDependencies += "com.qifun.sbt-haxe" %% "test-interface" % "0.1.0" % Test
 
-libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.2" % HaxeJava classifier "haxe-java"
+libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.3" % HaxeJava classifier "haxe-java"
 
 libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"
 
