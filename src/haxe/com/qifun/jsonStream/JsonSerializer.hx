@@ -463,45 +463,70 @@ class JsonSerializerGenerator
             }
           ];
           var enumAndValueParams = enumParams.concat(valueParams);
-          for (i in 0...args.length)
+          
+          function traverseBlockExprs(i:Int):String return
           {
-            var parameterName = 'constructorParameter$i';
-            var parameterExpr = macro $i{parameterName};
-            parameterExprs.push(parameterExpr);
-            switch (args[i])
+            var functionName:String = "";
+            if (i == args.length)
             {
-              case {
-                name: "unknownFieldMap",
-                t: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
-              }:
-                blockExprs.push(macro @await com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap($parameterExpr, yield));
-              case { name: parameterKey, t: parameterType, }:
-                var s = resolvedSerialize(TypeTools.toComplexType(parameterType), macro parameterData, enumAndValueParams);
-                // trace(ExprTools.toString(s));
-                var f =
+              "onComplete";
+            }
+            else
+            {
+              var lastFunction = traverseBlockExprs(i + 1);
+              functionName = "function__recursion__" + Std.string(i);
+              var parameterName = 'constructorParameter$i';
+              var parameterExpr = macro $i{parameterName};
+              parameterExprs.push(parameterExpr);
+              switch (args[i])
+              {
+                case {
+                  name: "unknownFieldMap",
+                  t: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
+                }:
+                  blockExprs.push(macro function $functionName():Void
                   {
-                    pos: Context.currentPos(),
-                    expr: EFunction(
-                      #if no_inline
-                        "temporaryEnumValueSerialize"
-                      #else
-                        "inline_temporaryEnumValueSerialize"
-                      #end,
-                      {
-                        params: enumAndValueParams,
-                        ret: null,
-                        args: [ { name: "parameterData", type: null, } ],
-                        expr: macro return $s,
-                      })
-                  };
-                blockExprs.push(
-                  macro if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull($parameterExpr))
-                  {
-                    $f;
-                    @await yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{parameterKey}, temporaryEnumValueSerialize(com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.nullize($parameterExpr))));
+                    com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap($parameterExpr, yield, $i { lastFunction } );
                   });
+                  functionName;
+                case { name: parameterKey, t: parameterType, }:
+                  var s = resolvedSerialize(TypeTools.toComplexType(parameterType), macro parameterData, enumAndValueParams);
+                  var f =
+                    {
+                      pos: Context.currentPos(),
+                      expr: EFunction(
+                        #if no_inline
+                          "temporaryEnumValueSerialize"
+                        #else
+                          "inline_temporaryEnumValueSerialize"
+                        #end,
+                        {
+                          params: enumAndValueParams,
+                          ret: null,
+                          args: [ { name: "parameterData", type: null, } ],
+                          expr: macro return $s,
+                        })
+                    };
+                  blockExprs.push(
+                    macro function $functionName():Void
+                    {
+                      if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull($parameterExpr))
+                      {
+                        $f;
+                        yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v { parameterKey }, temporaryEnumValueSerialize(com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.nullize($parameterExpr))), $i { lastFunction } );
+                      }
+                      else
+                      {
+                        $i { lastFunction }();
+                      }
+                    });
+                  functionName;
+              }
             }
           }
+          var accessFunctionName = traverseBlockExprs(0);
+          blockExprs.push(macro $i { accessFunctionName }() );
+    
           var block =
           {
             expr: EBlock(blockExprs),
@@ -513,15 +538,13 @@ class JsonSerializerGenerator
               values: [ macro $i{constructorName}($a{parameterExprs}) ],
               expr: macro com.qifun.jsonStream.JsonStream.OBJECT(
                 new com.dongxiguo.continuation.utils.Generator(
-                  com.dongxiguo.continuation.Continuation.cpsFunction(
-                    function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void
-                      @await yield(
+                    function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>, onComplete:Void->Void):Void
+                      yield(
                         new com.qifun.jsonStream.JsonStream.JsonStreamPair(
                           $v{constructorName},
                           com.qifun.jsonStream.JsonStream.OBJECT(
                             new com.dongxiguo.continuation.utils.Generator(
-                              com.dongxiguo.continuation.Continuation.cpsFunction(
-                                function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void $block)))))))),
+                              function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>,onComplete:Void->Void):Void $block))),onComplete))),
             });
         case { name: constructorName } :
           cases.push(
@@ -621,35 +644,59 @@ class JsonSerializerGenerator
           TypeTools.applyTypeParameters(t, classType.params, concreteTypes);
         }
       }
-      for (field in classType.fields.get())
+      var fields = classType.fields.get();
+      var lastFunctionName:String = null;
+      function traverseBlockExprs(i:Int):String return
       {
-        switch (field)
+        var functionName:String = "";
+        var field = fields[i];
+        if (i == fields.length)
+          "onComplete"
+        else
         {
-          case
+          functionName = "function__recursion__" + Std.string(i);
+          var lastFunction = traverseBlockExprs(i + 1);
+          switch (field)
           {
-            name: "unknownFieldMap",
-            kind: FVar(AccNormal | AccNo | AccCall, _),
-            type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
-          }:
-          {
-            blockExprs.push(macro @await com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap(data.unknownFieldMap, yield));
-          }
-          case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
-          {
-            var fieldName = field.name;
-            var s = resolvedSerialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro data.$fieldName, params);
-            blockExprs.push(
-              macro if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull(data.$fieldName))
-              {
-                @await yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fieldName}, $s));
-              });
-          }
-          case _:
-          {
-            continue;
+            case
+            {
+              name: "unknownFieldMap",
+              kind: FVar(AccNormal | AccNo | AccCall, _),
+              type: Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.unknown.UnknownFieldMap", name: "UnknownFieldMap" }, []),
+            }:
+            {
+              blockExprs.push(
+                macro function $functionName():Void
+                {
+                  com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.yieldUnknownFieldMap(data.unknownFieldMap, yield, $i { lastFunction } );
+                });
+              functionName;
+            }
+            case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
+            {
+              var fieldName = field.name;
+              var s = resolvedSerialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro data.$fieldName, params);
+              blockExprs.push(
+                macro function $functionName():Void
+                {
+                  if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull(data.$fieldName))
+                  {
+                    yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v { fieldName }, $s), $i { lastFunction } );
+                  }
+                  else
+                  {
+                    $i { lastFunction }();
+                  }
+                });
+              functionName;
+            }
+            default: lastFunction;
           }
         }
       }
+      var accessFunctionName = traverseBlockExprs(0);
+      blockExprs.push(macro $i { accessFunctionName }() );
+    
       var superClass = classType.superClass;
       if (superClass != null)
       {
@@ -682,8 +729,8 @@ class JsonSerializerGenerator
       ret: null,
       expr: macro return
         com.qifun.jsonStream.JsonStream.OBJECT(
-          new com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream.JsonStreamPair>(com.dongxiguo.continuation.Continuation.cpsFunction(
-            function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void $block))),
+          new com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream.JsonStreamPair>(
+            function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>, onComplete:Void->Void):Void $block)),
       params: params,
     }
   }
@@ -810,14 +857,13 @@ class JsonSerializerGenerator
       com.qifun.jsonStream.JsonStream.NULL :
       com.qifun.jsonStream.JsonStream.OBJECT(
         new com.dongxiguo.continuation.utils.Generator(
-          com.dongxiguo.continuation.Continuation.cpsFunction(
             function(
               yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<
-                com.qifun.jsonStream.JsonStream.JsonStreamPair>):Void
+                com.qifun.jsonStream.JsonStream.JsonStreamPair>, onComplete:Void->Void):Void
             {
               var dynamicValueType = Type.Type.typeof(dynamicData);
-              @await yield($processDynamic);
-            }))))($data);
+              yield($processDynamic, onComplete);
+            })))($data);
   }
 
   private var thisClassExpr:Expr;
