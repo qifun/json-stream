@@ -525,8 +525,10 @@ class JsonSerializerGenerator
             }
           }
           var accessFunctionName = traverseBlockExprs(0);
-          blockExprs.push(macro $i { accessFunctionName }() );
-    
+          blockExprs.push(macro $i { accessFunctionName } () );
+          //因为使用栈来做循环，所以顺序和遍历顺序是相反的，应反转
+          parameterExprs.reverse();
+      
           var block =
           {
             expr: EBlock(blockExprs),
