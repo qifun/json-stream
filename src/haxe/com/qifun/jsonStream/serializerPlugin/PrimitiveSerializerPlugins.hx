@@ -131,6 +131,28 @@ class StringSerializerPlugin
   }
 }
 
+#if macro
+class IterableArray<Element>
+{
+  var list:List<JsonStream> = new List<JsonStream>();
+  var iterator:Iterator<JsonStream>;
+  public function new<Element>(array:Array<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):Void
+  {
+    for (element in array)
+      list.push(elementSerializeFunction(new JsonSerializerPluginData(element)));
+    iterator = list.iterator();
+  }
+  public function hasNext():Bool return 
+  {
+    iterator.hasNext();
+  }
+  public function next():JsonStream return
+  {
+    iterator.next();
+  }
+}
+#end
+
 @:final
 class ArraySerializerPlugin
 {
@@ -147,6 +169,11 @@ class ArraySerializerPlugin
       NULL;
     }
     else
+    #if macro
+    {
+      ARRAY(new IterableArray<Element>(data.underlying, elementSerializeFunction));
+    }
+    #else
     {
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
@@ -156,6 +183,7 @@ class ArraySerializerPlugin
         }
       })));
     }
+    #end
   }
 
   macro public static function pluginSerialize<Element>(self:ExprOf<JsonSerializerPluginData<Array<Element>>>):ExprOf<JsonStream> return
