@@ -633,6 +633,7 @@ class JsonSerializerGenerator
       }
     ];
     var blockExprs:Array<Expr> = [];
+    var lastTraverseName:String = null;
     function addBlockExprs(classType:Null<ClassType>, ?concreteTypes:Array<Type>):Void
     {
       function applyTypeParameters(t:Type) return
@@ -647,16 +648,20 @@ class JsonSerializerGenerator
         }
       }
       var fields = classType.fields.get();
-      var lastFunctionName:String = null;
+
       function traverseBlockExprs(i:Int):String return
       {
         var functionName:String = "";
         var field = fields[i];
         if (i == fields.length)
-          "onComplete"
+        {
+          if(lastTraverseName == null)
+            "onComplete";
+          else lastTraverseName;
+        }
         else
         {
-          functionName = "__recursion_" + Std.string(i);
+          functionName = "__"+ classType.name +"_recursion_" + Std.string(i);
           var lastFunction = traverseBlockExprs(i + 1);
           switch (field)
           {
@@ -696,8 +701,7 @@ class JsonSerializerGenerator
           }
         }
       }
-      var accessFunctionName = traverseBlockExprs(0);
-      blockExprs.push(macro $i { accessFunctionName }() );
+      lastTraverseName = traverseBlockExprs(0);
     
       var superClass = classType.superClass;
       if (superClass != null)
@@ -708,6 +712,7 @@ class JsonSerializerGenerator
       }
     }
     addBlockExprs(classType);
+    blockExprs.push(macro $i { lastTraverseName }() );
     var block =
     {
       expr: EBlock(blockExprs),
@@ -728,11 +733,27 @@ class JsonSerializerGenerator
             }),
         },
       ],
-      ret: null,
-      expr: macro return
-        com.qifun.jsonStream.JsonStream.OBJECT(
-          new com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream.JsonStreamPair>(
-            function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>, onComplete:Void->Void):Void $block)),
+      ret: 
+      {
+        var t = Context.getType("com.qifun.jsonStream.JsonStream");
+        switch (t)
+        {
+          case TEnum(tr, _):
+          {
+            TPath(
+            {
+              pack: tr.get().pack,
+              name: tr.get().name
+            });
+          }
+          default: null;
+        }
+      },
+      expr: macro {
+        var generator = new com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream.JsonStreamPair>(
+            function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<com.qifun.jsonStream.JsonStream.JsonStreamPair>, onComplete:Void->Void):Void $block);
+        return com.qifun.jsonStream.JsonStream.OBJECT(generator);
+      },
       params: params,
     }
   }
