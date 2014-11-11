@@ -474,7 +474,7 @@ class JsonSerializerGenerator
             else
             {
               var lastFunction = traverseBlockExprs(i + 1);
-              functionName = "function__recursion__" + Std.string(i);
+              functionName = "__recursion_" + Std.string(i);
               var parameterName = 'constructorParameter$i';
               var parameterExpr = macro $i{parameterName};
               parameterExprs.push(parameterExpr);
@@ -656,7 +656,7 @@ class JsonSerializerGenerator
           "onComplete"
         else
         {
-          functionName = "function__recursion__" + Std.string(i);
+          functionName = "__recursion_" + Std.string(i);
           var lastFunction = traverseBlockExprs(i + 1);
           switch (field)
           {
