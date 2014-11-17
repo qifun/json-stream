@@ -366,7 +366,7 @@ class StringMapDeserializerPlugin
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
               {
-              if (pairIterator.hasNext())
+                if (pairIterator.hasNext())
                 {
                   var keyStream = pairIterator.next();
                   var key = StringDeserializerPlugin.pluginDeserialize(new JsonDeserializerPluginStream(keyStream));

@@ -131,28 +131,6 @@ class StringSerializerPlugin
   }
 }
 
-#if macro
-class IterableArray<Element>
-{
-  var list:List<JsonStream> = new List<JsonStream>();
-  var iterator:Iterator<JsonStream>;
-  public function new<Element>(array:Array<Element>, elementSerializeFunction:JsonSerializerPluginData<Element>->JsonStream):Void
-  {
-    for (element in array)
-      list.push(elementSerializeFunction(new JsonSerializerPluginData(element)));
-    iterator = list.iterator();
-  }
-  public function hasNext():Bool return 
-  {
-    iterator.hasNext();
-  }
-  public function next():JsonStream return
-  {
-    iterator.next();
-  }
-}
-#end
-
 @:final
 class ArraySerializerPlugin
 {
@@ -171,7 +149,28 @@ class ArraySerializerPlugin
     else
     #if macro
     {
-      ARRAY(new IterableArray<Element>(data.underlying, elementSerializeFunction));
+      ARRAY(new Generator(function(yield:YieldFunction<JsonStream>, onComplete:Void->Void):Void
+      {
+        function traverse(i:Int):Void
+        {
+          if (i < data.underlying.length - 1)
+          {
+            yield(
+              elementSerializeFunction(new JsonSerializerPluginData(data.underlying[i])), 
+              function():Void 
+              {
+                traverse(i + 1);
+              }
+            );
+          }
+          else if(i == data.underlying.length - 1)
+          {
+            yield(elementSerializeFunction(new JsonSerializerPluginData(data.underlying[i])), onComplete);
+          }
+          else onComplete();
+        }
+        traverse(0);
+      }));
     }
     #else
     {
@@ -224,73 +223,7 @@ class VectorSerializerPlugin
     macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.VectorSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
   }
 }
-#if macro
-//TODO : StringMap and IntMap
-class IterablePair<Value>
-{
-  private var pos:Int = 0;
-  
-  var key:JsonStream;
-  
-  var value:JsonStream;
-  
-  public function new<Value>(k:String, v:Value, ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):Void
-  {
-    key = StringSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(k));
-    value = ValueSerializeFunction(new JsonSerializerPluginData(v));
-  }
-  
-  public function hasNext():Bool return
-  {
-    if (pos < 2)
-      true;
-    else 
-      false;
-  }
-  
-  public function next():JsonStream return
-  {
-    switch (pos)
-    {
-      case 0:++pos; key;
-      case 1:++pos; value;
-      default:throw "has no more element.";
-    }
-  }
-}
 
-class IterableMap<Value>
-{
-  var elements:Array<JsonStream> = [];
-  
-  var pos:Int = 0;
-  
-  public function new(map:StringMap<Value>, valueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):Void
-  {
-    var keys = map.keys();
-    while (keys.hasNext())
-    {
-      var key = keys.next();
-      elements.push(ARRAY(new IterablePair(key, map.get(key), valueSerializeFunction)));
-    }
-  }
-  
-  public function hasNext():Bool return 
-  {
-    if (pos < elements.length)
-      true;
-    else
-      false;  
-  }
-  
-  public function next():JsonStream return
-  {
-    if (pos < elements.length)
-      elements[pos++];
-    else throw "has no more element.";
-  }
-}
-#end
 @:final
 class StringMapSerializerPlugin
 {
@@ -307,7 +240,52 @@ class StringMapSerializerPlugin
     else
     {
       #if macro
-      ARRAY(new IterableMap(data.underlying, ValueSerializeFunction));
+      ARRAY(new Generator(function(yield:YieldFunction<JsonStream>, onComplete:Void->Void):Void
+      {
+        function traverse(keys:Iterator<String>):Void
+        {
+          if (!keys.hasNext())
+            onComplete();
+          var elementKey = keys.next();
+          if (keys.hasNext())
+          {
+            yield(
+              ARRAY(new Generator(function(yieldPair:YieldFunction<JsonStream>, onCompletePair:Void->Void):Void
+              {
+                yieldPair(StringSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(elementKey)),
+                  function():Void
+                  {
+                    yieldPair(ValueSerializeFunction(new JsonSerializerPluginData(data.underlying.get(elementKey))),
+                      onCompletePair);
+                  }
+                );
+              })),
+              function():Void
+              {
+                traverse(keys);
+              }
+            );
+          }
+          else
+          {
+            yield(
+              ARRAY(new Generator(function(yieldPair:YieldFunction<JsonStream>, onCompletePair:Void->Void):Void
+              {
+                yieldPair(StringSerializerPlugin.pluginSerialize(new JsonSerializerPluginData(elementKey)),
+                  function():Void
+                  {
+                    yieldPair(ValueSerializeFunction(new JsonSerializerPluginData(data.underlying.get(elementKey))),
+                      onCompletePair);
+                  }
+                );
+              })),
+              onComplete
+            );
+          }
+        }
+        var keys = data.underlying.keys();
+        traverse(keys);
+      }));
       #else
       ARRAY(new Generator(Continuation.cpsFunction(function(yield:YieldFunction<JsonStream>):Void
       {
