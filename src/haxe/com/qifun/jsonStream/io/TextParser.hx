@@ -26,6 +26,15 @@ import haxe.io.Eof;
 import haxe.io.Input;
 import haxe.io.StringInput;
 
+private class TextParseContext
+{
+
+  public var level:Int = 0;
+
+  public function new() { }
+
+}
+
 enum TextParserError
 {
   ILLEGAL_NUMBER_FORMAT;
@@ -35,6 +44,7 @@ enum TextParserError
   EXPECT_DOUBLE_QUOTE;
   EXPECT_COLON;
   EXPECT_END_BRACKET;
+  INNER_JSON_STREAM_IS_NOT_FINISHED(expectedLevel:Int, currentLevel:Int);
 }
 
 class TextParser
@@ -73,7 +83,7 @@ class TextParser
     return String.fromCharCode((h0 << 24) | (h1 << 16) | (h2 << 8) | h3);
   }
 
-  static function parseStringLiteral(source:ISource):String
+  static function parseStringLiteral(source:ISource, context:TextParseContext):String
   {
     var buffer = new BytesBuffer();
     var b;
@@ -117,7 +127,7 @@ class TextParser
     return buffer.getBytes().toString();
   }
 
-  static function parsePositiveInteger(source:ISource):Float
+  static function parsePositiveInteger(source:ISource, context:TextParseContext):Float
   {
     var digit = source.current;
     if (digit >= "0".code && digit <= "9".code)
@@ -139,7 +149,7 @@ class TextParser
     }
   }
 
-  static function parseExponent(base:Float, source:ISource):Float
+  static function parseExponent(source:ISource, context:TextParseContext, base:Float):Float
   {
     switch(source.current)
     {
@@ -150,12 +160,12 @@ class TextParser
         {
           case "-".code:
             source.next();
-            return base * Math.pow(10, -parsePositiveInteger(source));
+            return base * Math.pow(10, -parsePositiveInteger(source, context));
           case "+".code:
             source.next();
-            return base * Math.pow(10, parsePositiveInteger(source));
+            return base * Math.pow(10, parsePositiveInteger(source, context));
           default:
-            return base * Math.pow(10, parsePositiveInteger(source));
+            return base * Math.pow(10, parsePositiveInteger(source, context));
         }
       }
       default:
@@ -165,7 +175,7 @@ class TextParser
     }
   }
 
-  static function parseFraction(base:Float, source:ISource):Float
+  static function parseFraction(source:ISource, context:TextParseContext, base:Float):Float
   {
     if (source.current == ".".code)
     {
@@ -190,10 +200,10 @@ class TextParser
         return throw TextParserError.ILLEGAL_NUMBER_FORMAT;
       }
     }
-    return parseExponent(base, source);
+    return parseExponent(source, context, base);
   }
 
-  static function parsePositiveNumberLiteral(source:ISource):Float
+  static function parsePositiveNumberLiteral(source:ISource, context:TextParseContext):Float
   {
     switch (source.current)
     {
@@ -201,7 +211,7 @@ class TextParser
       {
         // 整数部分是0，现在读取小数部分
         source.next();
-        return parseFraction(0, source);
+        return parseFraction(source, context, 0);
       }
       case notZero if (notZero >= "1".code && notZero <= "9".code):
       {
@@ -215,7 +225,7 @@ class TextParser
           digit = source.current;
         }
         // 整数部分读完了，现在读取小数部分
-        return parseFraction(f, source);
+        return parseFraction(source, context, f);
       }
       default:
       {
@@ -224,7 +234,7 @@ class TextParser
     }
   }
 
-  static function skipWhiteSpace(source:ISource):Void
+  static function skipWhiteSpace(source:ISource, context:TextParseContext):Void
   {
     while (true)
     {
@@ -242,12 +252,12 @@ class TextParser
     }
   }
 
-  static function skipComma(source:ISource):Bool
+  static function skipComma(source:ISource, context:TextParseContext):Bool
   {
     if (source.current == ",".code)
     {
       source.next();
-      skipWhiteSpace(source);
+      skipWhiteSpace(source, context);
       return true;
     }
     else
@@ -256,12 +266,13 @@ class TextParser
     }
   }
 
-  static function parseArrayLiteral(source:ISource):Generator<JsonStream>
+  static function parseArrayLiteral(source:ISource, context:TextParseContext):Generator<JsonStream>
   {
     return new Generator(Continuation.cpsFunction(function(yield):Void
     {
+      var expectedCurrentLevel = ++context.level;
       source.next();
-      skipWhiteSpace(source);
+      skipWhiteSpace(source, context);
       if (source.current == "]".code)
       {
         source.next();
@@ -270,11 +281,15 @@ class TextParser
       {
         do
         {
-          var value = parseValue(source);
+          var value = parseValue(source, context);
           @await yield(value);
-          skipWhiteSpace(source);
+          if (expectedCurrentLevel != context.level)
+          {
+            throw TextParserError.INNER_JSON_STREAM_IS_NOT_FINISHED(expectedCurrentLevel, context.level);
+          }
+          skipWhiteSpace(source, context);
         }
-        while (skipComma(source));
+        while (skipComma(source, context));
         if (source.current != "]".code)
         {
           throw TextParserError.EXPECT_END_BRACKET;
@@ -282,15 +297,17 @@ class TextParser
         }
         source.next();
       }
+      context.level--;
     }));
   }
 
-  static function parseObjectLiteral(source:ISource):Generator<JsonStreamPair>
+  static function parseObjectLiteral(source:ISource, context:TextParseContext):Generator<JsonStreamPair>
   {
     return new Generator(Continuation.cpsFunction(function(yield):Void
     {
+      var expectedCurrentLevel = ++context.level;
       source.next();
-      skipWhiteSpace(source);
+      skipWhiteSpace(source, context);
       if (source.current == "}".code)
       {
         source.next();
@@ -301,18 +318,22 @@ class TextParser
         {
           if (source.current == "\"".code)
           {
-            var key = parseStringLiteral(source);
-            skipWhiteSpace(source);
+            var key = parseStringLiteral(source, context);
+            skipWhiteSpace(source, context);
             if (source.current != ":".code)
             {
               throw TextParserError.EXPECT_COLON;
               return;
             }
             source.next();
-            skipWhiteSpace(source);
-            var value = parseValue(source);
+            skipWhiteSpace(source, context);
+            var value = parseValue(source, context);
             @await yield(new JsonStreamPair(key, value));
-            skipWhiteSpace(source);
+            if (expectedCurrentLevel != context.level)
+            {
+              throw TextParserError.INNER_JSON_STREAM_IS_NOT_FINISHED(expectedCurrentLevel, context.level);
+            }
+            skipWhiteSpace(source, context);
           }
           else
           {
@@ -320,7 +341,7 @@ class TextParser
             return;
           }
         }
-        while (skipComma(source));
+        while (skipComma(source, context));
         if (source.current != "}".code)
         {
           throw TextParserError.EXPECT_END_BRACKET;
@@ -328,24 +349,25 @@ class TextParser
         }
         source.next();
       }
+      context.level--;
     }));
   }
 
-  static function parseValue(source:ISource):JsonStream return
+  static function parseValue(source:ISource, context:TextParseContext):JsonStream return
   {
     switch (source.current)
     {
       case "\"".code:
-        return JsonStream.STRING(parseStringLiteral(source));
+        return JsonStream.STRING(parseStringLiteral(source, context));
       case "-".code:
         source.next();
-        return JsonStream.NUMBER(-parsePositiveNumberLiteral(source));
+        return JsonStream.NUMBER(-parsePositiveNumberLiteral(source, context));
       case digit if (digit >= "0".code && digit <= "9".code):
-        return JsonStream.NUMBER(parsePositiveNumberLiteral(source));
+        return JsonStream.NUMBER(parsePositiveNumberLiteral(source, context));
       case "{".code:
-        return JsonStream.OBJECT(parseObjectLiteral(source));
+        return JsonStream.OBJECT(parseObjectLiteral(source, context));
       case "[".code:
-        return JsonStream.ARRAY(parseArrayLiteral(source));
+        return JsonStream.ARRAY(parseArrayLiteral(source, context));
       case 't'.code:
         if ('r'.code == { source.next(); source.current; })
         if ('u'.code == { source.next(); source.current; })
@@ -385,20 +407,20 @@ class TextParser
     }
   }
 
-  public static function parse(source:ISource):JsonStream
+  public static function parse(source:ISource, context:TextParseContext):JsonStream
   {
-    skipWhiteSpace(source);
-    return parseValue(source);
+    skipWhiteSpace(source, context);
+    return parseValue(source, context);
   }
 
   public static function parseString(string:String):JsonStream
   {
-    return parse(new StringSource(string));
+    return parse(new StringSource(string), new TextParseContext());
   }
 
   public static function parseInput(input:Input):JsonStream
   {
-    return parse(new InputSource(input));
+    return parse(new InputSource(input), new TextParseContext());
   }
 
 }
