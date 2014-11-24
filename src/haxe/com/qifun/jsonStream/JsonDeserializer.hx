@@ -176,6 +176,7 @@ enum JsonDeserializerError
   TOO_MANY_FIELDS<Element>(iterator:Iterator<Element>, expected:Int);
   NOT_ENOUGH_FIELDS<Element>(iterator:Iterator<Element>, expected:Int, actual:Int);
   UNMATCHED_JSON_TYPE(stream:JsonStream, expected: Array<String>);
+  NO_DESERIALIZER_FOR_TYPE(fullyTypeName:String);
 }
 
 #if macro
@@ -1076,7 +1077,7 @@ class JsonDeserializerGenerator
           }
           else
           {
-            macro null;
+            macro throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.NO_DESERIALIZER_FOR_TYPE($key);
           }
         if (contextBuilder == null)
         {
