@@ -18,6 +18,7 @@
  */
 
 package com.qifun.jsonStream.crossPlatformTypes;
+import haxe.Int64;
 
 #if (scala && java)
 typedef StmNativeRef<A> = scala.concurrent.stm.Ref<A>;
@@ -27,6 +28,7 @@ typedef StmNativeRef<A> = A;
 typedef StmNativeRef<A> = A;
 #end
 
+@:nativeGen
 abstract StmRef<A>(StmNativeRef<A>)
 {
   public var underlying(get, never):StmNativeRef<A>;
@@ -43,6 +45,15 @@ abstract StmRef<A>(StmNativeRef<A>)
   }
 
   @:from public static inline function makeInt(value:Int):StmRef<Int> return
+  {
+    #if (scala && java)
+      new StmRef(scala.concurrent.stm.Ref.Ref_.MODULE_.apply(value));
+    #else
+      new StmRef(value);
+    #end
+  }
+
+  @:from public static inline function makeInt64(value:Int64):StmRef<Int64> return
   {
     #if (scala && java)
       new StmRef(scala.concurrent.stm.Ref.Ref_.MODULE_.apply(value));
