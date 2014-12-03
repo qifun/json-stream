@@ -131,6 +131,163 @@ class OutgoingProxyFactory
     {
       var pack = Context.getLocalModule().split(".");
       pack[pack.length - 1] = "outgoingProxies_" + pack[pack.length - 1];
+
+      function proxyMethod(
+        field:ClassField,
+        methodKind:MethodKind,
+        args:Array<{ name : String, opt : Bool, t : Type }>,
+        responseType:Null<Type>):Field return
+      {
+        var complexResponseType = responseType == null ? null : TypeTools.toComplexType(responseType);
+        var methodName = field.name;
+        var numRequestArguments = args.length;
+        var methodParameterDeclarations:Array<TypeParamDecl> =
+        [
+          for (p in field.params)
+          {
+            name: p.name,
+            // TODO: Constraits
+          }
+        ];
+        var allParameterDeclarations = typeParameterDeclarations.concat(methodParameterDeclarations);
+        var requestYieldExprs =
+        [
+          for (i in 0...numRequestArguments)
+          {
+            var requestType = args[i].t;
+            var complexRequestType = TypeTools.toComplexType(requestType);
+            var requestName = "request" + i;
+            var serializeExpr =
+              JsonSerializerGenerator.resolvedSerialize(
+                complexRequestType,
+                macro $i{requestName},
+                allParameterDeclarations);
+            macro @await yield($serializeExpr);
+          }
+        ];
+        var requestBlock =
+        {
+          expr: EBlock(requestYieldExprs),
+          pos: Context.currentPos(),
+        }
+        var implementationArgs:Array<FunctionArg> =
+        [
+          for (i in 0...numRequestArguments)
+          {
+            var arg = args[i];
+            {
+              name: "request" + i,
+              type: TypeTools.toComplexType(arg.t),
+            }
+          }
+        ];
+        var methodBody =
+          if (complexResponseType == null)
+          {
+            macro return new com.qifun.jsonStream.rpc.Future.Future0(
+              function(responseHandler:Void->Void, catcher:Dynamic->Void):Void
+              {
+                this.outgoingRpc.apply(
+                  com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
+                    $v{methodName},
+                    com.qifun.jsonStream.JsonStream.ARRAY(
+                      new com.dongxiguo.continuation.utils.Generator(
+                        com.dongxiguo.continuation.Continuation.cpsFunction(
+                          function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<
+                            com.qifun.jsonStream.JsonStream>):Void
+                            $requestBlock)))),
+                  new com.qifun.jsonStream.rpc.JsonHandler(
+                    function(response:com.qifun.jsonStream.rpc.JsonHandler.JsonResponse):Void
+                    {
+                      switch (response)
+                      {
+                        case FAILURE(errorStream):
+                        {
+                          $localPrefix.handleError(catcher, errorStream);
+                        }
+                        case SUCCESS(stream):
+                        {
+                          switch (stream)
+                          {
+                            case com.qifun.jsonStream.JsonStream.NULL:
+                            {
+                              responseHandler();
+                            }
+                            default:
+                            {
+                              throw com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyError.UNMATCHED_JSON_TYPE(stream, ["NULL"]);
+                            }
+                          }
+                        }
+                      }
+                    }));
+              });
+          }
+          else
+          {
+            var deserializeExpr =
+              JsonDeserializerGenerator.resolvedDeserialize(
+                complexResponseType,
+                macro responseStream,
+                allParameterDeclarations);
+            macro return new com.qifun.jsonStream.rpc.Future.Future1<$complexResponseType>(
+              function(responseHandler:$complexResponseType->Void, catcher:Dynamic->Void):Void
+              {
+                this.outgoingRpc.apply(
+                  com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
+                    $v{methodName},
+                    com.qifun.jsonStream.JsonStream.ARRAY(
+                      new com.dongxiguo.continuation.utils.Generator(
+                        com.dongxiguo.continuation.Continuation.cpsFunction(
+                          function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction<
+                            com.qifun.jsonStream.JsonStream>):Void
+                            $requestBlock)))),
+                  new com.qifun.jsonStream.rpc.JsonHandler(
+                    function(response:com.qifun.jsonStream.rpc.JsonHandler.JsonResponse):Void
+                    {
+                      switch (response)
+                      {
+                        case FAILURE(errorStream):
+                        {
+                          $localPrefix.handleError(catcher, errorStream);
+                        }
+                        case SUCCESS(responseStream):
+                        {
+                          responseHandler($deserializeExpr);
+                        }
+                      }
+                    }));
+              });
+          }
+        //trace(ExprTools.toString(methodBody));
+        {
+          name: methodName,
+          pos: Context.currentPos(),
+          access: switch(methodKind)
+          {
+            case MethInline: [ APublic, AInline ];
+            case MethNormal: [ APublic ];
+            case MethDynamic: [ APublic, ADynamic ];
+            case _: throw "Unexpected MethodKind";
+          },
+          kind: FFun(
+            {
+              args: implementationArgs,
+              ret: null,
+              expr: methodBody,
+              params:
+              [
+                for (typeParameter in field.params)
+                {
+                  name: typeParameter.name,
+                  // TODO: constraits
+                }
+              ],
+            }),
+        };
+      }
+
+
       var fields:Array<Field> = [];
       for (field in serviceClassType.fields.get())
       {
@@ -140,121 +297,25 @@ class OutgoingProxyFactory
           case
           {
             kind: FMethod(methodKind),
-            type: TFun(args, Context.follow(_) => TAbstract(_, [ responseType ])),
+            type: TFun(args, Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.rpc.Future", name: "Future0"}, [ ])),
             name: fieldName,
           }:
           {
-            var complexResponseType = TypeTools.toComplexType(responseType);
-            var methodName = field.name;
-            var numRequestArguments = args.length;
-            var methodParameterDeclarations:Array<TypeParamDecl>  =
-            [
-              for (p in field.params)
-              {
-                name: p.name,
-                // TODO: Constraits
-              }
-            ];
-            var allParameterDeclarations = typeParameterDeclarations.concat(methodParameterDeclarations);
-            var requestYieldExprs =
-            [
-              for (i in 0...numRequestArguments)
-              {
-                var requestType = args[i].t;
-                var complexRequestType = TypeTools.toComplexType(requestType);
-                var requestName = "request" + i;
-                var serializeExpr =
-                  JsonSerializerGenerator.resolvedSerialize(
-                    complexRequestType,
-                    macro $i{requestName},
-                    allParameterDeclarations);
-                macro @await yield($serializeExpr);
-              }
-            ];
-            var requestBlock =
-            {
-              expr: EBlock(requestYieldExprs),
-              pos: Context.currentPos(),
-            }
-            var deserializeExpr =
-              JsonDeserializerGenerator.resolvedDeserialize(
-                complexResponseType,
-                macro responseStream,
-                allParameterDeclarations);
-            var implementationArgs:Array<FunctionArg> =
-            [
-              for (i in 0...numRequestArguments)
-              {
-                var arg = args[i];
-                {
-                  name: "request" + i,
-                  type: TypeTools.toComplexType(arg.t),
-                }
-              }
-            ];
-            var methodBody =
-              macro return new com.qifun.jsonStream.rpc.Future<$complexResponseType>(
-                function(responseHandler:$complexResponseType->Void, catcher:Dynamic->Void):Void
-                {
-                  this.outgoingRpc.apply(
-                    com.qifun.jsonStream.rpc.OutgoingProxyFactory.OutgoingProxyRuntime.object1(
-                      $v{methodName},
-                      com.qifun.jsonStream.JsonStream.ARRAY(
-                        new com.dongxiguo.continuation.utils.Generator(
-                          com.dongxiguo.continuation.Continuation.cpsFunction(
-                            function(yield:com.dongxiguo.continuation.utils.Generator.YieldFunction <
-                              com.qifun.jsonStream.JsonStream > ):Void
-                              $requestBlock)))),
-                    new com.qifun.jsonStream.rpc.JsonHandler(
-                      function(response:com.qifun.jsonStream.rpc.JsonHandler.JsonResponse):Void
-                      {
-                        switch (response)
-                        {
-                          case FAILURE(errorStream):
-                          {
-                            $localPrefix.handleError(catcher, errorStream);
-                          }
-                          case SUCCESS(responseStream):
-                          {
-                            responseHandler($deserializeExpr);
-                          }
-                        }
-                      }));
-                });
-            //trace(ExprTools.toString(methodBody));
-            fields.push(
-              {
-                name: fieldName,
-                pos: Context.currentPos(),
-                access: switch(methodKind)
-                {
-                  case MethInline: [ APublic, AInline ];
-                  case MethNormal: [ APublic ];
-                  case MethDynamic: [ APublic, ADynamic ];
-                  case _: throw "Unexpected MethodKind";
-                },
-                kind: FFun(
-                  {
-                    args: implementationArgs,
-                    ret: TPath(
-                      {
-                        pack: [ "com", "qifun", "jsonStream", "rpc" ],
-                        name: "Future",
-                        params: [ TPType(TypeTools.toComplexType(responseType)) ]
-                      }),
-                    expr: methodBody,
-                    params:
-                    [
-                      for (typeParameter in field.params)
-                      {
-                        name: typeParameter.name,
-                        // TODO: constraits
-                      }
-                    ],
-                  }),
-              });
+            fields.push(proxyMethod(field, methodKind, args, null));
           }
-          case _: throw "Expect method!";
+          case
+          {
+            kind: FMethod(methodKind),
+            type: TFun(args, Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.rpc.Future", name: "Future1"}, [ responseType ])),
+            name: fieldName,
+          }:
+          {
+            fields.push(proxyMethod(field, methodKind, args, responseType));
+          }
+          default:
+          {
+            throw "Expect method!" + field;
+          }
         }
       }
       var proxyDefinition =
@@ -367,4 +428,9 @@ class OutgoingProxyFactory
     fields;
   }
 
+}
+
+enum OutgoingProxyError
+{
+  UNMATCHED_JSON_TYPE(stream:JsonStream, expected: Array<String>);
 }

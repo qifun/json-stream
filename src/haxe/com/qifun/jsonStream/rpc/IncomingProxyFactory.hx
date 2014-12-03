@@ -117,16 +117,18 @@ class IncomingProxyFactory
     var cases:Array<Case> = [];
     for (field in serviceClassType.fields.get())
     {
-      switch (field)
+      function buildCase(methodKind:MethodKind, args:Array<{ name : String, opt : Bool, t : Type }>, awaitResultType:Null<Type>):Case return
       {
-        case { kind: FVar(_) | FMethod(MethMacro) }: continue;
-        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_, [ awaitResultType ])) }:
+        var methodName = field.name;
+        var numRequestArguments = args.length;
+        var declareResponseHandler = if (awaitResultType == null)
         {
-          var methodName = field.name;
-          var numRequestArguments = args.length;
-          var responseType = TypeTools.applyTypeParameters(awaitResultType, serviceClassType.params, serviceParameters);
-          var complexResponseType = TypeTools.toComplexType(responseType);
-          var declareResponseHandler =
+          macro function():Void responseHandler.onSuccess(com.qifun.jsonStream.JsonStream.NULL);
+        }
+        else
+        {
+          var responseType = awaitResultType == null ? null : TypeTools.applyTypeParameters(awaitResultType, serviceClassType.params, serviceParameters);
+          var complexResponseType = responseType == null ? null : TypeTools.toComplexType(responseType);
           {
             pos: Context.currentPos(),
             expr: EFunction(
@@ -145,92 +147,105 @@ class IncomingProxyFactory
                     response).pluginSerialize()),
               }),
           }
-          function parseRestRequest(readArray:Expr, argumentIndex:Int):Expr return
+        }
+
+        function parseRestRequest(readArray:Expr, argumentIndex:Int):Expr return
+        {
+          if (argumentIndex < numRequestArguments)
           {
-            if (argumentIndex < numRequestArguments)
+            var requestType = TypeTools.applyTypeParameters(
+              args[argumentIndex].t,
+              serviceClassType.params,
+              serviceParameters);
+            var complexRequestType = TypeTools.toComplexType(requestType);
+            var requestName = "request" + argumentIndex;
+            var next = parseRestRequest(readArray, argumentIndex + 1);
+            macro
             {
-              var requestType = TypeTools.applyTypeParameters(
-                args[argumentIndex].t,
-                serviceClassType.params,
-                serviceParameters);
-              var complexRequestType = TypeTools.toComplexType(requestType);
-              var requestName = "request" + argumentIndex;
-              var next = parseRestRequest(readArray, argumentIndex + 1);
-              macro
+              if ($readArray.hasNext())
               {
-                if ($readArray.hasNext())
-                {
-                  var elementStream = $readArray.next();
-                  var $requestName:$complexRequestType = new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$complexRequestType>(elementStream).pluginDeserialize();
-                  $next;
-                }
-                else
-                {
-                  throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.NOT_ENOUGH_FIELDS($readArray, $v{numRequestArguments}, $v{argumentIndex});
-                }
+                var elementStream = $readArray.next();
+                var $requestName:$complexRequestType = new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$complexRequestType>(elementStream).pluginDeserialize();
+                $next;
               }
-            }
-            else
-            {
-              var parameters =
-              [
-                for (i in 0...numRequestArguments)
-                {
-                  var requestName = "request" + i;
-                  macro $i{requestName};
-                }
-              ];
-              macro
+              else
               {
-                if ($readArray.hasNext())
-                {
-                  throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS($readArray, $v{numRequestArguments});
-                }
-                else
-                {
-                  serviceImplementation.$methodName($a{parameters}).start(
-                    $declareResponseHandler,
-                    function(errorResponse:Dynamic):Void
-                    {
-                      responseHandler.onFailure(com.qifun.jsonStream.JsonSerializer.serialize(errorResponse));
-                    });
-                }
+                throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.NOT_ENOUGH_FIELDS($readArray, $v{numRequestArguments}, $v{argumentIndex});
               }
             }
           }
-
-          var readIteratorExpr = parseRestRequest(macro readRequest, 0);
-          var readGeneratorExpr = parseRestRequest(macro readRequestGenerator, 0);
-          var parseRequestExpr =
-            withDefaultTypeParameters(
-              macro
+          else
+          {
+            var parameters =
+            [
+              for (i in 0...numRequestArguments)
               {
-                var readRequestGenerator = Std.instance(readRequest, (com.dongxiguo.continuation.utils.Generator:Class<com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream>>));
-                if (readRequestGenerator != null)
-                {
-                  $readGeneratorExpr;
-                }
-                else
-                {
-                  $readIteratorExpr;
-                }
-              },
-              field.params);
-          cases.push(
-            {
-              values: [ macro $v{methodName} ],
-              expr: macro switch($parameters)
-              {
-                case com.qifun.jsonStream.JsonStream.ARRAY(readRequest):
-                {
-                  $parseRequestExpr;
-                }
-                case _:
-                {
-                  throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(request, [ "ARRAY" ]);
-                }
+                var requestName = "request" + i;
+                macro $i{requestName};
               }
-            });
+            ];
+            macro
+            {
+              if ($readArray.hasNext())
+              {
+                throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS($readArray, $v{numRequestArguments});
+              }
+              else
+              {
+                serviceImplementation.$methodName($a{parameters}).start(
+                  $declareResponseHandler,
+                  function(errorResponse:Dynamic):Void
+                  {
+                    responseHandler.onFailure(com.qifun.jsonStream.JsonSerializer.serialize(errorResponse));
+                  });
+              }
+            }
+          }
+        }
+
+        var readIteratorExpr = parseRestRequest(macro readRequest, 0);
+        var readGeneratorExpr = parseRestRequest(macro readRequestGenerator, 0);
+        var parseRequestExpr =
+          withDefaultTypeParameters(
+            macro
+            {
+              var readRequestGenerator = Std.instance(readRequest, (com.dongxiguo.continuation.utils.Generator:Class<com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream>>));
+              if (readRequestGenerator != null)
+              {
+                $readGeneratorExpr;
+              }
+              else
+              {
+                $readIteratorExpr;
+              }
+            },
+            field.params);
+
+        {
+          values: [ macro $v{methodName} ],
+          expr: macro switch($parameters)
+          {
+            case com.qifun.jsonStream.JsonStream.ARRAY(readRequest):
+            {
+              $parseRequestExpr;
+            }
+            case _:
+            {
+              throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(request, [ "ARRAY" ]);
+            }
+          }
+        };
+      };
+      switch (field)
+      {
+        case { kind: FVar(_) | FMethod(MethMacro) }: continue;
+        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.rpc.Future", name: "Future0"}, [ ])) } :
+        {
+          cases.push(buildCase(methodKind, args, null));
+        }
+        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.rpc.Future", name: "Future1"}, [ awaitResultType ])) }:
+        {
+          cases.push(buildCase(methodKind, args, awaitResultType));
         }
         case _: throw "Expect method!";
       }

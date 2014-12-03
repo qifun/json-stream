@@ -42,6 +42,8 @@ class Int64SerializerPlugin
     d;
     #end
   }
+
+  @:noDynamicSerialize
   /* inline */ // 如果加入inline，会导致Java平台编译错误
   public static function pluginSerialize(self:JsonSerializerPluginData<Int64>):JsonStream return
   {
@@ -206,7 +208,7 @@ class StringMapSerializerPlugin
   @:dox(hide)
   @:noUsing
   public static function serializeForElement<Value>(
-    data:JsonSerializerPluginData<StringMap<Value>>, 
+    data:JsonSerializerPluginData<StringMap<Value>>,
     ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
   {
     if (data == null)
@@ -231,7 +233,7 @@ class StringMapSerializerPlugin
       })));
     }
   }
-  
+
   macro public static function pluginSerialize<Value>(self:ExprOf<JsonSerializerPluginData<StringMap<Value>>>):ExprOf<JsonStream> return
   {
     macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.StringMapSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());
@@ -245,7 +247,7 @@ class IntMapSerializerPlugin
   @:dox(hide)
   @:noUsing
   public static function serializeForElement<Value>(
-    data:JsonSerializerPluginData<IntMap<Value>>, 
+    data:JsonSerializerPluginData<IntMap<Value>>,
     ValueSerializeFunction:JsonSerializerPluginData<Value>->JsonStream):JsonStream return
   {
     if (data == null)
@@ -270,7 +272,7 @@ class IntMapSerializerPlugin
       })));
     }
   }
-  
+
   macro public static function pluginSerialize<Value>(self:ExprOf<JsonSerializerPluginData<IntMap<Value>>>):ExprOf<JsonStream> return
   {
     macro com.qifun.jsonStream.serializerPlugin.PrimitiveSerializerPlugins.IntMapSerializerPlugin.serializeForElement($self, function(subdata) return subdata.pluginSerialize());

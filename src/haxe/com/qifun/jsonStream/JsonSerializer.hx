@@ -322,7 +322,7 @@ class JsonSerializerGenerator
             var c = newCase(
               dataType,
               macro ($resolvedTemporaryFunction(data)));
-            
+
             if (c != null)
             {
               dynamicCases.push(c);
@@ -734,7 +734,7 @@ class JsonSerializerGenerator
           buildingFields.push(
             {
               name: methodName,
-              
+
               pos: Context.currentPos(),
               meta: [ { name: ":noUsing", pos: Context.currentPos(), } ],
               access: [ APublic, AStatic ],

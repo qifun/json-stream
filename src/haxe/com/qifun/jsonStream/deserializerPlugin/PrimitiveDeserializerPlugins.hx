@@ -345,12 +345,12 @@ class VectorDeserializerPlugin
 @:final
 class StringMapDeserializerPlugin
 {
- 
+
   @:noUsing
   @:dox(hide)
-  public static function deserializeForElement<Value>(self:JsonDeserializerPluginStream<StringMap<Value>>, 
+  public static function deserializeForElement<Value>(self:JsonDeserializerPluginStream<StringMap<Value>>,
     valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
-    Null<StringMap<Value>> return  
+    Null<StringMap<Value>> return
   {
     switch (self.underlying)
     {
@@ -361,7 +361,7 @@ class StringMapDeserializerPlugin
         if (generator != null)
         {
           while(generator.hasNext())
-          {            
+          {
             switch (generator.next())
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
@@ -453,12 +453,12 @@ class StringMapDeserializerPlugin
 @:final
 class IntMapDeserializerPlugin
 {
- 
+
   @:noUsing
   @:dox(hide)
-  public static function deserializeForElement<Value>(self:JsonDeserializerPluginStream<IntMap<Value>>, 
+  public static function deserializeForElement<Value>(self:JsonDeserializerPluginStream<IntMap<Value>>,
     valueDeserializeFunction:JsonDeserializerPluginStream<Value>->Value):
-    Null<IntMap<Value>> return  
+    Null<IntMap<Value>> return
   {
     switch (self.underlying)
     {
@@ -469,7 +469,7 @@ class IntMapDeserializerPlugin
           if (generator != null)
           {
             while(generator.hasNext())
-            {            
+            {
             switch (generator.next())
             {
               case com.qifun.jsonStream.JsonStream.ARRAY(pairIterator):
