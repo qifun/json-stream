@@ -33,29 +33,30 @@ typedef Catcher = Dynamic->Void;
 
   @param Handler 任务完成时调用的回调函数类型。
 **/
-#if (cs && unity)
+#if cs
 
-
-abstract Future0(dotnet.system.Action2<cs.system.Action_0, cs.system.Action_1<Dynamic>>)
+@:dox(hide)
+abstract Future0(dotnet.system.Action2<dotnet.system.Action, cs.system.Action_1<Dynamic>>)
 {
 
   public function new(startFunction:(Void->Void)->Catcher->Void):Future0
   {
     this = cast untyped __delegate__(
-      function(handler:cs.system.Action_0, catcher:cs.system.Action_1<Dynamic>):Void
+      function(handler:dotnet.system.Action, catcher:cs.system.Action_1<Dynamic>):Void
         startFunction(
           function () handler.Invoke(),
           function (e:Dynamic) catcher.Invoke(e)));
   }
 
-  public static function start(completeHandler:Void->Void, errorHandler:Catcher):Void
+  public function start(completeHandler:Void->Void, errorHandler:Catcher):Void
   {
-    this.Invoke(cs.system.Action_0.FromHaxeFunction(function()completeHandler()), cs.system.Action_1.FromHaxeFunction(function(e:Dynamic)errorHandler(e)));
+    this.Invoke(cast untyped __delegate__(function()completeHandler()), cs.system.Action_1.FromHaxeFunction(function(e:Dynamic)errorHandler(e)));
   }
 
 }
 
-abstract Future1<AwaitResult>(IFuture1<dotnet.system.Action2<cs.system.Action_1<AwaitResult>, cs.system.Action_1<Dynamic>>>)
+@:dox(hide)
+abstract Future1<AwaitResult>(dotnet.system.Action2<cs.system.Action_1<AwaitResult>, cs.system.Action_1<Dynamic>>)
 {
 
   public inline function new(startFunction:(AwaitResult->Void)->Catcher->Void)
@@ -67,14 +68,15 @@ abstract Future1<AwaitResult>(IFuture1<dotnet.system.Action2<cs.system.Action_1<
           function (e:Dynamic) catcher.Invoke(e)));
   }
 
-  public static function start(completeHandler:AwaitableResult->Void, errorHandler:Catcher):Void
+  public function start(completeHandler:AwaitResult->Void, errorHandler:Catcher):Void
   {
-    this.Invoke(cs.system.Action_1.FromHaxeFunction(function(r:AwaitableResult)completeHandler(r)), cs.system.Action_1.FromHaxeFunction(function(e:Dynamic)errorHandler(e)));
+    this.Invoke(cs.system.Action_1.FromHaxeFunction(function(r)completeHandler(r)), cs.system.Action_1.FromHaxeFunction(function(e:Dynamic)errorHandler(e)));
   }
 }
 
 #else
 
+@:dox(hide)
 abstract Future0(IFuture0)
 {
 
@@ -90,6 +92,7 @@ abstract Future0(IFuture0)
 
 }
 
+@:dox(hide)
 abstract Future1<AwaitResult>(IFuture1<AwaitResult>)
 {
 
@@ -98,7 +101,7 @@ abstract Future1<AwaitResult>(IFuture1<AwaitResult>)
     this = new FunctionFuture1(startFunction);
   }
 
-  public function start<AwaitResult>(completeHandler:AwaitResult->Void, errorHandler:Catcher):Void
+  public function start(completeHandler:AwaitResult->Void, errorHandler:Catcher):Void
   {
     this.start(new FunctionCompleteHandler1<AwaitResult>(completeHandler, errorHandler));
   }
@@ -233,6 +236,7 @@ class Future<AwaitResult>
 {
 }
 
+@:dox(hide)
 class FutureBuilder
 {
   macro public static function build():ComplexType return

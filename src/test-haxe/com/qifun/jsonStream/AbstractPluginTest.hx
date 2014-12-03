@@ -94,8 +94,8 @@ class AbstractPluginTest extends JsonTestCase
       mapBuilder._plus_eq(new scala.Tuple2(25, 625));
       mapBuilder._plus_eq(new scala.Tuple2(256, 65536));
       o.map = new com.qifun.jsonStream.crossPlatformTypes.CrossMap(mapBuilder.result());
-      var jsonStream = JsonSerializer.serialize(o);
     #end
+    var jsonStream = JsonSerializer.serialize(o);
 
     assertDeepEquals(["1", "1", "2", "3", "5"], JsonDeserializer.deserializeRaw(jsonStream).underlying.list);
   }
