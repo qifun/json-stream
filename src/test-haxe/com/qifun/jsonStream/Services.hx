@@ -36,6 +36,8 @@ interface IRpc2
 interface VoidInterface
 {
 
-  public function voidMethod():Future<Void>;
+  public function voidFutureMethod():Future<Void>;
+
+  public function voidMethod():Void;
 
 }

@@ -108,6 +108,131 @@ class IncomingProxyFactory
     }
   }
 
+  private static function buildVoidSwitchExprForService(
+    serviceClassType:ClassType,
+    serviceParameters,
+    rpcMethodName: ExprOf<String>,
+    parameters:ExprOf<JsonStream>):Expr
+  {
+    var cases:Array<Case> = [];
+    for (field in serviceClassType.fields.get())
+    {
+      function buildCase(methodKind:MethodKind, args:Array<{ name : String, opt : Bool, t : Type }>):Case return
+      {
+        var methodName = field.name;
+        var numRequestArguments = args.length;
+
+        function parseRestRequest(readArray:Expr, argumentIndex:Int):Expr return
+        {
+          if (argumentIndex < numRequestArguments)
+          {
+            var requestType = TypeTools.applyTypeParameters(
+              args[argumentIndex].t,
+              serviceClassType.params,
+              serviceParameters);
+            var complexRequestType = TypeTools.toComplexType(requestType);
+            var requestName = "request" + argumentIndex;
+            var next = parseRestRequest(readArray, argumentIndex + 1);
+            macro
+            {
+              if ($readArray.hasNext())
+              {
+                var elementStream = $readArray.next();
+                var $requestName:$complexRequestType = new com.qifun.jsonStream.JsonDeserializer.JsonDeserializerPluginStream<$complexRequestType>(elementStream).pluginDeserialize();
+                $next;
+              }
+              else
+              {
+                throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.NOT_ENOUGH_FIELDS($readArray, $v{numRequestArguments}, $v{argumentIndex});
+              }
+            }
+          }
+          else
+          {
+            var parameters =
+            [
+              for (i in 0...numRequestArguments)
+              {
+                var requestName = "request" + i;
+                macro $i{requestName};
+              }
+            ];
+            macro
+            {
+              if ($readArray.hasNext())
+              {
+                throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.TOO_MANY_FIELDS($readArray, $v{numRequestArguments});
+              }
+              else
+              {
+                serviceImplementation.$methodName($a{parameters});
+              }
+            }
+          }
+        }
+
+        var readIteratorExpr = parseRestRequest(macro readRequest, 0);
+        var readGeneratorExpr = parseRestRequest(macro readRequestGenerator, 0);
+        var parseRequestExpr =
+          withDefaultTypeParameters(
+            macro
+            {
+              var readRequestGenerator = Std.instance(readRequest, (com.dongxiguo.continuation.utils.Generator:Class<com.dongxiguo.continuation.utils.Generator<com.qifun.jsonStream.JsonStream>>));
+              if (readRequestGenerator != null)
+              {
+                $readGeneratorExpr;
+              }
+              else
+              {
+                $readIteratorExpr;
+              }
+            },
+            field.params);
+
+        {
+          values: [ macro $v{methodName} ],
+          expr: macro switch($parameters)
+          {
+            case com.qifun.jsonStream.JsonStream.ARRAY(readRequest):
+            {
+              $parseRequestExpr;
+            }
+            case _:
+            {
+              throw com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(request, [ "ARRAY" ]);
+            }
+          }
+        };
+      };
+      switch (field)
+      {
+        case { kind: FVar(_) | FMethod(MethMacro) }: continue;
+        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.rpc.Future", name: "Future0"}, [ ])) } :
+        {
+          continue;
+        }
+        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_.get() => { module: "com.qifun.jsonStream.rpc.Future", name: "Future1"}, [ awaitResultType ])) }:
+        {
+          continue;
+        }
+        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_.get() => { pack: [], name: "Void"}, [ ])) } :
+        {
+          cases.push(buildCase(methodKind, args));
+        }
+        case _: throw "Expect method!";
+      }
+    }
+    //trace(ExprTools.toString({
+      //expr: ESwitch(rpcMethodName, cases, null),
+      //pos: Context.currentPos(),
+    //}));
+    return
+    {
+      expr: ESwitch(rpcMethodName, cases, macro throw com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyError.UNKNOWN_RPC_METHOD(rpcMethodName)),
+      pos: Context.currentPos(),
+    };
+  }
+
   private static function buildSwitchExprForService(
     serviceClassType:ClassType,
     serviceParameters,
@@ -247,6 +372,10 @@ class IncomingProxyFactory
         {
           cases.push(buildCase(methodKind, args, awaitResultType));
         }
+        case { kind: FMethod(methodKind), type: TFun(args, Context.follow(_) => TAbstract(_.get() => { pack: [], name: "Void"}, [ ])) } :
+        {
+          continue;
+        }
         case _: throw "Expect method!";
       }
     }
@@ -288,8 +417,34 @@ class IncomingProxyFactory
       var parameterTypes = [ for (p in serviceClassType.params) p.t ];
       var switchRpcMethodName =
         buildSwitchExprForService(serviceClassType, parameterTypes, macro rpcMethodName, macro parameters);
+      var switchVoidMethodName =
+        buildVoidSwitchExprForService(serviceClassType, parameterTypes, macro rpcMethodName, macro parameters);
       macro return new com.qifun.jsonStream.rpc.IncomingProxy(
-        function (
+        function(request:com.qifun.jsonStream.JsonStream):Void
+        {
+          switch (request)
+          {
+            case com.qifun.jsonStream.JsonStream.OBJECT(pairs):
+            {
+              com.qifun.jsonStream.rpc.IncomingProxyFactory.IncomingProxyRuntime.optimizedExtract1(
+                pairs,
+                function(pair:com.qifun.jsonStream.JsonStream.JsonStreamPair):Void
+                {
+                  var rpcMethodName = pair.key;
+                  var parameters = pair.value;
+                  $switchVoidMethodName;
+                });
+            }
+            case _:
+            {
+              com.qifun.jsonStream.JsonDeserializer.JsonDeserializerError.UNMATCHED_JSON_TYPE(
+                request,
+                [ "OBJECT" ]);
+            }
+          }
+
+        },
+        function(
           request:com.qifun.jsonStream.JsonStream,
           responseHandler:com.qifun.jsonStream.rpc.IJsonService.IJsonResponseHandler):Void
         {
