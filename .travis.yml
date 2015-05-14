@@ -37,6 +37,6 @@ before_install:
  - if [[ "$SBT_TEST_CONFIGURATION" = "csharp-test" ]]; then travis_retry haxelib git HUGS https://github.com/qifun/HUGS.git; fi
  - travis_retry haxelib install continuation
  - travis_retry haxelib git hxparse https://github.com/Simn/hxparse.git development src
- - travis_retry haxelib git haxeparser https://github.com/qifun/haxeparser qifun.git src
+ - travis_retry haxelib git haxeparser https://github.com/qifun/haxeparser.git qifun src
 
 script: sbt ++$TRAVIS_SCALA_VERSION $SBT_TEST_CONFIGURATION:test
