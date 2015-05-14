@@ -37,7 +37,7 @@ class Int64SerializerPlugin
   private static function toInt64(d:Dynamic):Int64 return
   {
     #if java
-    untyped __java__("(long)d");
+    untyped __java__("((java.lang.Number)d).longValue");
     #else
     d;
     #end
