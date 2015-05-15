@@ -34,7 +34,7 @@ abstract BsonInput(ReadableBuffer)
 
   public inline function readByte():Int
   {
-    var byte = new java.lang.Byte(this.readByte());
+    var byte = java.lang.Byte.valueOf(this.readByte());
     return byte.intValue();
   }
   
