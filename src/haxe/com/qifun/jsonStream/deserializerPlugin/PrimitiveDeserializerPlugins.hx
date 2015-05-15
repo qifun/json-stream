@@ -389,6 +389,14 @@ class VectorDeserializerPlugin
   @:overload
   @:noUsing
   @:dox(hide)
+  public static function setVectorElement(v:Vector<java.types.Char16>, index:Int, value:java.types.Char16)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
   public static function setVectorElement(v:Vector<java.types.Int8>, index:Int, value:java.types.Int8)
   {
     v[index] = value;
