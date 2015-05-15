@@ -350,12 +350,75 @@ class VectorDeserializerPlugin
     v;
   }
 
+  #if java
+  @:overload
+  #end
   @:noUsing
   @:dox(hide)
   public static function setVectorElement<Element>(v:Vector<Element>, index:Int, value:Element)
   {
     v[index] = value;
   }
+
+  #if java
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Bool>, index:Int, value:Bool)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Float>, index:Int, value:Float)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Single>, index:Int, value:Single)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<java.types.Int8>, index:Int, value:java.types.Int8)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<java.types.Int16>, index:Int, value:java.types.Int16)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Int>, index:Int, value:Int)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<haxe.Int64>, index:Int, value:haxe.Int64)
+  {
+    v[index] = value;
+  }
+
+  #end
 
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<Vector<Element>>>):ExprOf<Null<Vector<Element>>> return
   {
