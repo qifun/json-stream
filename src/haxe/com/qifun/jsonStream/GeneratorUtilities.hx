@@ -33,7 +33,11 @@ class GeneratorUtilities
 {
   private static function jsonFieldName(field:ClassField):String return
   {
+    #if haxe_320
     switch (field.meta.extract(":jsonFieldName"))
+    #else
+    switch (field.meta.get().filter(function (entry) return entry.name == ":jsonFieldName"))
+    #end
     {
       case []:
       {
