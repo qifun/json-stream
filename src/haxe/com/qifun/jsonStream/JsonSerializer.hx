@@ -637,11 +637,12 @@ class JsonSerializerGenerator
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
           {
             var fieldName = field.name;
+            var jsonFieldName = GeneratorUtilities.jsonFieldName(field);
             var s = resolvedSerialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro data.$fieldName, params);
             blockExprs.push(
               macro if (com.qifun.jsonStream.JsonSerializer.JsonSerializerRuntime.isNotNull(data.$fieldName))
               {
-                @await yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{fieldName}, $s));
+                @await yield(new com.qifun.jsonStream.JsonStream.JsonStreamPair($v{jsonFieldName}, $s));
               });
           }
           case _:

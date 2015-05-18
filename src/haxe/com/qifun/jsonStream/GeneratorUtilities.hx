@@ -31,6 +31,35 @@ using Lambda;
 @:allow(com.qifun.jsonStream)
 class GeneratorUtilities
 {
+  private static function jsonFieldName(field:ClassField):String return
+  {
+    switch (field.meta.extract(":jsonFieldName"))
+    {
+      case []:
+      {
+        field.name;
+      }
+      case [ jsonFieldNameEntry ]:
+      {
+        switch (jsonFieldNameEntry.params)
+        {
+          case [ { expr:EConst(CString(value))} ]:
+          {
+            value;
+          }
+          default:
+          {
+            Context.error("Expect exactly one string literal parameter for @:jsonFieldName", Context.currentPos());
+          }
+        }
+      }
+      default:
+      {
+        Context.error("Duplicated metadata @:jsonFieldName", Context.currentPos());
+      }
+    }
+  }
+
   private static function hasConstructor(classType:ClassType):Bool return
   {
     var constructor = classType.constructor;

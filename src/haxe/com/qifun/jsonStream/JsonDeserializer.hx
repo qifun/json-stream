@@ -699,10 +699,11 @@ class JsonDeserializerGenerator
                 {
                   // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
                   var fieldName = field.name;
+                  var jsonFieldName = GeneratorUtilities.jsonFieldName(field);
                   var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
                   cases.push(
                     {
-                      values: [ macro $v{fieldName} ],
+                      values: [ macro $v{jsonFieldName} ],
                       guard: null,
                       expr: macro result.$fieldName = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.toInt64($d),
                     });
@@ -710,10 +711,11 @@ class JsonDeserializerGenerator
                 case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
                 {
                   var fieldName = field.name;
+                  var jsonFieldName = GeneratorUtilities.jsonFieldName(field);
                   var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
                   cases.push(
                     {
-                      values: [ macro $v{fieldName} ],
+                      values: [ macro $v{jsonFieldName} ],
                       guard: null,
                       expr: macro result.$fieldName = $d,
                     });
