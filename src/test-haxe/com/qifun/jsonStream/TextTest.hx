@@ -31,6 +31,13 @@ import haxe.io.StringInput;
 class TextTest extends JsonTestCase
 {
 
+  public function testNumberLiteral()
+  {
+    var text = "{\"numberField\":-33.799232482910156}";
+    var nativeData2:Dynamic = JsonDeserializer.deserializeRaw(TextParser.parseString(text));
+    assertEquals(-33.799232482910156, nativeData2.numberField);
+  }
+
   public function testParser()
   {
     var nativeData =
