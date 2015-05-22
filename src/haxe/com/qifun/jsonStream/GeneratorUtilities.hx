@@ -29,58 +29,53 @@ using Lambda;
 
 @:dox(hide)
 @:allow(com.qifun.jsonStream)
-class GeneratorUtilities
-{
+class GeneratorUtilities {
   private static function jsonFieldName(field:ClassField):String return
   {
-    #if haxe_320
+#if haxe_320
     switch (field.meta.extract(":jsonFieldName"))
-    #else
-    switch (field.meta.get().filter(function (entry) return entry.name == ":jsonFieldName"))
-    #end
+#else
+    switch (field.meta.get().filter(function(entry) return entry.name == ":jsonFieldName"))
+#end
     {
       case []:
-      {
-        field.name;
-      }
-      case [ jsonFieldNameEntry ]:
-      {
-        switch (jsonFieldNameEntry.params)
         {
-          case [ { expr:EConst(CString(value))} ]:
+          field.name;
+        }
+      case [ jsonFieldNameEntry ]:
+        {
+          switch (jsonFieldNameEntry.params)
           {
-            value;
-          }
-          default:
-          {
-            Context.error("Expect exactly one string literal parameter for @:jsonFieldName", Context.currentPos());
+            case [ { expr:EConst(CString(value))} ]:
+              {
+                value;
+              }
+            default:
+              {
+                Context.error("Expect exactly one string literal parameter for @:jsonFieldName", Context.currentPos());
+              }
           }
         }
-      }
       default:
-      {
-        Context.error("Duplicated metadata @:jsonFieldName", Context.currentPos());
-      }
+        {
+          Context.error("Duplicated metadata @:jsonFieldName", Context.currentPos());
+        }
     }
   }
 
   private static function hasConstructor(classType:ClassType):Bool return
   {
     var constructor = classType.constructor;
-    if (constructor == null)
-    {
+    if (constructor == null) {
       var superClass = classType.superClass;
-      if (superClass == null)
-      {
+      if (superClass == null) {
         false;
       }
-      else
-      {
+      else {
         hasConstructor(classType.superClass.t.get());
       }
     }
-    else
-    {
+    else {
       true;
     }
   }
@@ -98,10 +93,9 @@ class GeneratorUtilities
 
   private static function get_lowPriorityDynamicType():Type return
   {
-    if (_lowPriorityDynamicType == null)
-    {
+    if (_lowPriorityDynamicType == null) {
       _lowPriorityDynamicType =
-        Context.getType("com.qifun.jsonStream.LowPriorityDynamic");
+      Context.getType("com.qifun.jsonStream.LowPriorityDynamic");
     }
     _lowPriorityDynamicType;
   }
@@ -112,10 +106,9 @@ class GeneratorUtilities
 
   private static function get_hasUnknownTypeFieldType():Type return
   {
-    if (_hasUnknownTypeFieldType == null)
-    {
+    if (_hasUnknownTypeFieldType == null) {
       _hasUnknownTypeFieldType =
-        Context.getType("com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeField");
+      Context.getType("com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeField");
     }
     _hasUnknownTypeFieldType;
   }
@@ -126,29 +119,26 @@ class GeneratorUtilities
 
   private static function get_hasUnknownTypeSetterType():Type return
   {
-    if (_hasUnknownTypeSetterType == null)
-    {
+    if (_hasUnknownTypeSetterType == null) {
       _hasUnknownTypeSetterType =
-        Context.getType("com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeSetter");
+      Context.getType("com.qifun.jsonStream.unknown.UnknownType.HasUnknownTypeSetter");
     }
     _hasUnknownTypeSetterType;
   }
 
   private static var VOID_COMPLEX_TYPE(default, never) =
-    TPath({ name: "Void", pack: []});
+  TPath({ name: "Void", pack: []});
 
   private static var DYNAMIC_COMPLEX_TYPE(default, never) =
-    TPath({ name: "Dynamic", pack: []});
+  TPath({ name: "Dynamic", pack: []});
 
   private static function getFullName(module:String, name:String):String return
   {
     var lastDot = module.lastIndexOf(".");
-    if (lastDot == -1)
-    {
+    if (lastDot == -1) {
       name;
     }
-    else
-    {
+    else {
       '${module.substring(0, lastDot)}.$name';
     }
   }
