@@ -1343,14 +1343,36 @@ class JsonDeserializerRuntime
     switch (stream)
     {
       case OBJECT(pairs):
-        for (pair in pairs)
+        var generator = Std.instance(pairs, (Generator:Class<Generator<JsonStream.JsonStreamPair>>));
+        if (generator != null)
         {
-          skip(pair.value);
+          for (pair in generator)
+          {
+            skip(pair.value);
+          }
+        }
+        else
+        {
+          for (pair in pairs)
+          {
+            skip(pair.value);
+          }
         }
       case ARRAY(elements):
-        for (element in elements)
+        var generator = Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
         {
-          skip(element);
+          for (element in generator)
+          {
+            skip(element);
+          }
+        }
+        else
+        {
+          for (element in elements)
+          {
+            skip(element);
+          }
         }
       default:
         // Do nothing
