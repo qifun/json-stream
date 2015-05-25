@@ -436,8 +436,7 @@ class JsonDeserializerGenerator
                   parameterCases,
                   if (unknownFieldMapName == null)
                   {
-                    expr: EBlock([]),
-                    pos: Context.currentPos(),
+                    macro com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(parameterPair.value);
                   }
                   else
                   {
@@ -508,7 +507,7 @@ class JsonDeserializerGenerator
         cases,
         if (unknownEnumValueConstructor == null)
         {
-          macro null;
+          macro com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(parameterPair.value);
         }
         else
         {
@@ -758,7 +757,7 @@ class JsonDeserializerGenerator
               }
               else
               {
-                macro null;
+                macro com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(pair.value);
               }),
           }
 
@@ -1337,6 +1336,48 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 @:final
 class JsonDeserializerRuntime
 {
+
+  @:noUsing
+  public static function skip(stream:JsonStream):Void
+  {
+    switch (stream)
+    {
+      case OBJECT(pairs):
+        var generator = Std.instance(pairs, (Generator:Class<Generator<JsonStream.JsonStreamPair>>));
+        if (generator != null)
+        {
+          for (pair in generator)
+          {
+            skip(pair.value);
+          }
+        }
+        else
+        {
+          for (pair in pairs)
+          {
+            skip(pair.value);
+          }
+        }
+      case ARRAY(elements):
+        var generator = Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          for (element in generator)
+          {
+            skip(element);
+          }
+        }
+        else
+        {
+          for (element in elements)
+          {
+            skip(element);
+          }
+        }
+      default:
+        // Do nothing
+    }
+  }
 
   @:noUsing
   public static inline function toInt64(d:Dynamic):Int64 return
