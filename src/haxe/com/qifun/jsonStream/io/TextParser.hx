@@ -406,6 +406,27 @@ class TextParser
     return parse(new StringSource(string), new TextParseContext());
   }
 
+  public static function parseIterator(iterator:Iterator<Int>):JsonStream
+  {
+    #if (java && scala)
+    var scalaIterator:scala.collection.Iterator<Int> = Std.instance(iterator, scala.collection.Iterator);
+    if (scalaIterator != null) {
+      return parse(new GenericIteratorSource<scala.collection.Iterator<Int>>(scalaIterator), new TextParseContext());
+    }
+    #end
+    #if java
+    var javaIterator:java.util.Iterator<Int> = Std.instance(iterator, java.util.Iterator);
+    if (javaIterator != null) {
+      return parse(new GenericIteratorSource<java.util.Iterator<Int>>(javaIterator), new TextParseContext());
+    }
+    #end
+    var generator:Generator<Int> = Std.instance(iterator, Generator);
+    if (generator != null) {
+      return parse(new GenericIteratorSource<Generator<Int>>(generator), new TextParseContext());
+    }
+    return parse(new IteratorSource(iterator), new TextParseContext());
+  }
+
   public static function parseInput(input:Input):JsonStream
   {
     return parse(new InputSource(input), new TextParseContext());
@@ -452,6 +473,77 @@ class StringSource extends StringInput implements ISource
 }
 
 @:final
+class IteratorSource implements ISource
+{
+
+  var head:Int;
+
+  var tail:Iterator<Int>;
+
+  public function next():Void
+  {
+    if (tail.hasNext())
+    {
+      head = tail.next();
+    }
+    else
+    {
+      head = -1;
+    }
+  }
+
+  public function get_current():Int
+  {
+    return head;
+  }
+
+  public var current(get, never):Int;
+
+  public function new(iterator:Iterator<Int>)
+  {
+    tail = iterator;
+    next();
+  }
+
+}
+
+@:final
+@:generic
+class GenericIteratorSource<I:Iterator<Int>> implements ISource
+{
+
+  var head:Int;
+
+  var tail:I;
+
+  public function next():Void
+  {
+    if (tail.hasNext())
+    {
+      head = tail.next();
+    }
+    else
+    {
+      head = -1;
+    }
+  }
+
+  public function get_current():Int
+  {
+    return head;
+  }
+
+  public var current(get, never):Int;
+
+  public function new(iterator:I)
+  {
+    tail = iterator;
+    next();
+  }
+
+}
+
+@:final
 class InputSource implements ISource
 {
 
@@ -480,8 +572,8 @@ class InputSource implements ISource
 
   public function new(input:Input)
   {
-    head = input.readByte();
     tail = input;
+    next();
   }
 
 }
