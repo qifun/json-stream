@@ -13,8 +13,8 @@ jdk:
 
 env:
   matrix:
-    # The lastest Haxe
-    - SBT_TEST_CONFIGURATION=test HAXE_FILE=haxe_latest.tar.gz
+    # The lastest Haxe, disabled due to https://github.com/HaxeFoundation/haxe/issues/4235
+    # - SBT_TEST_CONFIGURATION=test HAXE_FILE=haxe_latest.tar.gz
     # Haxe 3.2.0
     - SBT_TEST_CONFIGURATION=test HAXE_FILE=haxe_2015-05-12_master_77d171b.tar.gz
     # Disable test cases for old Haxe version
