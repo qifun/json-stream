@@ -507,7 +507,7 @@ class JsonDeserializerGenerator
         cases,
         if (unknownEnumValueConstructor == null)
         {
-          macro com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(parameterPair.value);
+          macro com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(pair.value);
         }
         else
         {
