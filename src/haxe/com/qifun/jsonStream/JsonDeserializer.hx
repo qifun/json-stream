@@ -436,8 +436,7 @@ class JsonDeserializerGenerator
                   parameterCases,
                   if (unknownFieldMapName == null)
                   {
-                    expr: EBlock([]),
-                    pos: Context.currentPos(),
+                    macro com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(parameterPair.value);
                   }
                   else
                   {
@@ -508,7 +507,11 @@ class JsonDeserializerGenerator
         cases,
         if (unknownEnumValueConstructor == null)
         {
-          macro null;
+          macro
+          {
+            com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(pair.value);
+            null;
+          }
         }
         else
         {
@@ -699,10 +702,11 @@ class JsonDeserializerGenerator
                 {
                   // Workaround for https://github.com/HaxeFoundation/haxe/issues/3203
                   var fieldName = field.name;
+                  var jsonFieldName = GeneratorUtilities.jsonFieldName(field);
                   var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
                   cases.push(
                     {
-                      values: [ macro $v{fieldName} ],
+                      values: [ macro $v{jsonFieldName} ],
                       guard: null,
                       expr: macro result.$fieldName = com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.toInt64($d),
                     });
@@ -710,10 +714,11 @@ class JsonDeserializerGenerator
                 case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
                 {
                   var fieldName = field.name;
+                  var jsonFieldName = GeneratorUtilities.jsonFieldName(field);
                   var d = resolvedDeserialize(TypeTools.toComplexType(applyTypeParameters(field.type)), macro pair.value, params);
                   cases.push(
                     {
-                      values: [ macro $v{fieldName} ],
+                      values: [ macro $v{jsonFieldName} ],
                       guard: null,
                       expr: macro result.$fieldName = $d,
                     });
@@ -756,7 +761,7 @@ class JsonDeserializerGenerator
               }
               else
               {
-                macro null;
+                macro com.qifun.jsonStream.JsonDeserializer.JsonDeserializerRuntime.skip(pair.value);
               }),
           }
 
@@ -1335,6 +1340,48 @@ abstract JsonDeserializerPluginStream<ResultType>(JsonStream)
 @:final
 class JsonDeserializerRuntime
 {
+
+  @:noUsing
+  public static function skip(stream:JsonStream):Void
+  {
+    switch (stream)
+    {
+      case OBJECT(pairs):
+        var generator = Std.instance(pairs, (Generator:Class<Generator<JsonStream.JsonStreamPair>>));
+        if (generator != null)
+        {
+          for (pair in generator)
+          {
+            skip(pair.value);
+          }
+        }
+        else
+        {
+          for (pair in pairs)
+          {
+            skip(pair.value);
+          }
+        }
+      case ARRAY(elements):
+        var generator = Std.instance(elements, (Generator:Class<Generator<JsonStream>>));
+        if (generator != null)
+        {
+          for (element in generator)
+          {
+            skip(element);
+          }
+        }
+        else
+        {
+          for (element in elements)
+          {
+            skip(element);
+          }
+        }
+      default:
+        // Do nothing
+    }
+  }
 
   @:noUsing
   public static inline function toInt64(d:Dynamic):Int64 return

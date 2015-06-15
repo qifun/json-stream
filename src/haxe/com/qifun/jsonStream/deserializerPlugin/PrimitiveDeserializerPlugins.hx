@@ -308,6 +308,7 @@ class VectorDeserializerPlugin
         var generator = Std.instance(value, (Generator:Class<Generator<JsonStream>>));
         if (generator != null)
         {
+          // Don't use haxe.ds.Vector.fromArrayCopy because it will throw java.lang.ClassCastException: [Ljava.lang.Object; cannot be cast to [Ljava.lang.String;
           arrayToVector(
             [
               for (element in generator)
@@ -333,9 +334,106 @@ class VectorDeserializerPlugin
     }
   }
 
+  @:noUsing
+  @:dox(hide)
+  public static inline function arrayToVector<Element>(a:Array<Element>):Vector<Element> return
+  {
+    var v = new haxe.ds.Vector<Element>(a.length);
+    for (i in 0...a.length)
+    {
+      #if java
+        setVectorElement(v, i, a[i]);
+      #else
+        v[i] = a[i];
+      #end
+    }
+    v;
+  }
+
+  #if java
+  @:overload
+  #end
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement<Element>(v:Vector<Element>, index:Int, value:Element)
+  {
+    v[index] = value;
+  }
+
+  #if java
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Bool>, index:Int, value:Bool)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Float>, index:Int, value:Float)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Single>, index:Int, value:Single)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<java.types.Char16>, index:Int, value:java.types.Char16)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<java.types.Int8>, index:Int, value:java.types.Int8)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<java.types.Int16>, index:Int, value:java.types.Int16)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<Int>, index:Int, value:Int)
+  {
+    v[index] = value;
+  }
+
+  @:overload
+  @:noUsing
+  @:dox(hide)
+  public static function setVectorElement(v:Vector<haxe.Int64>, index:Int, value:haxe.Int64)
+  {
+    v[index] = value;
+  }
+
+  #end
+
   macro public static function pluginDeserialize<Element>(self:ExprOf<JsonDeserializerPluginStream<Vector<Element>>>):ExprOf<Null<Vector<Element>>> return
   {
-    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement($self, function(a) return { var v = new haxe.ds.Vector(a.length); for (i in 0...a.length) v[i] = a[i]; v; }, function(substream) return substream.pluginDeserialize());
+    macro com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.deserializeForElement(
+      $self,
+      function (a) return com.qifun.jsonStream.deserializerPlugin.PrimitiveDeserializerPlugins.VectorDeserializerPlugin.arrayToVector(a),
+      function(substream) return substream.pluginDeserialize());
   }
 }
 

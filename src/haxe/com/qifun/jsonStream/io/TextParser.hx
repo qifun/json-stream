@@ -127,109 +127,92 @@ class TextParser
     return buffer.getBytes().toString();
   }
 
-  static function parsePositiveInteger(source:ISource, context:TextParseContext):Float
+  static function readPositiveInteger(source:ISource, context:TextParseContext, buffer:BytesBuffer):Void
   {
     var digit = source.current;
     if (digit >= "0".code && digit <= "9".code)
     {
-      var result:Float = digit - "0".code;
+      buffer.addByte(digit);
       source.next();
       digit = source.current;
       while (digit >= "0".code && digit <= "9".code)
       {
-        result = result * 10 + (digit - "0".code);
+        buffer.addByte(digit);
         source.next();
         digit = source.current;
       }
-      return result;
     }
     else
     {
-      return throw TextParserError.ILLEGAL_NUMBER_FORMAT;
+      throw TextParserError.ILLEGAL_NUMBER_FORMAT;
     }
   }
 
-  static function parseExponent(source:ISource, context:TextParseContext, base:Float):Float
+  static function readExponent(source:ISource, context:TextParseContext, buffer:BytesBuffer):Void
   {
     switch(source.current)
     {
       case "E".code | "e".code:
       {
+        buffer.addByte("E".code);
         source.next();
-        switch (source.current)
+        var b = source.current;
+        switch (b)
         {
-          case "-".code:
+          case "-".code, "+".code:
+            buffer.addByte(b);
             source.next();
-            return base * Math.pow(10, -parsePositiveInteger(source, context));
-          case "+".code:
-            source.next();
-            return base * Math.pow(10, parsePositiveInteger(source, context));
+            readPositiveInteger(source, context, buffer);
           default:
-            return base * Math.pow(10, parsePositiveInteger(source, context));
+            readPositiveInteger(source, context, buffer);
         }
       }
       default:
       {
-        return base;
+        return;
       }
     }
   }
 
-  static function parseFraction(source:ISource, context:TextParseContext, base:Float):Float
+  static function readFraction(source:ISource, context:TextParseContext, buffer:BytesBuffer):Void
   {
     if (source.current == ".".code)
     {
+      buffer.addByte(".".code);
       source.next();
-      var digit = source.current;
-      if (digit >= "0".code && digit <= "9".code)
-      {
-        var factor = 0.1;
-        base += (digit - "0".code) * factor;
-        source.next();
-        digit = source.current;
-        while (digit >= "0".code && digit <= "9".code)
-        {
-          factor *= 0.1;
-          base += (digit - "0".code) * factor;
-          source.next();
-          digit = source.current;
-        }
-      }
-      else
-      {
-        return throw TextParserError.ILLEGAL_NUMBER_FORMAT;
-      }
+      readPositiveInteger(source, context, buffer);
     }
-    return parseExponent(source, context, base);
+    readExponent(source, context, buffer);
   }
 
-  static function parsePositiveNumberLiteral(source:ISource, context:TextParseContext):Float
+  static function readPositiveNumberLiteral(source:ISource, context:TextParseContext, buffer:BytesBuffer):Void
   {
     switch (source.current)
     {
       case "0".code:
       {
         // 整数部分是0，现在读取小数部分
+        buffer.addByte("0".code);
         source.next();
-        return parseFraction(source, context, 0);
+        readFraction(source, context, buffer);
       }
       case notZero if (notZero >= "1".code && notZero <= "9".code):
       {
-        var f:Float = notZero - "0".code;
+        buffer.addByte(notZero);
         source.next();
         var digit = source.current;
         while (digit >= "0".code && digit <= "9".code)
         {
-          f = f * 10 + (digit - "0".code);
+          buffer.addByte(digit);
           source.next();
           digit = source.current;
         }
         // 整数部分读完了，现在读取小数部分
-        return parseFraction(source, context, f);
+        readFraction(source, context, buffer);
       }
       default:
       {
-        return throw TextParserError.ILLEGAL_NUMBER_FORMAT;
+        throw TextParserError.ILLEGAL_NUMBER_FORMAT;
       }
     }
   }
@@ -360,10 +343,15 @@ class TextParser
       case "\"".code:
         return JsonStream.STRING(parseStringLiteral(source, context));
       case "-".code:
+        var buffer = new BytesBuffer();
+        buffer.addByte("-".code);
         source.next();
-        return JsonStream.NUMBER(-parsePositiveNumberLiteral(source, context));
+        readPositiveNumberLiteral(source, context, buffer);
+        return JsonStream.NUMBER(Std.parseFloat(buffer.getBytes().toString()));
       case digit if (digit >= "0".code && digit <= "9".code):
-        return JsonStream.NUMBER(parsePositiveNumberLiteral(source, context));
+        var buffer = new BytesBuffer();
+        readPositiveNumberLiteral(source, context, buffer);
+        return JsonStream.NUMBER(Std.parseFloat(buffer.getBytes().toString()));
       case "{".code:
         return JsonStream.OBJECT(parseObjectLiteral(source, context));
       case "[".code:
@@ -418,6 +406,27 @@ class TextParser
     return parse(new StringSource(string), new TextParseContext());
   }
 
+  public static function parseIterator(iterator:Iterator<Int>):JsonStream
+  {
+    #if (java && scala)
+    var scalaIterator:scala.collection.Iterator<Int> = Std.instance(iterator, scala.collection.Iterator);
+    if (scalaIterator != null) {
+      return parse(new GenericIteratorSource<scala.collection.Iterator<Int>>(scalaIterator), new TextParseContext());
+    }
+    #end
+    #if java
+    var javaIterator:java.util.Iterator<Int> = Std.instance(iterator, java.util.Iterator);
+    if (javaIterator != null) {
+      return parse(new GenericIteratorSource<java.util.Iterator<Int>>(javaIterator), new TextParseContext());
+    }
+    #end
+    var generator:Generator<Int> = Std.instance(iterator, Generator);
+    if (generator != null) {
+      return parse(new GenericIteratorSource<Generator<Int>>(generator), new TextParseContext());
+    }
+    return parse(new IteratorSource(iterator), new TextParseContext());
+  }
+
   public static function parseInput(input:Input):JsonStream
   {
     return parse(new InputSource(input), new TextParseContext());
@@ -464,6 +473,77 @@ class StringSource extends StringInput implements ISource
 }
 
 @:final
+class IteratorSource implements ISource
+{
+
+  var head:Int;
+
+  var tail:Iterator<Int>;
+
+  public function next():Void
+  {
+    if (tail.hasNext())
+    {
+      head = tail.next();
+    }
+    else
+    {
+      head = -1;
+    }
+  }
+
+  public function get_current():Int
+  {
+    return head;
+  }
+
+  public var current(get, never):Int;
+
+  public function new(iterator:Iterator<Int>)
+  {
+    tail = iterator;
+    next();
+  }
+
+}
+
+@:final
+@:generic
+class GenericIteratorSource<I:Iterator<Int>> implements ISource
+{
+
+  var head:Int;
+
+  var tail:I;
+
+  public function next():Void
+  {
+    if (tail.hasNext())
+    {
+      head = tail.next();
+    }
+    else
+    {
+      head = -1;
+    }
+  }
+
+  public function get_current():Int
+  {
+    return head;
+  }
+
+  public var current(get, never):Int;
+
+  public function new(iterator:I)
+  {
+    tail = iterator;
+    next();
+  }
+
+}
+
+@:final
 class InputSource implements ISource
 {
 
@@ -492,8 +572,8 @@ class InputSource implements ISource
 
   public function new(input:Input)
   {
-    head = input.readByte();
     tail = input;
+    next();
   }
 
 }

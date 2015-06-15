@@ -887,10 +887,11 @@ class JsonBuilderFactoryGenerator
             hasUnknownFieldMap = true;
           case { kind: FVar(AccNormal | AccNo, AccNormal | AccNo), meta: meta } if (!meta.has(":transient")):
             var fieldName = field.name;
+            var jsonFieldName = GeneratorUtilities.jsonFieldName(field);
             var d = resolvedBuild(TypeTools.toComplexType(applyTypeParameters(field.type)), macro value, params);
             cases.push(
               {
-                values: [ macro $v{fieldName} ],
+                values: [ macro $v{jsonFieldName} ],
                 guard: null,
                 expr: macro result.$fieldName = @await $d(),
               });
