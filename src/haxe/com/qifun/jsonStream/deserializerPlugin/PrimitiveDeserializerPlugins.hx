@@ -125,10 +125,12 @@ class UIntDeserializerPlugin
     {
       case com.qifun.jsonStream.JsonStream.NUMBER(value):
         cast value;
+      case INT32(value):
+        value;
       case NULL:
         null;
       case stream:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL"]);
     }
   }
 }
@@ -144,13 +146,11 @@ class IntDeserializerPlugin
       case NUMBER(value):
         cast value;
       case INT32(value):
-      {
         value;
-      }
       case NULL:
         null;
       case stream:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "INT32", "NULL"]);
     }
   }
 }
@@ -168,7 +168,7 @@ class IntDeserializerPlugin
         case NULL:
           null;
         case stream:
-          throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
+          throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL"]);
       }
     }
   }
@@ -186,7 +186,7 @@ class FloatDeserializerPlugin
       case NULL:
         null;
       case stream:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "ARRAY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "NUMBER", "NULL"]);
     }
   }
 }
@@ -226,7 +226,7 @@ class BinaryDeserializerPlugin
       case NULL:
         null;
       case stream:
-        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "BINARY", "NULL"]);
+        throw JsonDeserializerError.UNMATCHED_JSON_TYPE(stream, [ "STRING", "BINARY", "NULL"]);
     }
   }
 }
