@@ -17,6 +17,10 @@ for (c <- Seq(CSharp, TestCSharp)) yield {
   haxeOptions in c ++= Seq("-lib", "HUGS", "-D", "CF")
 }
 
+releaseUseGlobalVersion := false
+
+releaseCrossBuild := true
+
 haxeOptions in CSharp ++= Seq("-D", "unity", "-D", "dll")
 
 haxeOptions in TestCSharp ++= Seq("-D", "WITHOUTUNITY", "-main", "com.qifun.jsonStream.Main")
