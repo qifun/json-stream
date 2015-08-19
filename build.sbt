@@ -84,6 +84,8 @@ publishTo <<= (isSnapshot) { isSnapshot: Boolean =>
     Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 }
 
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
 import ReleaseTransformations._
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
