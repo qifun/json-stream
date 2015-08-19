@@ -78,6 +78,22 @@ publishTo <<= (isSnapshot) { isSnapshot: Boolean =>
     Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 }
 
+import ReleaseTransformations._
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+  setNextVersion,
+  commitNextVersion,
+  releaseStepCommand("sonatypeRelease"),
+  pushChanges
+)
+
 scmInfo := Some(ScmInfo(
   url(s"https://github.com/qifun/${name.value}"),
   s"scm:git:git://github.com/qifun/${name.value}.git",
