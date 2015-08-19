@@ -40,6 +40,13 @@ class TextTest extends JsonTestCase
     #else
     assertTrue(Math.abs(-33.799232482910156 - nativeData2.numberField) < 0.000000000001);
     #end
+  } 
+
+  public function testUnicodeEscape()
+  {
+    var text = "{\"textField\":\"\\u4e2d文 \\uD83D\\uDC33\"}";
+    var nativeData2:Dynamic = JsonDeserializer.deserializeRaw(TextParser.parseString(text));
+    assertEquals("中文 🐳", nativeData2.textField);
   }
 
   public function testParser()

@@ -45,6 +45,7 @@ enum TextParserError
   EXPECT_COLON;
   EXPECT_END_BRACKET;
   INNER_JSON_STREAM_IS_NOT_FINISHED(expectedLevel:Int, currentLevel:Int);
+  ILLEGAL_UNICODE_ESCAPE;
 }
 
 class TextParser
@@ -70,17 +71,17 @@ class TextParser
       case "d".code | "D".code: 0xD;
       case "e".code | "E".code: 0xE;
       case "f".code | "F".code: 0xF;
-      default: throw TextParserError.ILLEGAL_NUMBER_FORMAT;
+      default: throw TextParserError.ILLEGAL_UNICODE_ESCAPE;
     }
   }
 
-  static function parseHexCharacter4(c0:Int, c1:Int, c2:Int, c3:Int):String
+  static function parseHexCharacter4(c0:Int, c1:Int, c2:Int, c3:Int):Int
   {
     var h0 = parseHexCharacter(c0);
     var h1 = parseHexCharacter(c1);
     var h2 = parseHexCharacter(c2);
     var h3 = parseHexCharacter(c3);
-    return String.fromCharCode((h0 << 24) | (h1 << 16) | (h2 << 8) | h3);
+    return (h0 << 12) | (h1 << 8) | (h2 << 4) | h3;
   }
 
   static function parseStringLiteral(source:ISource, context:TextParseContext):String
@@ -114,8 +115,40 @@ class TextParser
               var c1 = { source.next(); source.current; }
               var c2 = { source.next(); source.current; }
               var c3 = { source.next(); source.current; }
-              var s = parseHexCharacter4(c0, c1, c2, c3);
-              buffer.addString(s);
+              var c = parseHexCharacter4(c0, c1, c2, c3);
+              if( 0xD800 <= c && c <= 0xDBFF ) {
+                source.next();
+                switch (source.current) {
+                  case "\\".code:
+                  default: throw TextParserError.ILLEGAL_UNICODE_ESCAPE;
+                }
+                source.next();
+                switch (source.current) {
+                  case "u".code:
+                  default: throw TextParserError.ILLEGAL_UNICODE_ESCAPE;
+                }
+                var c4 = { source.next(); source.current; }
+                var c5 = { source.next(); source.current; }
+                var c6 = { source.next(); source.current; }
+                var c7 = { source.next(); source.current; }
+                var low = parseHexCharacter4(c4, c5, c6, c7);
+                c = (c - 0xD7C0 << 10) | (low & 0x3FF);
+              }
+              if (c <= 0x7F) {
+                buffer.addByte(c);
+              } else if( c <= 0x7FF ) {
+                buffer.addByte( 0xC0 | (c >> 6) );
+                buffer.addByte( 0x80 | (c & 63) );
+              } else if( c <= 0xFFFF ) {
+                buffer.addByte( 0xE0 | (c >> 12) );
+                buffer.addByte( 0x80 | ((c >> 6) & 63) );
+                buffer.addByte( 0x80 | (c & 63) );
+              } else {
+                buffer.addByte( 0xF0 | (c >> 18) );
+                buffer.addByte( 0x80 | ((c >> 12) & 63) );
+                buffer.addByte( 0x80 | ((c >> 6) & 63) );
+                buffer.addByte( 0x80 | (c & 63) );
+              }
           }
         case -1:
           throw new Eof();

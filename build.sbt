@@ -17,6 +17,10 @@ for (c <- Seq(CSharp, TestCSharp)) yield {
   haxeOptions in c ++= Seq("-lib", "HUGS", "-D", "CF")
 }
 
+releaseUseGlobalVersion := false
+
+releaseCrossBuild := true
+
 haxeOptions in CSharp ++= Seq("-D", "unity", "-D", "dll")
 
 haxeOptions in TestCSharp ++= Seq("-D", "WITHOUTUNITY", "-main", "com.qifun.jsonStream.Main")
@@ -41,7 +45,7 @@ libraryDependencies += "com.qifun.sbt-haxe" %% "test-interface" % "0.1.0" % Test
 
 libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.4" % HaxeJava classifier "haxe-java"
 
-libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"
+libraryDependencies += "org.reactivemongo" %% "reactivemongo-bson" % "0.11.6"
 
 crossScalaVersions := Seq("2.10.4", "2.11.2")
 
@@ -60,8 +64,6 @@ doc in Compile :=  {
 organization := "com.qifun"
 
 name := "json-stream"
-
-version := "0.2.4-SNAPSHOT"
 
 homepage := Some(url(s"https://github.com/qifun/${name.value}"))
 
