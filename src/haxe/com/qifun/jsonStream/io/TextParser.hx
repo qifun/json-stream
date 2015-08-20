@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package com.qifun.jsonStream.io ;
+package com.qifun.jsonStream.io;
 import com.dongxiguo.continuation.Continuation;
 import com.dongxiguo.continuation.utils.Generator;
 import com.qifun.jsonStream.JsonStream.JsonStreamPair;
@@ -45,7 +45,7 @@ enum TextParserError
   EXPECT_COLON;
   EXPECT_END_BRACKET;
   INNER_JSON_STREAM_IS_NOT_FINISHED(expectedLevel:Int, currentLevel:Int);
-  ILLEGAL_UNICODE_ESCAPE;
+  ILLEGAL_ESCAPE;
 }
 
 class TextParser
@@ -71,7 +71,7 @@ class TextParser
       case "d".code | "D".code: 0xD;
       case "e".code | "E".code: 0xE;
       case "f".code | "F".code: 0xF;
-      default: throw TextParserError.ILLEGAL_UNICODE_ESCAPE;
+      default: throw TextParserError.ILLEGAL_ESCAPE;
     }
   }
 
@@ -100,6 +100,8 @@ class TextParser
               buffer.addByte("\"".code);
             case "\\".code:
               buffer.addByte("\\".code);
+            case "/".code:
+              buffer.addByte("/".code);
             case "b".code:
               buffer.addByte("\x08".code);
             case "f".code:
@@ -120,12 +122,12 @@ class TextParser
                 source.next();
                 switch (source.current) {
                   case "\\".code:
-                  default: throw TextParserError.ILLEGAL_UNICODE_ESCAPE;
+                  default: throw TextParserError.ILLEGAL_ESCAPE;
                 }
                 source.next();
                 switch (source.current) {
                   case "u".code:
-                  default: throw TextParserError.ILLEGAL_UNICODE_ESCAPE;
+                  default: throw TextParserError.ILLEGAL_ESCAPE;
                 }
                 var c4 = { source.next(); source.current; }
                 var c5 = { source.next(); source.current; }
@@ -149,6 +151,7 @@ class TextParser
                 buffer.addByte( 0x80 | ((c >> 6) & 63) );
                 buffer.addByte( 0x80 | (c & 63) );
               }
+            default: throw TextParserError.ILLEGAL_ESCAPE;
           }
         case -1:
           throw new Eof();
