@@ -1,3 +1,7 @@
+enablePlugins(HaxeJavaPlugin)
+
+enablePlugins(HaxeCSharpPlugin)
+
 resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 for (c <- Seq(Compile, Test)) yield {
@@ -5,7 +9,9 @@ for (c <- Seq(Compile, Test)) yield {
     Seq("-D", "scala")
 }
 
-for (c <- Seq(Compile, Test, CSharp, TestCSharp)) yield {
+val targetConfigurations = Seq(Compile, Test, CSharp, TestCSharp/*, Cpp, TestCpp, Js, TestJs, Php, TestPhp, Python, TestPython, Neko, TestNeko, Flash, TestFlash, As3, TestAs3*/)
+
+for (c <- targetConfigurations) yield {
   haxeOptions in c ++=
     Seq(
       "-D", "no-root",
@@ -16,6 +22,10 @@ for (c <- Seq(Compile, Test, CSharp, TestCSharp)) yield {
 for (c <- Seq(CSharp, TestCSharp)) yield {
   haxeOptions in c ++= Seq("-lib", "HUGS", "-D", "CF")
 }
+
+releaseUseGlobalVersion := false
+
+releaseCrossBuild := true
 
 haxeOptions in CSharp ++= Seq("-D", "unity", "-D", "dll")
 
@@ -41,7 +51,7 @@ libraryDependencies += "com.qifun.sbt-haxe" %% "test-interface" % "0.1.0" % Test
 
 libraryDependencies += "com.qifun" %% "haxe-scala-stm" % "0.1.4" % HaxeJava classifier "haxe-java"
 
-libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.10.5.0.akka23"
+libraryDependencies += "org.reactivemongo" %% "reactivemongo-bson" % "0.11.6"
 
 crossScalaVersions := Seq("2.10.4", "2.11.2")
 
@@ -61,8 +71,6 @@ organization := "com.qifun"
 
 name := "json-stream"
 
-version := "0.2.4-SNAPSHOT"
-
 homepage := Some(url(s"https://github.com/qifun/${name.value}"))
 
 startYear := Some(2014)
@@ -75,6 +83,24 @@ publishTo <<= (isSnapshot) { isSnapshot: Boolean =>
   else
     Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
 }
+
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+
+import ReleaseTransformations._
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+  setNextVersion,
+  commitNextVersion,
+  releaseStepCommand("sonatypeRelease"),
+  pushChanges
+)
 
 scmInfo := Some(ScmInfo(
   url(s"https://github.com/qifun/${name.value}"),

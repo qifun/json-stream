@@ -42,6 +42,21 @@ class TextTest extends JsonTestCase
     #end
   }
 
+  public function testUnicodeEscape()
+  {
+    var text = "{\"textField\":\"\\u4e2d文 \\uD83D\\uDC33\"}";
+    var nativeData2:Dynamic = JsonDeserializer.deserializeRaw(TextParser.parseString(text));
+    assertEquals("中文 🐳", nativeData2.textField);
+  }
+
+
+  public function testEscape()
+  {
+    var text = "{\"escapedField\":\"\\n\\/\"}";
+    var nativeData2:Dynamic = JsonDeserializer.deserializeRaw(TextParser.parseString(text));
+    assertEquals("\n/", nativeData2.escapedField);
+  }
+
   public function testParser()
   {
     var nativeData =
