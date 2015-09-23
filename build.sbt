@@ -2,6 +2,20 @@ enablePlugins(HaxeJavaPlugin)
 
 enablePlugins(HaxeCSharpPlugin)
 
+enablePlugins(HaxeCppPlugin)
+
+enablePlugins(HaxeFlashPlugin)
+
+enablePlugins(HaxeAs3Plugin)
+
+enablePlugins(HaxePythonPlugin)
+
+enablePlugins(HaxeNekoPlugin)
+
+enablePlugins(HaxePhpPlugin)
+
+enablePlugins(HaxeJsPlugin)
+
 resolvers in ThisBuild += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 for (c <- Seq(Compile, Test)) yield {
@@ -9,9 +23,7 @@ for (c <- Seq(Compile, Test)) yield {
     Seq("-D", "scala")
 }
 
-val targetConfigurations = Seq(Compile, Test, CSharp, TestCSharp/*, Cpp, TestCpp, Js, TestJs, Php, TestPhp, Python, TestPython, Neko, TestNeko, Flash, TestFlash, As3, TestAs3*/)
-
-for (c <- targetConfigurations) yield {
+for (c <- AllTargetConfigurations ++ AllTestTargetConfigurations) yield {
   haxeOptions in c ++=
     Seq(
       "-D", "no-root",
