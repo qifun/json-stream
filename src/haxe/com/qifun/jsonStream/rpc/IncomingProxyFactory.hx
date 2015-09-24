@@ -46,7 +46,7 @@ class IncomingProxyFactory
       var found = s.indexOf("_", prev);
       if (found != -1)
       {
-        sb.addSub(s, prev, i - prev);
+        sb.addSub(s, prev, found - prev);
         sb.add("__");
         i = found + 1;
       }
